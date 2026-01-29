@@ -1,0 +1,65 @@
+{
+  "name": "matimo",
+  "version": "0.0.1",
+  "description": "Maximum AI Tools in Modular Object - Universal configuration-driven AI agent tools ecosystem",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src test --ext .ts",
+    "lint:fix": "eslint src test --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"*.json\" \"*.md\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "commitlint": "commitlint --from HEAD~1 --to HEAD",
+    "validate-tools": "node scripts/validate-tool.js",
+    "test-tools": "jest test/fixtures/tools",
+    "dev": "ts-node src/index.ts",
+    "clean": "rm -rf dist coverage"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "tools",
+    "mcp",
+    "llm",
+    "claude",
+    "langchain",
+    "crewai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.7.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
+    "@types/jest": "^29.5.10",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^9.39.2",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.1",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
