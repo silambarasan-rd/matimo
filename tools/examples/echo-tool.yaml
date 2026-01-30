@@ -1,0 +1,35 @@
+name: echo-tool
+version: "1.0.0"
+description: "Echo back the input message - useful for testing"
+
+parameters:
+  message:
+    type: string
+    description: "The message to echo"
+    required: true
+
+execution:
+  type: command
+  command: "echo"
+  args: ["{message}"]
+
+output_schema:
+  type: object
+  properties:
+    message:
+      type: string
+      description: "The echoed message"
+    timestamp:
+      type: string
+      description: "ISO timestamp of execution"
+
+error_handling:
+  retry: 1
+
+examples:
+  - parameters:
+      message: "Hello, Matimo!"
+    result:
+      message: "Hello, Matimo!"
+
+tags: [test, echo, basic]
