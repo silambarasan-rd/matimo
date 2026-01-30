@@ -42,8 +42,8 @@ export const ExecutionConfigSchema = z.discriminatedUnion('type', [
     type: z.literal('http'),
     method: z.enum(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']),
     url: z.string(),
-    headers: z.record(z.string()).optional(),
-    body: z.any().optional(),
+    headers: z.record(z.string(), z.string()).optional(),
+    body: z.unknown().optional(),
     timeout: z.number().optional(),
   }),
 ]);
@@ -53,7 +53,7 @@ export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
 // Output schema for validation
 export const OutputSchemaSchema = z.object({
   type: z.string().optional(),
-  properties: z.record(z.any()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
   required: z.array(z.string()).optional(),
   description: z.string().optional(),
 });
@@ -85,7 +85,7 @@ export const ToolDefinitionSchema = z.object({
   name: z.string(),
   description: z.string(),
   version: z.string(),
-  parameters: z.record(ParameterSchema).optional(),
+  parameters: z.record(z.string(), ParameterSchema).optional(),
   execution: ExecutionConfigSchema,
   authentication: AuthConfigSchema.optional(),
   output_schema: OutputSchemaSchema.optional(),
@@ -95,7 +95,7 @@ export const ToolDefinitionSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        params: z.record(z.any()),
+        params: z.record(z.string(), z.unknown()),
         description: z.string().optional(),
       })
     )
@@ -128,11 +128,11 @@ export function validateToolDefinition(tool: unknown): ToolDefinition {
   const result = ToolDefinitionSchema.safeParse(tool);
 
   if (!result.success) {
-    // Format detailed error messages from Zod
-    const errors = result.error.errors
-      .map((err) => {
-        const path = err.path.length > 0 ? err.path.join('.') : 'root';
-        return `  • ${path}: ${err.message} (${err.code})`;
+    // Format detailed error messages from Zod v4
+    const errors = result.error.issues
+      .map((issue) => {
+        const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+        return `  • ${path}: ${issue.message} (${issue.code})`;
       })
       .join('\n');
 

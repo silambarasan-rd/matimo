@@ -20,7 +20,7 @@ export class HttpExecutor {
     // Implement parameter templating
     const templatedUrl = this.templateString(url, params);
     const templatedHeaders = this.templateObject(headers, params);
-    const templatedBody = body ? this.templateObject(body, params) : undefined;
+    const templatedBody = body && typeof body === 'object' ? this.templateObject(body as Record<string, unknown>, params) : body;
 
     // Build request config
     const requestConfig: AxiosRequestConfig = {
