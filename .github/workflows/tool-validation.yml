@@ -42,5 +42,5 @@ jobs:
       - name: Validate tools
         run: pnpm validate-tools
 
-      - name: Run tool tests
-        run: pnpm test -- test/fixtures/tools
+      - name: Run full test suite
+        run: pnpm test
