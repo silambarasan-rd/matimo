@@ -262,7 +262,7 @@ test(decorator): add tests
 - New executor types
 - Performance optimizations
 
-See [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ## Documentation
 
