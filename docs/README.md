@@ -13,10 +13,11 @@ Welcome to the Matimo documentation! Everything you need to get started, build t
 - **[Tool Specification](./TOOL_SPECIFICATION.md)** — How to write YAML tools  
 - **[Decorator Guide](./DECORATOR_GUIDE.md)** — TypeScript decorator syntax
 
-### Development
+### Security & Best Practices
+- **[Security Guide](/SECURITY.md)** — Security standards and guidelines
 - **[Commit Guidelines](./COMMIT_GUIDELINES.md)** — Conventional commits standard
 - **[Development Standards](./DEVELOPMENT_STANDARDS.md)** — Code quality rules
-- **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute
+- **[CONTRIBUTING.md](/CONTRIBUTING.md)** — How to contribute
 
 ---
 

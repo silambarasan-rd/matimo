@@ -38,6 +38,20 @@ Complete documentation for Matimo.
   - Testing decorator tools
   - Migration from YAML to decorators
 
+## Security
+
+- **[Security Guide](/SECURITY.md)** — Security standards and best practices
+  - Core security principles
+  - Secret management (environment variables)
+  - Input validation with schemas
+  - Error handling without leaking information
+  - Logging without sensitive data
+  - Authentication mechanisms
+  - Command execution safety
+  - Common vulnerabilities and fixes
+  - Security checklist
+  - Responsible vulnerability disclosure
+
 ## Development
 
 - **[Commit Guidelines](./COMMIT_GUIDELINES.md)** — Conventional commits standard
@@ -58,7 +72,7 @@ Complete documentation for Matimo.
   - Performance and memory targets
   - Quality metrics and checklists
 
-- **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute to Matimo
+- **[CONTRIBUTING.md](/CONTRIBUTING.md)** — How to contribute to Matimo
   - Getting started and setup
   - Code standards and best practices
   - Testing with TDD approach
@@ -82,14 +96,14 @@ Complete documentation for Matimo.
 3. Follow [Development Standards](./DEVELOPMENT_STANDARDS.md) for code quality
 
 ### For Contributors
-1. Check [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines
+1. Check [CONTRIBUTING.md](/CONTRIBUTING.md) for contribution guidelines
 2. Follow [Development Standards](./DEVELOPMENT_STANDARDS.md) for code quality
 3. Use [Commit Guidelines](./COMMIT_GUIDELINES.md) for proper commit format
 
 ### For Maintainers
 1. Review [Development Standards](./DEVELOPMENT_STANDARDS.md) for quality metrics
 2. Check [Commit Guidelines](./COMMIT_GUIDELINES.md) for PR commit validation
-3. See [CONTRIBUTING.md](../CONTRIBUTING.md) for overall workflow
+3. See [CONTRIBUTING.md](/CONTRIBUTING.md) for overall workflow
 
 ---
 
