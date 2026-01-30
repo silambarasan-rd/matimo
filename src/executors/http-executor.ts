@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 import { ToolDefinition } from '../core/schema';
 
 /**
@@ -23,13 +23,13 @@ export class HttpExecutor {
     const templatedBody = body ? this.templateObject(body, params) : undefined;
 
     // Build request config
-    const requestConfig: any = {
+    const requestConfig: AxiosRequestConfig = {
       method,
       url: templatedUrl,
     };
 
     if (Object.keys(templatedHeaders).length > 0) {
-      requestConfig.headers = templatedHeaders;
+      requestConfig.headers = templatedHeaders as Record<string, string>;
     }
 
     if (templatedBody !== undefined) {
@@ -50,11 +50,12 @@ export class HttpExecutor {
         statusCode: response.status,
         headers: response.headers,
       };
-    } catch (error: any) {
-      const status = error.response?.status || 500;
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status || 500;
       return {
         success: false,
-        error: error.message || String(error),
+        error: axiosError.message || String(error),
         statusCode: status,
       };
     }

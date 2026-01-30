@@ -4,7 +4,7 @@
   "description": "Maximum AI Tools in Modular Object - Universal configuration-driven AI agent tools ecosystem",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "commonjs",
+  "type": "module",
   "packageManager": "pnpm@8.15.0",
   "engines": {
     "node": ">=18.0.0",
@@ -22,9 +22,9 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"*.json\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "commitlint": "commitlint --from HEAD~1 --to HEAD",
-    "validate-tools": "node scripts/validate-tool.js",
+    "validate-tools": "node --import ts-node/esm scripts/validate-tool.ts",
     "test-tools": "jest test/fixtures/tools",
-    "dev": "ts-node src/index.ts",
+    "dev": "node --import ts-node/esm src/index.ts",
     "clean": "rm -rf dist coverage"
   },
   "keywords": [
