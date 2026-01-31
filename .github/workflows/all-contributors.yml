@@ -1,0 +1,31 @@
+name: all-contributors
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: Generate contributors table
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies (no-op if none)
+        run: npm ci || true
+
+      - name: Generate contributors table
+        run: npx -y all-contributors-cli generate
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md || true
+          git commit -m "chore(contributors): update contributors via all-contributors" || echo "no changes to commit"
+          git push
