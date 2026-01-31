@@ -49,6 +49,7 @@ After cloning the repo, dependencies install should auto-initialize hooks:
 pnpm install
 ```
 
+
 Or manually initialize:
 ```bash
 pnpm exec husky install
@@ -67,14 +68,16 @@ chmod +x .husky/pre-commit .husky/pre-push .husky/commit-msg
 
 **Pre-commit (fast):**
 ```bash
-pnpm lint      # ESLint checks
-pnpm format    # Prettier auto-formatting
+pnpm lint         # ESLint checks
+pnpm format:check # Prettier formatting check (no modifications)
 ```
 
 **Pre-push (comprehensive):**
 ```bash
 pnpm test:coverage  # Run all tests with coverage report
 ```
+
+**Note:** The pre-commit hook uses `format:check` to validate formatting without modifying files. If formatting issues are found, run `pnpm format` to fix them and then commit again.
 
 **Troubleshooting:**
 
