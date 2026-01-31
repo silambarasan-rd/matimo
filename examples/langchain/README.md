@@ -5,12 +5,14 @@ Three complete, production-ready AI agent examples showing how to integrate **Ma
 ## 🎯 What These Examples Demonstrate
 
 ✅ **Framework-Independent Tool Execution:**
+
 - Matimo loads and manages tools independently
 - Tools work the same way in any framework (LangChain, CrewAI, etc.)
 - No tool redefinition needed across frameworks
 - Simple adapter layer for LangChain integration
 
 ✅ **Three SDK Calling Patterns:**
+
 1. **LangChain Official API** (Recommended): Use `createAgent()` with `tool()` function
    - Simplest, fastest, most maintainable approach
    - LangChain handles tool selection and calling automatically
@@ -25,11 +27,13 @@ Three complete, production-ready AI agent examples showing how to integrate **Ma
    - Use when: You prefer functional style
 
 ✅ **Full LangChain Integration:**
+
 - Real OpenAI GPT-4 agent with multi-step reasoning
 - Tool orchestration with natural language understanding
 - Matimo stays independent of LangChain's details
 
 ✅ **Production Ready:**
+
 - Independent npm package setup
 - Environment variable management
 - Proper TypeScript configuration
@@ -63,6 +67,7 @@ npm run agent:langchain
 ```
 
 **What it does:**
+
 - Loads all tools from YAML using Matimo SDK
 - Converts each tool to LangChain's native tool format
 - Uses `createAgent()` for automatic tool orchestration
@@ -70,6 +75,7 @@ npm run agent:langchain
 - Runs 3 example queries with real Matimo execution
 
 **Pattern:**
+
 ```
 LLM decides tool needed
          ↓
@@ -85,6 +91,7 @@ Result flows back through LangChain
 ```
 
 **Why this approach is best:**
+
 - ✅ Minimal code (~100 lines)
 - ✅ Pure LangChain API (no workarounds)
 - ✅ Automatic schema generation from Zod
@@ -93,6 +100,7 @@ Result flows back through LangChain
 - ✅ Production-ready out of the box
 
 **Example output:**
+
 ```
 ❓ User: "🧮 What is 42 plus 8?"
 
@@ -111,23 +119,52 @@ npm run agent:decorator
 ```
 
 **What it does:**
-- Loads all tools from YAML (only those that actually exist)
+
+- Loads all tools from YAML using Matimo SDK
 - Creates agent with `@tool(toolName)` decorated methods
-- Decorator intercepts calls → executes via Matimo
-- Adapts to LangChain for agent orchestration
+- Decorator intercepts method calls → executes via Matimo
+- Uses **dynamic dispatch** to route tool calls to decorated methods
+- No hardcoded routing - scales to any number of tools
 - Runs 3 example queries
 
 **Pattern:**
+
 ```
-Agent Method Call (@tool decorated)
+LLM decides tool name (string)
          ↓
-Decorator intercepts
+executeTool(toolName, params)
          ↓
-Matimo registry lookup
+getToolMethodMap() maps name → method name
          ↓
-Execute via Matimo (CommandExecutor or HttpExecutor)
+Dynamically call decorated method
          ↓
-Result returned to LangChain
+@tool decorator intercepts
+         ↓
+Decorator calls matimo.execute()
+         ↓
+Matimo executes via CommandExecutor or HttpExecutor
+         ↓
+Result returned to agent
+```
+
+**Why this approach is elegant:**
+
+- ✅ Decorated methods define agent's API clearly
+- ✅ No if-else routing code (scales automatically)
+- ✅ Add 100 tools = just add 100 `@tool()` decorated methods
+- ✅ Full type safety with TypeScript
+- ✅ Decorator pattern working with real magic
+- ✅ Dynamic dispatch handles routing
+
+**Example output:**
+
+```
+❓ Prompt: "🧮 What is 42 plus 8?"
+
+🔧 Using tool: calculator
+   Parameters: {"operation":"add","a":42,"b":8}
+
+✅ Result: { result: 50 }
 ```
 
 ### 5. Run Factory Pattern Agent
@@ -137,6 +174,7 @@ npm run agent:factory
 ```
 
 **What it does:**
+
 - Loads all tools from YAML (only those that actually exist)
 - Directly calls `matimo.execute(toolName, params)`
 - Simple, straightforward execution model
@@ -144,6 +182,7 @@ npm run agent:factory
 - Runs 3 example queries
 
 **Pattern:**
+
 ```
 Direct Matimo Call
         ↓
@@ -156,18 +195,20 @@ Result returned to LangChain
 
 ## 🔀 Patterns Compared
 
-| Aspect | LangChain Official | Decorator | Factory |
-|--------|------------|-----------|---------|
-| **Call Style** | `createAgent()` + `tool()` | `await agent.method()` | `await matimo.execute()` |
-| **Complexity** | ~100 lines | ~150 lines | ~150 lines |
-| **Schema** | Automatic from Zod | Manual mapping | Manual mapping |
-| **Tool Binding** | Native LangChain | Decorator intercept | Direct call |
-| **Recommended** | ⭐ **Yes** | For class-based | For functional |
-| **Production Ready** | ✅ Yes | ✅ Yes | ✅ Yes |
+| Aspect               | LangChain Official         | Decorator                           | Factory                  |
+| -------------------- | -------------------------- | ----------------------------------- | ------------------------ |
+| **Call Style**       | `createAgent()` + `tool()` | `await agent.method()`              | `await matimo.execute()` |
+| **Complexity**       | ~100 lines                 | ~200 lines (with dynamic dispatch)  | ~150 lines               |
+| **Schema**           | Automatic from Zod         | Inferred from method signature      | Manual mapping           |
+| **Tool Binding**     | Native LangChain           | Decorator intercept with reflection | Direct call              |
+| **Scalability**      | ✅ Great                   | ✅ Excellent (no routing code)      | ✅ Great                 |
+| **Type Safety**      | ✅ Yes                     | ✅ Yes (full TS support)            | ✅ Yes                   |
+| **Recommended**      | ⭐ **For frameworks**      | ⭐ **For class-based agents**       | For functional style     |
+| **Production Ready** | ✅ Yes                     | ✅ Yes                              | ✅ Yes                   |
 
 ## 📁 Project Structure
 
-```
+````
 examples/langchain/
 ├── agents/
 │   ├── langchain-agent.ts              # ⭐ LangChain Official API (recommended)
@@ -200,7 +241,7 @@ const matimo = await MatimoInstance.init('./tools');
 // 2. Convert each Matimo tool to LangChain tool
 function convertMatimoTool(matimo: MatimoInstance, toolName: string) {
   const matimoTool = matimo.getTool(toolName);
-  
+
   // Build Zod schema from Matimo parameters
   const schemaShape = {};
   Object.entries(matimoTool.parameters).forEach(([paramName, param]) => {
@@ -208,7 +249,7 @@ function convertMatimoTool(matimo: MatimoInstance, toolName: string) {
     if (!param.required) fieldSchema = fieldSchema.optional();
     schemaShape[paramName] = fieldSchema;
   });
-  
+
   // Create LangChain tool
   return tool(
     async (input) => {
@@ -234,9 +275,10 @@ const agent = await createAgent({
 await agent.invoke({
   messages: [{ role: 'user', content: 'What is 42 plus 8?' }],
 });
-```
+````
 
 **Why this works:**
+
 - ✅ LangChain handles all schema management
 - ✅ Automatic parameter validation
 - ✅ Native function calling with OpenAI
@@ -266,7 +308,7 @@ class MyAgent {
 
 // 3. Call decorated method
 const agent = new MyAgent();
-const result = await agent.calculator('add', 5, 3);  // Decorator intercepts → Matimo executes
+const result = await agent.calculator('add', 5, 3); // Decorator intercepts → Matimo executes
 ```
 
 ### Approach 3: Factory Pattern
@@ -327,6 +369,7 @@ The beauty of Matimo is that it stays **completely independent**:
 ```
 
 **Key insight:** LangChain orchestrates tool selection, Matimo executes the tool.
+
 - ✅ Matimo tools work the same in any framework
 - ✅ No framework-specific tool reimplementation
 - ✅ Add tool to `tools/*.yaml`, it appears everywhere
@@ -348,6 +391,7 @@ When you run `npm run agent:langchain`, you'll see debug output confirming **Mat
 ```
 
 This proves:
+
 1. ✅ LangChain selected the `calculator` tool
 2. ✅ LangChain called the tool wrapper
 3. ✅ **Matimo executed the actual tool** (via CommandExecutor)
@@ -376,10 +420,11 @@ parameters:
 execution:
   type: command
   command: node calculator.js
-  args: ["--op", "{operation}", "{a}", "{b}"]
+  args: ['--op', '{operation}', '{a}', '{b}']
 ```
 
 These same tools are used in:
+
 - ✅ This example: **LangChain agents** (via both patterns)
 - ✅ **Matimo SDK direct**: `await matimo.execute('calculator', params)`
 - ✅ **MCP Server**: Claude can call them natively
@@ -395,11 +440,11 @@ Both this example's agents use the exact same YAML tools - just different callin
 
 These examples work with whatever tools are in `../../tools/`:
 
-| Tool | Type | Purpose |
-|------|------|---------|
+| Tool         | Type    | Purpose                                           |
+| ------------ | ------- | ------------------------------------------------- |
 | `calculator` | Command | Math operations (add, subtract, multiply, divide) |
-| `echo` | Command | Echo messages back |
-| `http` | HTTP | Make HTTP requests (GET, POST, etc.) |
+| `echo`       | Command | Echo messages back                                |
+| `http`       | HTTP    | Make HTTP requests (GET, POST, etc.)              |
 
 **Framework Independence:** Add any tool to `../../tools/` and it automatically appears in all three agents. No code changes needed.
 
@@ -419,6 +464,7 @@ pnpm test test/integration/
 ### "Cannot find module 'matimo'"
 
 **Solution:** Make sure parent project is built:
+
 ```bash
 cd ../..
 pnpm build
@@ -429,6 +475,7 @@ npm install
 ### "OPENAI_API_KEY is not set"
 
 **Solution:** Create `.env` with your API key:
+
 ```bash
 cp .env.example .env
 # Edit .env and add your OpenAI API key
@@ -437,6 +484,7 @@ cp .env.example .env
 ### LangChain package errors
 
 **Solution:** Reinstall all dependencies:
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -445,6 +493,7 @@ npm install
 ### Tools not executing
 
 **Solution:** Ensure parent project tools are compiled:
+
 ```bash
 cd ../..
 pnpm build

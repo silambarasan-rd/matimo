@@ -138,27 +138,52 @@ const matimoInstance = await matimo.init('./tools');
 
 // Constructor / DI example (recommended for production)
 class MyAgent {
-  private matimoInstance: any;
-  constructor(matimoInstance: any) {
-    this.matimoInstance = matimoInstance;
-  }
+  constructor(public matimo: MatimoInstance) {}
 
   @tool('calculator')
   async calculate(operation: string, a: number, b: number) {
-    return await this.matimoInstance.execute('calculator', { operation, a, b });
+    // @tool decorator intercepts this call
+    // Argument order matches tool parameters: operation, a, b
+    // Method body can be empty - decorator does the work
   }
 
   @tool('github-get-repo')
   async getRepo(owner: string, repo: string) {
-    return await this.matimoInstance.execute('github-get-repo', { owner, repo });
+    // @tool decorator intercepts this call
+    // Argument order matches tool parameters: owner, repo
+    // Method body can be empty - decorator does the work
   }
 }
 
 const agent = new MyAgent(matimoInstance);
+// When you call agent.calculate('add', 5, 3):
+// 1. @tool decorator intercepts the call
+// 2. Decorator maps arguments to parameters: { operation: 'add', a: 5, b: 3 }
+// 3. Decorator calls matimo.execute('calculator', {...})
+// 4. Result is returned to you
 const result = await agent.calculate('add', 5, 3);
 ```
 
 **Use when:** You prefer method-based calling style or class-based architecture.
+
+**How @tool decorator works:**
+
+- ✅ **Intercepts method calls** - Decorator intercepts and executes via Matimo
+- ✅ **Auto-maps arguments** - Method args become tool parameters (in order)
+- ✅ **Auto-executes tool** - Calls `matimo.execute(toolName, params)` automatically
+- ✅ **Returns tool result** - The result from Matimo is returned to you
+- ✅ **Fully scalable** - Add 100 tools = just add 100 `@tool()` decorated methods, no routing code
+- ✅ **Works with DI** - Uses instance property or global instance
+- ✅ **Method body optional** - Can be empty since decorator replaces it
+
+**How @tool decorator works:**
+
+- ✅ **Replaces the entire method** with decorator logic
+- ✅ **Intercepts calls** - your method body never executes
+- ✅ **Auto-maps arguments** - method args become tool parameters
+- ✅ **Returns tool result** - the result from `matimo.execute()` is returned
+- ✅ **Works with DI** - uses instance property or global instance
+- ✅ **Method body optional** - can be empty since decorator replaces it
 
 ### Level 2: Framework Integration Patterns (With AI Framework)
 
