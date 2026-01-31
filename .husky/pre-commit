@@ -1,2 +1,4 @@
 #!/bin/sh
+# Run linting and formatting before commit
 pnpm lint
+pnpm format
