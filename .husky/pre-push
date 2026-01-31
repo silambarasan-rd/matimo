@@ -1,0 +1,4 @@
+#!/bin/sh
+# Run comprehensive tests and coverage check before push
+echo "Running tests and coverage check..."
+pnpm test:coverage

@@ -284,5 +284,24 @@ describe('CommandExecutor', () => {
       expect(typeof result.duration).toBe('number');
       expect(result.duration).toBeGreaterThanOrEqual(0);
     });
+
+    it('should throw error when execution type is not command', async () => {
+      const tool = {
+        name: 'http-tool',
+        version: '1.0.0',
+        description: 'Test HTTP tool',
+        parameters: {},
+        execution: {
+          type: 'http' as const,
+          method: 'GET',
+          url: 'https://example.com',
+        },
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await expect(executor.execute(tool as any, {})).rejects.toThrow(
+        'Tool execution type is not command'
+      );
+    });
   });
 });

@@ -120,14 +120,19 @@ describe('ToolLoader', () => {
     });
 
     it('should return empty map for empty directory', () => {
-      const tempDir = path.join(fixturesDir, 'empty-dir');
+      const uniqueName = 'empty-dir-' + Date.now();
+      const tempDir = path.join(fixturesDir, uniqueName);
       fs.mkdirSync(tempDir, { recursive: true });
 
       try {
         const tools = loader.loadToolsFromDirectory(tempDir);
         expect(tools instanceof Map).toBe(true);
       } finally {
-        fs.rmdirSync(tempDir);
+        try {
+          fs.rmdirSync(tempDir);
+        } catch {
+          // Ignore cleanup errors
+        }
       }
     });
   });
@@ -171,6 +176,89 @@ describe('ToolLoader', () => {
 
       expect(tool.execution).toBeDefined();
       expect(['command', 'http']).toContain(tool.execution.type);
+    });
+
+    it('should throw error for unsupported file format', () => {
+      // Create a temporary unsupported file format
+      const tempDir = path.join(process.cwd(), 'temp-test-' + Date.now());
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const unsupportedPath = path.join(tempDir, 'tool.txt');
+      fs.writeFileSync(unsupportedPath, 'invalid');
+
+      try {
+        expect(() => {
+          loader.loadToolFromFile(unsupportedPath);
+        }).toThrow('Unsupported file format: .txt');
+      } finally {
+        if (fs.existsSync(unsupportedPath)) {
+          fs.unlinkSync(unsupportedPath);
+        }
+        if (fs.existsSync(tempDir)) {
+          fs.rmdirSync(tempDir);
+        }
+      }
+    });
+
+    it('should throw error for invalid tool definition', () => {
+      // Create a temporary invalid YAML file
+      const tempDir = path.join(process.cwd(), 'temp-test-' + Date.now());
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const invalidYamlPath = path.join(tempDir, 'invalid.yaml');
+      // Write a YAML without required fields
+      fs.writeFileSync(invalidYamlPath, 'name: test\nversion: 1.0.0\n');
+
+      try {
+        expect(() => {
+          loader.loadToolFromFile(invalidYamlPath);
+        }).toThrow('Invalid tool definition');
+      } finally {
+        if (fs.existsSync(invalidYamlPath)) {
+          fs.unlinkSync(invalidYamlPath);
+        }
+        if (fs.existsSync(tempDir)) {
+          fs.rmdirSync(tempDir);
+        }
+      }
+    });
+
+    it('should throw error when tools directory does not exist', () => {
+      const nonExistentDir = '/nonexistent/tools/directory';
+      expect(() => {
+        loader.loadToolsFromDirectory(nonExistentDir);
+      }).toThrow('Tools directory not found');
+    });
+
+    it('should handle invalid tool files gracefully', () => {
+      // Create a directory with an invalid tool file
+      const tempDir = path.join(process.cwd(), 'temp-invalid-tool-' + Date.now());
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const invalidYamlPath = path.join(tempDir, 'invalid-tool.yaml');
+      // Write malformed YAML (missing required fields)
+      fs.writeFileSync(invalidYamlPath, 'broken: yaml: structure:');
+
+      try {
+        // Should not throw, but log warning and skip invalid tool
+        const tools = loader.loadToolsFromDirectory(tempDir);
+        expect(tools instanceof Map).toBe(true);
+        // Invalid tool should not be loaded
+        expect(tools.size).toBe(0);
+      } finally {
+        if (fs.existsSync(invalidYamlPath)) {
+          fs.unlinkSync(invalidYamlPath);
+        }
+        if (fs.existsSync(tempDir)) {
+          fs.rmdirSync(tempDir);
+        }
+      }
     });
   });
 });

@@ -26,7 +26,8 @@ execution:
   type: http
   method: GET
   url: "{url}"
-  headers: "{headers}"
+  headers:
+    "Content-Type": "application/json"
   body: "{body}"
 
 output_schema:
@@ -54,13 +55,19 @@ rate_limiting:
   requests_per_minute: 60
 
 examples:
-  - parameters:
-      url: "https://api.example.com/users"
+  - name: "Fetch GitHub user"
+    description: "Fetch GitHub user profile"
+    params:
+      url: "https://api.github.com/users/octocat"
       method: "GET"
-    result:
-      status: 200
-      statusText: "OK"
-      data:
-        users: []
+  - name: "Post JSON data"
+    description: "POST JSON to an API endpoint"
+    params:
+      url: "https://jsonplaceholder.typicode.com/posts"
+      method: "POST"
+      body:
+        title: "Test"
+        body: "This is a test"
+        userId: 1
 
 tags: [http, api, network, client]

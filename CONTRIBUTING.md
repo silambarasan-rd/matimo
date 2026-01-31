@@ -38,6 +38,72 @@ Welcome to Matimo! We're building a universal, configuration-driven AI tools eco
 - Git configured
 - VS Code (or preferred IDE)
 
+### Git Hooks Setup
+
+This project uses [Husky](https://typicode.io/husky/) v9 to enforce code quality at different stages:
+
+**Setup Instructions:**
+
+After cloning the repo, dependencies install should auto-initialize hooks:
+
+```bash
+pnpm install
+```
+
+Or manually initialize:
+
+```bash
+pnpm exec husky install
+chmod +x .husky/pre-commit .husky/pre-push .husky/commit-msg
+```
+
+**Available Git Hooks:**
+
+| Hook         | Stage        | Checks               | Purpose                                 |
+| ------------ | ------------ | -------------------- | --------------------------------------- |
+| `pre-commit` | `git commit` | Lint + Format        | Fast feedback before committing         |
+| `pre-push`   | `git push`   | Tests + Coverage     | Comprehensive validation before pushing |
+| `commit-msg` | `git commit` | Conventional commits | Enforce commit message format           |
+
+**What runs at each stage:**
+
+**Pre-commit (fast):**
+
+```bash
+pnpm lint         # ESLint checks
+pnpm format:check # Prettier formatting check (no modifications)
+```
+
+**Pre-push (comprehensive):**
+
+```bash
+pnpm test:coverage  # Run all tests with coverage report
+```
+
+**Note:** The pre-commit hook uses `format:check` to validate formatting without modifying files. If formatting issues are found, run `pnpm format` to fix them and then commit again.
+
+**Troubleshooting:**
+
+If hooks aren't triggering:
+
+```bash
+# Re-initialize hooks
+pnpm exec husky install
+
+# Check hook permissions
+chmod +x .husky/pre-commit .husky/pre-push .husky/commit-msg
+
+# Test hook directly
+bash .husky/pre-commit
+```
+
+**Bypass hooks (not recommended):**
+
+```bash
+git commit --no-verify  # Skip pre-commit hook
+git push --no-verify    # Skip pre-push hook
+```
+
 ### Build & Test Commands
 
 ```bash

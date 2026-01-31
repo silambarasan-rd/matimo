@@ -1,0 +1,29 @@
+{
+  "name": "matimo-langchain-examples",
+  "version": "1.0.0",
+  "description": "Matimo + LangChain.js agent examples - Decorator Pattern and Factory Pattern",
+  "type": "module",
+  "scripts": {
+    "agent:decorator": "tsx agents/decorator-pattern-agent.ts",
+    "agent:factory": "tsx agents/factory-pattern-agent.ts",
+    "agent:langchain": "tsx agents/langchain-agent.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.1.18",
+    "@langchain/openai": "^1.2.4",
+    "langchain": "^1.2.16",
+    "matimo": "file:../..",
+    "dotenv": "^17.2.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.1.0",
+    "typescript": "^5.9.3",
+    "tsx": "^4.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

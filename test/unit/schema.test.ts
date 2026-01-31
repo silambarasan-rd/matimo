@@ -1,4 +1,9 @@
-import { ParameterSchema, AuthConfigSchema, ExecutionConfigSchema } from '../../src/core/schema';
+import {
+  ParameterSchema,
+  AuthConfigSchema,
+  ExecutionConfigSchema,
+  validateToolDefinition,
+} from '../../src/core/schema';
 
 describe('Schema Validation', () => {
   describe('ParameterSchema', () => {
@@ -235,6 +240,29 @@ describe('Schema Validation', () => {
 
       expect(() => validateToolDefinition(invalidTool)).toThrow();
       // Should mention multiple fields in the error message
+    });
+
+    it('should format validation errors with nested path information', () => {
+      const invalidTool = {
+        name: 'test',
+        version: '1.0.0',
+        description: 'Test',
+        parameters: {
+          nested: {
+            // Missing required 'type' field
+            description: 'A nested parameter',
+          },
+        },
+        execution: {
+          type: 'command',
+          command: 'test',
+        },
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => validateToolDefinition(invalidTool as any)).toThrow(
+        /Tool schema validation failed/
+      );
     });
   });
 });

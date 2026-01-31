@@ -1,3 +1,4 @@
+import path from 'path';
 import { ToolLoader } from './core/tool-loader';
 import { ToolRegistry } from './core/tool-registry';
 import { CommandExecutor } from './executors/command-executor';
@@ -20,7 +21,9 @@ export class MatimoInstance {
     this.toolsPath = toolsPath;
     this.loader = new ToolLoader();
     this.registry = new ToolRegistry();
-    this.commandExecutor = new CommandExecutor();
+    // Use dirname to get parent directory reliably - works regardless of directory name
+    const workingDir = path.dirname(toolsPath);
+    this.commandExecutor = new CommandExecutor(workingDir);
     this.httpExecutor = new HttpExecutor();
   }
 

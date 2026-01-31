@@ -29,7 +29,11 @@ module.exports = {
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: {
-        esModuleInterop: true
+        esModuleInterop: true,
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+        target: 'ES2020',
+        module: 'commonjs'
       }
     }]
   }

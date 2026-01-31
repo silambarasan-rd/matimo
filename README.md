@@ -1,14 +1,14 @@
 # 🧰 Matimo — Toolbox For All AI Agents
 
 <p align="center">
-    <strong>Maximum AI Tools in Modular Objects - matimo - "to be powerful"</strong>
+    <strong>Matimo - Modular AI Tools - "to be powerful"</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/tallclub/matimo/actions/workflows/ci.yml?branch=main"><img src="https://img.shields.io/github/actions/workflow/status/tallclub/matimo/ci.yml?branch=main&style=for-the-badge" alt="CI status"></a>
   <a href="https://www.npmjs.com/package/matimo"><img src="https://img.shields.io/npm/v/matimo.svg?style=for-the-badge" alt="npm version"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="MIT License"></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0+-blue?style=for-the-badge" alt="TypeScript"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-blue?style=for-the-badge" alt="TypeScript"></a>
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge" alt="Node.js"></a>
 </p>
 
@@ -38,7 +38,7 @@ const m = await matimo.init('./tools');
 const result = await m.execute('calculator', { operation: 'add', a: 5, b: 3 });
 ```
 
-Prefer factory pattern (simple) or decorator pattern (class-based agents). See [SDK Approaches](#sdk-approaches) for details.
+Prefer factory pattern (simple) or decorator pattern (class-based code). See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) for details.
 
 ## Built so far
 
@@ -90,9 +90,13 @@ git clone https://github.com/tallclub/matimo.git
 cd matimo && pnpm install && pnpm build
 ```
 
-## SDK Approaches
+## SDK Usage Patterns
 
-### 1. Factory Pattern (Recommended)
+### Level 1: Pure SDK Patterns (No Framework Required)
+
+Use Matimo directly without any AI framework. Perfect for CLI tools, backends, scheduled jobs, and simple integrations.
+
+#### 1. Factory Pattern (Recommended for Simple Use Cases)
 
 Simplest, ergonomic, single-initialization API:
 
@@ -116,44 +120,118 @@ const mathTools = matimoInstance.getToolsByTag('math');
 const results = matimoInstance.searchTools('calculator');
 ```
 
-### 2. Decorator Pattern
+**Use when:** You need simple tool execution without LLM orchestration.
 
-For class-based agents with automatic tool binding:
+#### 2. Decorator Pattern (Recommended for Class-Based Code)
+
+For class-based applications with automatic tool binding:
 
 ```typescript
-import { tool, setGlobalMatimoInstance } from 'matimo';
+import { tool } from 'matimo';
 import { matimo } from 'matimo';
 
-// Initialize globally
+// Initialize Matimo (once)
 const matimoInstance = await matimo.init('./tools');
-setGlobalMatimoInstance(matimoInstance);
 
-// Define agent with tool decorators
+// NOTE: `setGlobalMatimoInstance()` is convenient for quick demos.
+// For production code prefer explicit injection (constructor/factory) or an explicit binder.
+
+// Constructor / DI example (recommended for production)
 class MyAgent {
+  constructor(public matimo: MatimoInstance) {}
+
   @tool('calculator')
   async calculate(operation: string, a: number, b: number) {
-    // Tool automatically executed with validation
+    // @tool decorator intercepts this call
+    // Argument order matches tool parameters: operation, a, b
+    // Method body can be empty - decorator does the work
   }
 
   @tool('github-get-repo')
   async getRepo(owner: string, repo: string) {
-    // Same — fully automatic
+    // @tool decorator intercepts this call
+    // Argument order matches tool parameters: owner, repo
+    // Method body can be empty - decorator does the work
   }
 }
 
-const agent = new MyAgent();
+const agent = new MyAgent(matimoInstance);
+// When you call agent.calculate('add', 5, 3):
+// 1. @tool decorator intercepts the call
+// 2. Decorator maps arguments to parameters: { operation: 'add', a: 5, b: 3 }
+// 3. Decorator calls matimo.execute('calculator', {...})
+// 4. Result is returned to you
 const result = await agent.calculate('add', 5, 3);
 ```
+
+**Use when:** You prefer method-based calling style or class-based architecture.
+
+**How @tool decorator works:**
+
+- ✅ **Intercepts method calls** - Decorator intercepts and executes via Matimo
+- ✅ **Auto-maps arguments** - Method args become tool parameters (in order)
+- ✅ **Auto-executes tool** - Calls `matimo.execute(toolName, params)` automatically
+- ✅ **Returns tool result** - The result from Matimo is returned to you
+- ✅ **Fully scalable** - Add 100 tools = just add 100 `@tool()` decorated methods, no routing code
+- ✅ **Works with DI** - Uses instance property or global instance
+- ✅ **Method body optional** - Can be empty since decorator replaces it
+
+**How @tool decorator works:**
+
+- ✅ **Replaces the entire method** with decorator logic
+- ✅ **Intercepts calls** - your method body never executes
+- ✅ **Auto-maps arguments** - method args become tool parameters
+- ✅ **Returns tool result** - the result from `matimo.execute()` is returned
+- ✅ **Works with DI** - uses instance property or global instance
+- ✅ **Method body optional** - can be empty since decorator replaces it
+
+### Level 2: Framework Integration Patterns (With AI Framework)
+
+Integrate Matimo tools with LangChain(TS), CrewAI (coming soon) , or other AI frameworks for intelligent tool orchestration. The LLM automatically decides which tool to use.
+
+#### LangChain Integration (Recommended for AI Agents)
+
+Three complete, production-ready examples in [examples/langchain](./examples/langchain):
+
+1. **LangChain Official API** (⭐ Most Recommended)
+   - Uses `createAgent()` + `tool()` from LangChain core
+   - Automatic schema generation and tool orchestration
+   - [See example](./examples/langchain/agents/langchain-agent.ts)
+
+2. **Decorator Pattern with LangChain**
+   - Uses `@tool()` decorators with OpenAI function calling
+   - Integrates Matimo tools into class-based LangChain agents
+   - [See example](./examples/langchain/agents/decorator-pattern-agent.ts)
+
+3. **Factory Pattern with LangChain**
+   - Direct `matimo.execute()` calls in LangChain agent
+   - Simple functional approach
+   - [See example](./examples/langchain/agents/factory-pattern-agent.ts)
+
+All examples load tools from YAML once and reuse them across patterns — **single source of truth**.
+
+**Quick Start:** See [examples/langchain/README.md](./examples/langchain/README.md) for setup instructions and running the agents.
+
+**Use when:** You need intelligent tool selection based on natural language prompts.
 
 ## Integration Paths
 
 ### SDK (Available Now)
 
-- **Factory Pattern** — Simplest API for any use case
-- **Decorator Pattern** — Best for class-based agents
-- **Direct Executor Access** — Low-level control when needed
+**Level 1: Pure SDK** (No framework required)
 
-See [SDK Approaches](#sdk-approaches) above for examples.
+- **Factory Pattern** — Simplest API for any use case
+- **Decorator Pattern** — Best for class-based code
+
+See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) above for examples.
+
+**Level 2: Framework Integration** (With AI framework)
+
+- **LangChain Integration** — Production-ready AI agents with OpenAI GPT
+- **CrewAI Integration** — Coming in Phase 2
+- **Anthropic SDK Integration** — Coming in Phase 2
+
+See [SDK Usage Patterns - Level 2](#level-2-framework-integration-patterns-with-ai-framework) above and [examples/langchain/README.md](./examples/langchain/README.md) for complete working examples.
 
 ### Advanced (Coming Soon)
 
@@ -315,50 +393,6 @@ matimo/
 └── package.json
 ```
 
-## API Reference
-
-### Factory Pattern (Recommended)
-
-```typescript
-import { matimo } from 'matimo';
-
-const m = await matimo.init('./tools');
-
-// Execute
-m.execute(toolName, parameters); // Execute tool by name
-m.getTool(name); // Get tool definition
-m.listTools(); // List all tools
-m.searchTools(query); // Search by name/description
-m.getToolsByTag(tag); // Filter by tag
-```
-
-### Decorator Pattern
-
-```typescript
-import { tool, setGlobalMatimoInstance } from 'matimo';
-
-// Setup
-setGlobalMatimoInstance(matimoInstance);
-
-// Define with decorators
-class MyAgent {
-  @tool('calculator')
-  async calculate(operation: string, a: number, b: number) {}
-}
-```
-
-### Low-Level Access
-
-```typescript
-import { ToolLoader, CommandExecutor, HttpExecutor } from 'matimo';
-
-const loader = new ToolLoader();
-const tools = await loader.loadToolsFromDirectory('./tools');
-
-const executor = new CommandExecutor();
-const result = await executor.execute(tool, parameters);
-```
-
 ## Development
 
 ### Prerequisites
@@ -400,7 +434,7 @@ pnpm test:coverage              # Coverage (target: 80%+)
 
 **Coverage Target:** 80%+ (currently 112 tests, 11+ suites)
 
-## Contributing
+## Community
 
 We welcome contributions!
 
@@ -427,18 +461,15 @@ test(decorator): add tests
 
 ### What Can You Contribute?
 
-**Now:**
-
 - Core SDK improvements
 - Bug fixes
 - Documentation
 - Test coverage
-
-**Coming:**
-
-- Tool definitions (when registry opens)
+- Tool definitions
 - New executor types
 - Performance optimizations
+- Security
+- Ideas
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
@@ -480,12 +511,11 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 **Future:**
 
 - Python SDK
-- OpenAPI → YAML translation
+- MCP
 - Skills/Workflows (multi-tool orchestration)
 - 2000+ pre-configured tools
 
-
-## Performance
+## Performance Benchemark Expected
 
 - **Tool Execution:** <100ms overhead per call
 - **Schema Validation:** <10ms per request
@@ -531,6 +561,11 @@ MIT © 2026 Matimo Contributors
 - 💬 [Discussions](https://github.com/tallclub/matimo/discussions)
 - 🐛 [Issues](https://github.com/tallclub/matimo/issues)
 
+## Contributors
+
+![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=for-the-badge)
+
+Huge thanks to everyone who’s contributed to Matimo! Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## Star History
 

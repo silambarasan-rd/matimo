@@ -5,9 +5,8 @@ description: "Perform basic arithmetic operations"
 parameters:
   operation:
     type: string
-    description: "The operation to perform: add, subtract, multiply, divide"
+    description: "The operation to perform. Accepts: add (addition, sum, plus), subtract (subtraction, minus), multiply (multiplication, times, product), divide (division)"
     required: true
-    enum: [add, subtract, multiply, divide]
   a:
     type: number
     description: "First operand"
@@ -19,7 +18,7 @@ parameters:
 
 execution:
   type: command
-  command: "ts-node"
+  command: "tsx"
   args: ["tools/calculator/calculator.ts", "{operation}", "{a}", "{b}"]
 
 output_schema:
@@ -44,11 +43,29 @@ error_handling:
   initial_delay_ms: 500
 
 examples:
-  - parameters:
+  - name: "Simple addition"
+    description: "Add 5 and 3"
+    params:
       operation: "add"
       a: 5
       b: 3
-    result:
-      result: 8
+  - name: "Addition with variant"
+    description: "Add using 'addition' keyword"
+    params:
+      operation: "addition"
+      a: 10
+      b: 20
+  - name: "Subtraction"
+    description: "Subtract 3 from 10"
+    params:
+      operation: "subtract"
+      a: 10
+      b: 3
+  - name: "Multiplication"
+    description: "Multiply 4 and 7"
+    params:
+      operation: "multiply"
+      a: 4
+      b: 7
 
 tags: [math, arithmetic, basic]

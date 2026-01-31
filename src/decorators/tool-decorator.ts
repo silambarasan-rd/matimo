@@ -1,118 +1,172 @@
-import { ToolDefinition } from '../core/schema';
-
-/**
- * Interface for Matimo instance used by decorators
- * Accepts both real instances and mocks for testing
- */
-interface MatimoInstance {
-  registry: {
-    get: (name: string) => ToolDefinition | undefined;
-  };
-  validator?: {
-    validate: (
-      tool: ToolDefinition,
-      params: Record<string, unknown>
-    ) => Promise<Record<string, unknown>>;
-  };
-  commandExecutor: {
-    execute: (tool: ToolDefinition, params: Record<string, unknown>) => Promise<unknown>;
-  };
-  httpExecutor: {
-    execute: (tool: ToolDefinition, params: Record<string, unknown>) => Promise<unknown>;
-  };
-}
+import { ToolDefinition } from '../core/types.js';
+import type { MatimoInstance } from '../matimo-instance.js';
 
 /**
  * Global Matimo instance for decorator usage
- * Set via Matimo.setGlobalInstance() or new Matimo({ global: true })
+ * Set via setGlobalMatimoInstance() before using @tool decorators
  */
 let globalMatimoInstance: MatimoInstance | null = null;
 
-export function setGlobalMatimoInstance(instance: MatimoInstance | null) {
+/**
+ * Set the global Matimo instance for decorator usage
+ *
+ * Must be called before any @tool decorated methods are invoked
+ *
+ * @param instance - The MatimoInstance to use globally
+ *
+ * @example
+ * ```typescript
+ * const matimo = await MatimoInstance.init('./tools');
+ * setGlobalMatimoInstance(matimo);
+ *
+ * class MyAgent {
+ *   @tool('calculator')
+ *   async calculate(operation: string, a: number, b: number) { }
+ * }
+ *
+ * const agent = new MyAgent();
+ * await agent.calculate('add', 5, 3);
+ * ```
+ */
+export function setGlobalMatimoInstance(instance: MatimoInstance | null): void {
   globalMatimoInstance = instance;
 }
 
-export function getGlobalMatimoInstance(): MatimoInstance | null {
+/**
+ * Get the global Matimo instance
+ *
+ * @throws {Error} If no global instance is set
+ */
+export function getGlobalMatimoInstance(): MatimoInstance {
+  if (!globalMatimoInstance) {
+    throw new Error(
+      'Global MatimoInstance not set. Call setGlobalMatimoInstance() before using @tool decorator.'
+    );
+  }
   return globalMatimoInstance;
 }
 
 /**
  * Tool decorator - transforms a method into a tool executor
  *
+ * Automatically calls matimo.execute() with the method's arguments mapped to tool parameters.
+ * Must be used in a class that has a `matimo` property or after setGlobalMatimoInstance() is called.
+ *
+ * Works with both traditional and modern TypeScript decorator syntax.
+ *
  * @param toolName - Name of the tool to execute (e.g., 'calculator', 'github-get-repo')
  *
  * @example
  * ```typescript
+ * // Using global instance
+ * const matimo = await MatimoInstance.init('./tools');
+ * setGlobalMatimoInstance(matimo);
+ *
  * class MyAgent {
  *   @tool('calculator')
- *   async add(operation: string, a: number, b: number) {
- *     // Method body is ignored, tool is executed instead
+ *   async calculate(operation: string, a: number, b: number) {
+ *     // Automatically executes: matimo.execute('calculator', { operation, a, b })
  *   }
  *
  *   @tool('github-get-repo')
  *   async getRepo(owner: string, repo: string) {
- *     // Automatic validation and execution
+ *     // Automatically executes: matimo.execute('github-get-repo', { owner, repo })
  *   }
  * }
  *
  * const agent = new MyAgent();
- * const result = await agent.add('add', 5, 3);  // Executes calculator tool
+ * const result = await agent.calculate('add', 5, 3);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Using instance property
+ * class MyAgent {
+ *   constructor(public matimo: MatimoInstance) {}
+ *
+ *   @tool('calculator')
+ *   async calculate(operation: string, a: number, b: number) { }
+ * }
+ *
+ * const matimo = await MatimoInstance.init('./tools');
+ * const agent = new MyAgent(matimo);
+ * const result = await agent.calculate('add', 5, 3);
  * ```
  */
 export function tool(toolName: string) {
-  return function (
-    _target: unknown,
-    _propertyKey: string | symbol | undefined,
-    descriptor: PropertyDescriptor
-  ): PropertyDescriptor {
-    descriptor.value = async function (
-      this: { matimo?: MatimoInstance } | unknown,
-      ...args: unknown[]
-    ): Promise<unknown> {
-      // Get Matimo instance (either from instance or global)
-      const matimoInstance =
-        (this && typeof this === 'object' && 'matimo' in this
-          ? (this as { matimo?: MatimoInstance }).matimo
-          : undefined) || globalMatimoInstance;
-      if (!matimoInstance) {
-        throw new Error(
-          `Matimo instance not found for tool decorator. ` +
-            `Either pass matimo instance to class or set global instance via setGlobalMatimoInstance().`
-        );
-      }
+  return function <This, Args extends unknown[], Return>(
+    _target: (this: This, ...args: Args) => Return,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _context: any
+  ) {
+    // Handle modern experimental decorator API
+    // The decorator can be used on methods and will receive the method and context
 
-      // Get tool definition
-      const toolDef = matimoInstance.registry.get(toolName);
-      if (!toolDef) {
-        throw new Error(`Tool not found in registry: ${toolName}`);
-      }
-
-      // Convert positional arguments to parameters object using tool's parameter names
-      const params = convertArgsToParams(args, toolDef);
-
-      // Validate parameters against tool schema
-      const validated = matimoInstance.validator
-        ? await matimoInstance.validator.validate(toolDef, params)
-        : params;
-
-      // Select appropriate executor based on execution type
-      const executor = getExecutorForTool(matimoInstance, toolDef);
-
-      // Execute tool with validated parameters
-      const result = await executor.execute(toolDef, validated);
-
-      return result;
+    // Return a new function that intercepts the call
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return async function (this: any, ...args: Args): Promise<unknown> {
+      return executeToolViaDecorator(toolName, this, args);
     };
-
-    return descriptor;
   };
 }
 
 /**
+ * Execute tool via decorator - shared logic for both decorator syntaxes
+ * Exported for testing purposes
+ */
+export async function executeToolViaDecorator(
+  toolName: string,
+  thisArg: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: any[]
+): Promise<unknown> {
+  // Get Matimo instance (from class property or global)
+  let matimoInstance: MatimoInstance | null = null;
+
+  if (thisArg && typeof thisArg === 'object' && 'matimo' in thisArg) {
+    matimoInstance = (thisArg as { matimo?: MatimoInstance }).matimo || null;
+  }
+
+  if (!matimoInstance) {
+    matimoInstance = globalMatimoInstance;
+  }
+
+  if (!matimoInstance) {
+    throw new Error(
+      `Matimo instance not found for @tool('${toolName}') decorator. ` +
+        `Either add matimo property to class or call setGlobalMatimoInstance() first.`
+    );
+  }
+
+  // Get tool definition
+  const toolDef = matimoInstance.getTool(toolName);
+  if (!toolDef) {
+    throw new Error(`Tool '${toolName}' not found in Matimo registry`);
+  }
+
+  // Convert positional arguments to parameters object
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const params = convertArgsToParams(args, toolDef as any);
+
+  // Execute tool via Matimo
+  return matimoInstance.execute(toolName, params);
+}
+/**
  * Convert positional arguments to named parameters object
  * Maps function arguments to tool parameter names in order
+ * Exported for testing purposes
+ *
+ * @example
+ * ```
+ * Tool has parameters: { operation, a, b }
+ * Args: ['add', 5, 3]
+ * Result: { operation: 'add', a: 5, b: 3 }
+ * ```
  */
-function convertArgsToParams(args: unknown[], toolDef: ToolDefinition): Record<string, unknown> {
+export function convertArgsToParams(
+  args: unknown[],
+  toolDef: ToolDefinition
+): Record<string, unknown> {
   const params: Record<string, unknown> = {};
 
   if (!toolDef.parameters) {
@@ -126,20 +180,4 @@ function convertArgsToParams(args: unknown[], toolDef: ToolDefinition): Record<s
   }
 
   return params;
-}
-
-/**
- * Select executor based on tool execution type
- */
-function getExecutorForTool(
-  matimo: MatimoInstance,
-  toolDef: ToolDefinition
-): MatimoInstance['commandExecutor'] | MatimoInstance['httpExecutor'] {
-  const executionType = toolDef.execution?.type || 'command';
-
-  if (executionType === 'http') {
-    return matimo.httpExecutor;
-  }
-
-  return matimo.commandExecutor;
 }
