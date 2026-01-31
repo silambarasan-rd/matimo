@@ -20,7 +20,9 @@ export class MatimoInstance {
     this.toolsPath = toolsPath;
     this.loader = new ToolLoader();
     this.registry = new ToolRegistry();
-    this.commandExecutor = new CommandExecutor();
+    // Pass tools directory as working directory for command execution
+    const workingDir = toolsPath.substring(0, toolsPath.lastIndexOf('/tools'));
+    this.commandExecutor = new CommandExecutor(workingDir);
     this.httpExecutor = new HttpExecutor();
   }
 
