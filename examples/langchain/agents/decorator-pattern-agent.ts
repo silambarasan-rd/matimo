@@ -175,14 +175,43 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
   }
 
   /**
-   * Execute a tool via decorated methods
-   * The @tool decorator intercepts calls and executes tools automatically
+   * Map of tool names to their decorated methods
+   * Built at runtime to discover which tools this agent supports
+   */
+  private getToolMethodMap(): Map<string, string> {
+    const toolMap = new Map<string, string>();
+    
+    // Get all methods decorated with @tool
+    // The decorator stores tool name in a metadata property
+    for (const [methodName, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(this)))) {
+      if (typeof descriptor.value === 'function') {
+        // Check if method has tool metadata (added by decorator)
+        const method = descriptor.value as any;
+        if (method.__toolName) {
+          toolMap.set(method.__toolName, methodName);
+        }
+      }
+    }
+    
+    // Manual mapping as fallback (decorators should set __toolName)
+    // This ensures we catch all @tool decorated methods
+    toolMap.set('calculator', 'calculate');
+    toolMap.set('echo-tool', 'echo');
+    toolMap.set('http-client', 'fetch');
+    
+    return toolMap;
+  }
+
+  /**
+   * Execute a tool via decorated method
+   * Uses reflection to dynamically call the appropriate decorated method
+   * This keeps decorators as the source of truth for agent API
    */
   private async executeTool(toolName: string, params: Record<string, unknown>): Promise<void> {
     try {
       // Normalize parameters based on tool
       let normalizedParams = params;
-      
+
       // Calculator: Handle "operands" array format by converting to a, b
       if (toolName === 'calculator' && params.operands && Array.isArray(params.operands)) {
         const [a, b] = params.operands as number[];
@@ -196,33 +225,27 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
       console.log(`\n🔧 Using tool: ${toolName}`);
       console.log(`   Parameters: ${JSON.stringify(normalizedParams)}`);
 
-      let result: unknown;
+      // Find the decorated method for this tool
+      const toolMethodMap = this.getToolMethodMap();
+      const methodName = toolMethodMap.get(toolName);
 
-      // Route to appropriate @tool decorated method
-      switch (toolName) {
-        case 'calculator':
-          // @tool decorator automatically calls: matimo.execute('calculator', { operation, a, b })
-          result = await this.calculate(
-            normalizedParams.operation as string,
-            normalizedParams.a as number,
-            normalizedParams.b as number
-          );
-          break;
-        case 'echo-tool':
-          // @tool decorator automatically calls: matimo.execute('echo-tool', { message })
-          result = await this.echo(normalizedParams.message as string);
-          break;
-        case 'http-client':
-          // @tool decorator automatically calls: matimo.execute('http-client', { method, url })
-          result = await this.fetch(
-            normalizedParams.method as string,
-            normalizedParams.url as string
-          );
-          break;
-        default:
-          console.log(`\n❌ Unknown tool: ${toolName}`);
-          return;
+      if (!methodName) {
+        console.log(`\n❌ Tool '${toolName}' not in agent's API`);
+        console.log(`Available tools: ${Array.from(toolMethodMap.keys()).join(', ')}`);
+        return;
       }
+
+      // Dynamically call the decorated method
+      // The decorator intercepts the call and executes the tool
+      const method = (this as any)[methodName];
+      if (typeof method !== 'function') {
+        console.log(`\n❌ Method '${methodName}' for tool '${toolName}' not found`);
+        return;
+      }
+
+      // Convert params object to positional args matching method signature
+      const args = this.getMethodArgsFromParams(toolName, normalizedParams);
+      const result = await method.apply(this, args);
 
       // Format result
       if (typeof result === 'object' && result !== null) {
@@ -236,16 +259,35 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
           }
         } else if (resultData.data) {
           // HTTP response
-          console.log(`\n✅ Result (HTTP ${resultData.statusCode}):`, 
-            typeof resultData.data === 'string' 
-              ? resultData.data.substring(0, 200) 
-              : JSON.stringify(resultData.data).substring(0, 200));
+          console.log(
+            `\n✅ Result (HTTP ${resultData.statusCode}):`,
+            typeof resultData.data === 'string'
+              ? resultData.data.substring(0, 200)
+              : JSON.stringify(resultData.data).substring(0, 200)
+          );
         } else {
           console.log(`\n✅ Result:`, result);
         }
       }
     } catch (error) {
       console.error(`\n❌ Tool Error: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Convert parameter object to positional arguments for method call
+   * Maps normalized params to the decorated method's parameter order
+   */
+  private getMethodArgsFromParams(toolName: string, params: Record<string, unknown>): unknown[] {
+    switch (toolName) {
+      case 'calculator':
+        return [params.operation, params.a, params.b];
+      case 'echo-tool':
+        return [params.message];
+      case 'http-client':
+        return [params.method, params.url];
+      default:
+        return [];
     }
   }
 }
