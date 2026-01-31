@@ -266,6 +266,131 @@ describe('Tool Decorator', () => {
 
     executeSpy.mockRestore();
   });
+
+  describe('Decorator Interception', () => {
+    it('should intercept method calls and execute tool via decorator', async () => {
+      // Create a class that uses the decorator to wrap a method
+      class DecoratedAgent {
+        constructor(public matimo: MatimoInstance) {}
+
+        // Simulate a decorated method that would normally be intercepted
+        async calculate(operation: string, a: number, b: number) {
+          // In a real scenario, the decorator would intercept this call
+          // Here we simulate the interception by calling executeToolViaDecorator
+          return await executeToolViaDecorator('calculator', this, [operation, a, b]);
+        }
+      }
+
+      const agent = new DecoratedAgent(matimo);
+      const result = await agent.calculate('multiply', 5, 4);
+
+      // Verify the tool was executed and returned a result
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
+    });
+
+    it('should use instance matimo property over global instance in decorator', async () => {
+      const executeSpy = jest.spyOn(matimo, 'execute');
+
+      // Create a different instance
+      const otherMatimo = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+      const otherSpy = jest.spyOn(otherMatimo, 'execute');
+
+      class DecoratedAgent {
+        constructor(public matimo: MatimoInstance) {}
+
+        async calculate(operation: string, a: number, b: number) {
+          // Use decorator interception
+          return await executeToolViaDecorator('calculator', this, [operation, a, b]);
+        }
+      }
+
+      const agent = new DecoratedAgent(otherMatimo);
+      setGlobalMatimoInstance(matimo); // Set a different global instance
+
+      await agent.calculate('add', 10, 20);
+
+      // The instance property should be preferred over global
+      expect(otherSpy).toHaveBeenCalled();
+      expect(executeSpy).not.toHaveBeenCalled();
+
+      otherSpy.mockRestore();
+      executeSpy.mockRestore();
+    });
+
+    it('should convert decorator arguments to tool parameters', async () => {
+      class DecoratedAgent {
+        constructor(public matimo: MatimoInstance) {}
+
+        async calculate(operation: string, a: number, b: number) {
+          const tool = this.matimo.getTool('calculator')!;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const params = convertArgsToParams([operation, a, b], tool as any);
+          return params;
+        }
+      }
+
+      const agent = new DecoratedAgent(matimo);
+      const params = await agent.calculate('divide', 20, 4);
+
+      // Verify parameters are correctly mapped to tool schema
+      expect(params).toEqual({
+        operation: 'divide',
+        a: 20,
+        b: 4,
+      });
+    });
+
+    it('should handle decorator with no arguments', async () => {
+      class DecoratedAgent {
+        constructor(public matimo: MatimoInstance) {}
+
+        async noArgs() {
+          const tool = this.matimo.getTool('calculator')!;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const params = convertArgsToParams([], tool as any);
+          return params;
+        }
+      }
+
+      const agent = new DecoratedAgent(matimo);
+      const params = await agent.noArgs();
+
+      // Should return empty params when no args provided
+      expect(params).toEqual({});
+    });
+
+    it('should fail decorator execution when tool not found', async () => {
+      class DecoratedAgent {
+        constructor(public matimo: MatimoInstance) {}
+
+        async badTool() {
+          // Try to execute non-existent tool via decorator
+          return await executeToolViaDecorator('non-existent-tool', this, []);
+        }
+      }
+
+      const agent = new DecoratedAgent(matimo);
+
+      // Should throw error because tool doesn't exist
+      await expect(agent.badTool()).rejects.toThrow("Tool 'non-existent-tool' not found");
+    });
+
+    it('should use global instance when class has no matimo property', async () => {
+      class DecoratedAgent {
+        // No matimo property - should use global instance
+        async calculate(operation: string, a: number, b: number) {
+          return await executeToolViaDecorator('calculator', this, [operation, a, b]);
+        }
+      }
+
+      const agent = new DecoratedAgent();
+      const result = await agent.calculate('add', 5, 5);
+
+      // Should succeed using global instance
+      expect(result).toBeDefined();
+    });
+  });
 });
 
 describe('Decorator Helper Functions', () => {
