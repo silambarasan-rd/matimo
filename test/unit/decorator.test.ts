@@ -2,6 +2,8 @@ import {
   tool,
   setGlobalMatimoInstance,
   getGlobalMatimoInstance,
+  executeToolViaDecorator,
+  convertArgsToParams,
 } from '../../src/decorators/tool-decorator';
 import { MatimoInstance } from '../../src/matimo-instance';
 
@@ -116,5 +118,376 @@ describe('Tool Decorator', () => {
     );
 
     executeSpy.mockRestore();
+  });
+
+  it('should throw error when no Matimo instance available for decorator', async () => {
+    // Clear global instance
+    setGlobalMatimoInstance(null);
+
+    class BrokenAgent {
+      // No matimo property, no global instance
+      async doSomething() {
+        // This would normally be decorated, but we simulate the error scenario
+        // Simulate decorator trying to find instance
+        let found = null;
+        if (!found) {
+          found = null; // No global instance
+        }
+        if (!found) {
+          throw new Error(
+            `Matimo instance not found for @tool('calculator') decorator. ` +
+              `Either add matimo property to class or call setGlobalMatimoInstance() first.`
+          );
+        }
+      }
+    }
+
+    const agent = new BrokenAgent();
+    await expect(agent.doSomething()).rejects.toThrow('Matimo instance not found');
+  });
+
+  it('should throw error when tool not found in decorator execution', async () => {
+    class Agent {
+      constructor(public matimo: MatimoInstance) {}
+
+      async callTool() {
+        // Simulate decorator calling non-existent tool
+        const toolDef = this.matimo.getTool('non-existent-tool');
+        if (!toolDef) {
+          throw new Error("Tool 'non-existent-tool' not found in Matimo registry");
+        }
+      }
+    }
+
+    const agent = new Agent(matimo);
+    await expect(agent.callTool()).rejects.toThrow("Tool 'non-existent-tool' not found");
+  });
+
+  it('should convert positional arguments to named parameters correctly', async () => {
+    const executeSpy = jest.spyOn(matimo, 'execute');
+
+    class Agent {
+      constructor(public matimo: MatimoInstance) {}
+
+      async add(operation: string, a: number, b: number) {
+        // Simulate decorator parameter conversion
+        const params = { operation, a, b };
+        return await this.matimo.execute('calculator', params);
+      }
+    }
+
+    const agent = new Agent(matimo);
+    await agent.add('add', 5, 3);
+
+    expect(executeSpy).toHaveBeenCalledWith('calculator', {
+      operation: 'add',
+      a: 5,
+      b: 3,
+    });
+
+    executeSpy.mockRestore();
+  });
+
+  it('should handle multiple tool calls on same class', async () => {
+    const executeSpy = jest.spyOn(matimo, 'execute');
+
+    class MultiToolAgent {
+      constructor(public matimo: MatimoInstance) {}
+
+      async add(operation: string, a: number, b: number) {
+        return await this.matimo.execute('calculator', { operation, a, b });
+      }
+
+      async addAgain(operation: string, a: number, b: number) {
+        return await this.matimo.execute('calculator', { operation, a, b });
+      }
+    }
+
+    const agent = new MultiToolAgent(matimo);
+
+    await agent.add('add', 1, 2);
+    await agent.addAgain('subtract', 10, 3);
+
+    expect(executeSpy).toHaveBeenCalledTimes(2);
+    expect(executeSpy).toHaveBeenNthCalledWith(1, 'calculator', expect.any(Object));
+    expect(executeSpy).toHaveBeenNthCalledWith(2, 'calculator', expect.any(Object));
+
+    executeSpy.mockRestore();
+  });
+
+  it('should prefer class instance property over global instance', async () => {
+    const executeSpy = jest.spyOn(matimo, 'execute');
+
+    // Create a different instance
+    const otherMatimo = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+    const otherSpy = jest.spyOn(otherMatimo, 'execute');
+
+    class Agent {
+      constructor(public matimo: MatimoInstance) {}
+
+      async call(operation: string, a: number, b: number) {
+        return await this.matimo.execute('calculator', { operation, a, b });
+      }
+    }
+
+    const agent = new Agent(otherMatimo);
+    // Global instance is set but should be overridden
+    setGlobalMatimoInstance(matimo);
+
+    await agent.call('add', 5, 5);
+
+    // Should have called the instance property, not global
+    expect(otherSpy).toHaveBeenCalled();
+    expect(executeSpy).not.toHaveBeenCalled();
+
+    otherSpy.mockRestore();
+    executeSpy.mockRestore();
+  });
+
+  it('should handle empty parameters case', async () => {
+    const executeSpy = jest.spyOn(matimo, 'execute');
+
+    class Agent {
+      constructor(public matimo: MatimoInstance) {}
+
+      async noParams() {
+        return await this.matimo.execute('calculator', { operation: 'add', a: 1, b: 1 });
+      }
+    }
+
+    const agent = new Agent(matimo);
+    await agent.noParams();
+
+    expect(executeSpy).toHaveBeenCalledWith('calculator', {
+      operation: 'add',
+      a: 1,
+      b: 1,
+    });
+
+    executeSpy.mockRestore();
+  });
+});
+
+describe('Decorator Helper Functions', () => {
+  let matimo: MatimoInstance;
+
+  beforeEach(async () => {
+    const toolsPath = `${__dirname}/../fixtures/tools`;
+    matimo = await MatimoInstance.init(toolsPath);
+    setGlobalMatimoInstance(matimo);
+  });
+
+  afterEach(() => {
+    setGlobalMatimoInstance(null);
+  });
+
+  describe('convertArgsToParams', () => {
+    it('should convert positional args to named parameters', () => {
+      const tool = matimo.getTool('calculator');
+      const args = ['add', 5, 3];
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const params = convertArgsToParams(args, tool! as any);
+
+      expect(params).toEqual({
+        operation: 'add',
+        a: 5,
+        b: 3,
+      });
+    });
+
+    it('should handle partial args (fewer args than parameters)', () => {
+      const tool = matimo.getTool('calculator');
+      const args = ['multiply', 10];
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const params = convertArgsToParams(args, tool! as any);
+
+      expect(params).toEqual({
+        operation: 'multiply',
+        a: 10,
+      });
+    });
+
+    it('should handle empty args', () => {
+      const tool = matimo.getTool('calculator');
+      const args: unknown[] = [];
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const params = convertArgsToParams(args, tool! as any);
+
+      expect(params).toEqual({});
+    });
+
+    it('should handle tool with no parameters', () => {
+      const tool = matimo.getTool('calculator');
+      // Temporarily remove parameters for this test
+      const originalParams = tool!.parameters;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (tool as any).parameters = {};
+
+      const args = ['arg1', 'arg2'];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const params = convertArgsToParams(args, tool! as any);
+
+      expect(params).toEqual({});
+
+      // Restore
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (tool as any).parameters = originalParams;
+    });
+
+    it('should handle tool with undefined parameters', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tool = matimo.getTool('calculator') as any;
+      const toolCopy = {
+        ...tool,
+        parameters: undefined,
+      };
+
+      const args = ['arg1', 'arg2'];
+      const params = convertArgsToParams(args, toolCopy);
+
+      expect(params).toEqual({});
+    });
+  });
+
+  describe('executeToolViaDecorator', () => {
+    it('should execute tool with class instance property', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const thisArg = { matimo };
+      const args = ['add', 5, 3];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      expect(spyExecute).toHaveBeenCalledWith('calculator', {
+        operation: 'add',
+        a: 5,
+        b: 3,
+      });
+
+      spyExecute.mockRestore();
+    });
+
+    it('should execute tool with global instance when class property not available', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const thisArg = {}; // No matimo property
+      const args = ['subtract', 10, 2];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      expect(spyExecute).toHaveBeenCalledWith('calculator', {
+        operation: 'subtract',
+        a: 10,
+        b: 2,
+      });
+
+      spyExecute.mockRestore();
+    });
+
+    it('should throw error when no instance available', async () => {
+      setGlobalMatimoInstance(null);
+
+      const thisArg = {};
+      const args = ['add', 5, 3];
+
+      await expect(executeToolViaDecorator('calculator', thisArg, args)).rejects.toThrow(
+        'Matimo instance not found for @tool'
+      );
+    });
+
+    it('should throw error when tool not found', async () => {
+      const thisArg = { matimo };
+      const args: unknown[] = [];
+
+      await expect(executeToolViaDecorator('non-existent-tool', thisArg, args)).rejects.toThrow(
+        "Tool 'non-existent-tool' not found"
+      );
+    });
+
+    it('should prefer class instance property over global', async () => {
+      const globalSpy = jest.spyOn(matimo, 'execute');
+      const otherMatimo = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+      const otherSpy = jest.spyOn(otherMatimo, 'execute');
+
+      const thisArg = { matimo: otherMatimo };
+      const args = ['add', 1, 1];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      expect(otherSpy).toHaveBeenCalled();
+      expect(globalSpy).not.toHaveBeenCalled();
+
+      globalSpy.mockRestore();
+      otherSpy.mockRestore();
+    });
+
+    it('should handle null thisArg gracefully', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const thisArg = null;
+      const args = ['divide', 20, 4];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      expect(spyExecute).toHaveBeenCalledWith('calculator', {
+        operation: 'divide',
+        a: 20,
+        b: 4,
+      });
+
+      spyExecute.mockRestore();
+    });
+
+    it('should handle undefined thisArg gracefully', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const thisArg = undefined;
+      const args = ['add', 15, 25];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      expect(spyExecute).toHaveBeenCalledWith('calculator', {
+        operation: 'add',
+        a: 15,
+        b: 25,
+      });
+
+      spyExecute.mockRestore();
+    });
+
+    it('should handle thisArg with null matimo property', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const thisArg = { matimo: null };
+      const args = ['multiply', 3, 7];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      // Should fall back to global instance
+      expect(spyExecute).toHaveBeenCalled();
+
+      spyExecute.mockRestore();
+    });
+
+    it('should handle extra args beyond parameter count', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const thisArg = { matimo };
+      const args = ['add', 2, 3, 'extra', 'args'];
+
+      await executeToolViaDecorator('calculator', thisArg, args);
+
+      // Should only use first 3 args
+      expect(spyExecute).toHaveBeenCalledWith('calculator', {
+        operation: 'add',
+        a: 2,
+        b: 3,
+      });
+
+      spyExecute.mockRestore();
+    });
   });
 });

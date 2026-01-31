@@ -80,4 +80,29 @@ describe('Matimo Factory Pattern', () => {
       expect(instance.listTools()).toHaveLength(matimoInstance.listTools().length);
     });
   });
+
+  describe('Error Handling', () => {
+    it('should throw error when tool has unsupported execution type', async () => {
+      // Create a malformed tool with unsupported execution type
+      const malformedTool = {
+        name: 'bad-tool-' + Date.now(),
+        version: '1.0.0',
+        description: 'Tool with unsupported execution type',
+        parameters: {},
+        execution: {
+          type: 'unsupported-type', // Not 'command' or 'http'
+          command: 'echo test',
+        },
+      };
+
+      // Manually register to internal registry and try to get executor
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (matimoInstance as any).registry.register(malformedTool);
+
+      // Try to execute - should throw error about unsupported execution type
+      await expect(matimoInstance.execute(malformedTool.name, {})).rejects.toThrow(
+        'Unsupported execution type'
+      );
+    });
+  });
 });

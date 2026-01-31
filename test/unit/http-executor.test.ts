@@ -429,5 +429,81 @@ describe('HttpExecutor', () => {
 
       expect(result).toHaveProperty('headers');
     });
+
+    it('should handle object templating with non-string values', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tool: any = {
+        name: 'http-headers-mixed',
+        version: '1.0.0',
+        description: 'Test',
+        parameters: {},
+        execution: {
+          type: 'http' as const,
+          method: 'POST' as const,
+          url: 'https://api.example.com/data',
+          headers: {
+            'X-Number': '123',
+            'X-Object': { nested: 'value' },
+            'X-Array': [1, 2, 3],
+          },
+        },
+      };
+
+      mockedAxios.request.mockResolvedValue({
+        status: 200,
+        data: { success: true },
+      });
+
+      const result = (await executor.execute(tool, {})) as Record<string, unknown>;
+      expect(result.success).toBe(true);
+      // Verify non-string values in headers are preserved
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'X-Object': { nested: 'value' },
+            'X-Array': [1, 2, 3],
+          }),
+        })
+      );
+    });
+
+    it('should handle request body with mixed types', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tool: any = {
+        name: 'http-body-mixed',
+        version: '1.0.0',
+        description: 'Test',
+        parameters: {},
+        execution: {
+          type: 'http' as const,
+          method: 'POST' as const,
+          url: 'https://api.example.com/data',
+          body: {
+            text: 'string value',
+            number: 42,
+            flag: true,
+            nested: { key: 'value' },
+          },
+        },
+      };
+
+      mockedAxios.request.mockResolvedValue({
+        status: 201,
+        data: { id: 1 },
+      });
+
+      const result = (await executor.execute(tool, {})) as Record<string, unknown>;
+      expect(result.success).toBe(true);
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            text: 'string value',
+            number: 42,
+            flag: true,
+            nested: { key: 'value' },
+          }),
+        })
+      );
+    });
   });
 });

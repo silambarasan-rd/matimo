@@ -112,8 +112,9 @@ export function tool(toolName: string) {
 
 /**
  * Execute tool via decorator - shared logic for both decorator syntaxes
+ * Exported for testing purposes
  */
-async function executeToolViaDecorator(
+export async function executeToolViaDecorator(
   toolName: string,
   thisArg: unknown,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -153,6 +154,7 @@ async function executeToolViaDecorator(
 /**
  * Convert positional arguments to named parameters object
  * Maps function arguments to tool parameter names in order
+ * Exported for testing purposes
  *
  * @example
  * ```
@@ -161,7 +163,10 @@ async function executeToolViaDecorator(
  * Result: { operation: 'add', a: 5, b: 3 }
  * ```
  */
-function convertArgsToParams(args: unknown[], toolDef: ToolDefinition): Record<string, unknown> {
+export function convertArgsToParams(
+  args: unknown[],
+  toolDef: ToolDefinition
+): Record<string, unknown> {
   const params: Record<string, unknown> = {};
 
   if (!toolDef.parameters) {
