@@ -11,6 +11,7 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
+    "prepare": "husky install",
     "build": "tsc",
     "watch": "tsc --watch",
     "test": "jest",
