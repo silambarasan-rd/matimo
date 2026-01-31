@@ -194,12 +194,14 @@ All examples load tools from YAML once and reuse them across patterns — **sing
 ### SDK (Available Now)
 
 **Level 1: Pure SDK** (No framework required)
+
 - **Factory Pattern** — Simplest API for any use case
 - **Decorator Pattern** — Best for class-based code
 
 See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) above for examples.
 
 **Level 2: Framework Integration** (With AI framework)
+
 - **LangChain Integration** — Production-ready AI agents with OpenAI GPT
 - **CrewAI Integration** — Coming in Phase 2
 - **Anthropic SDK Integration** — Coming in Phase 2
@@ -488,8 +490,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 - Skills/Workflows (multi-tool orchestration)
 - 2000+ pre-configured tools
 
-
-## Performance Benchemark Expected 
+## Performance Benchemark Expected
 
 - **Tool Execution:** <100ms overhead per call
 - **Schema Validation:** <10ms per request
@@ -540,8 +541,6 @@ MIT © 2026 Matimo Contributors
 ![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=for-the-badge)
 
 Huge thanks to everyone who’s contributed to Matimo! Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
-
 
 ## Star History
 

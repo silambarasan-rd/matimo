@@ -40,19 +40,19 @@ Matimo runs untrusted code and handles user input across multiple integration po
 ```typescript
 // ❌ WRONG: Trust user input
 function executeCommand(userInput: string) {
-  return execSync(`echo ${userInput}`);  // Dangerous!
+  return execSync(`echo ${userInput}`); // Dangerous!
 }
 
 // ✅ CORRECT: Validate input
 import { z } from 'zod';
 
 const inputSchema = z.object({
-  message: z.string().max(1000)
+  message: z.string().max(1000),
 });
 
 function executeCommand(userInput: unknown) {
-  const validated = inputSchema.parse(userInput);  // Throws if invalid
-  return execSync(`echo "${validated.message}"`);  // Escaped
+  const validated = inputSchema.parse(userInput); // Throws if invalid
+  return execSync(`echo "${validated.message}"`); // Escaped
 }
 ```
 
@@ -97,7 +97,7 @@ const sanitized = {
   ...errorContext,
   password: '[REDACTED]',
   token: '[REDACTED]',
-  apiKey: '[REDACTED]'
+  apiKey: '[REDACTED]',
 };
 logger.error('Execution failed', sanitized);
 ```
@@ -112,16 +112,12 @@ throw new Error(`Failed to authenticate with API key: ${apiKey}`);
 throw new Error(`Connection failed: ${connectionString}`);
 
 // ✅ CORRECT: Safe error messages
-throw new MatimoError(
-  'Authentication failed: invalid credentials',
-  ErrorCode.AUTH_FAILED
-);
+throw new MatimoError('Authentication failed: invalid credentials', ErrorCode.AUTH_FAILED);
 
-throw new MatimoError(
-  'Database connection failed',
-  ErrorCode.EXECUTION_FAILED,
-  { service: 'database', timeout: 5000 }
-);
+throw new MatimoError('Database connection failed', ErrorCode.EXECUTION_FAILED, {
+  service: 'database',
+  timeout: 5000,
+});
 ```
 
 ---
@@ -157,21 +153,15 @@ MATIMO_API_SECRET=api_secret_xxxx
 // ✅ Retrieve and validate
 function getSecret(name: string): string {
   const secret = process.env[`MATIMO_${name.toUpperCase()}`];
-  
+
   if (!secret) {
-    throw new MatimoError(
-      `Missing required secret: ${name}`,
-      ErrorCode.AUTH_FAILED
-    );
+    throw new MatimoError(`Missing required secret: ${name}`, ErrorCode.AUTH_FAILED);
   }
-  
+
   if (secret.trim().length === 0) {
-    throw new MatimoError(
-      `Invalid secret: ${name} is empty`,
-      ErrorCode.AUTH_FAILED
-    );
+    throw new MatimoError(`Invalid secret: ${name} is empty`, ErrorCode.AUTH_FAILED);
   }
-  
+
   return secret;
 }
 
@@ -212,11 +202,11 @@ const toolSchema = z.object({
   repo: z.string().regex(/^[^/]+\/[^/]+$/),
   issue: z.number().min(1).max(10000),
   labels: z.array(z.string()).optional(),
-  body: z.string().max(5000).optional()
+  body: z.string().max(5000).optional(),
 });
 
 function execute(params: unknown) {
-  const validated = toolSchema.parse(params);  // Throws if invalid
+  const validated = toolSchema.parse(params); // Throws if invalid
   // Safe to use validated params
   return api.createIssue(validated);
 }
@@ -233,7 +223,7 @@ parameters:
     description: Repository (owner/repo)
     required: true
     validation:
-      pattern: "^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$"
+      pattern: '^[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$'
       minLength: 3
       maxLength: 100
 
@@ -259,19 +249,19 @@ parameters:
 const stringConstraints = {
   minLength: 1,
   maxLength: 1000,
-  pattern: /^[a-zA-Z0-9_-]+$/  // Alphanumeric, underscore, hyphen only
+  pattern: /^[a-zA-Z0-9_-]+$/, // Alphanumeric, underscore, hyphen only
 };
 
 const numberConstraints = {
   min: 0,
   max: 1000,
-  isInteger: true
+  isInteger: true,
 };
 
 const arrayConstraints = {
   minItems: 0,
   maxItems: 100,
-  unique: true
+  unique: true,
 };
 
 // ❌ DON'T: Accept unbounded input
@@ -295,22 +285,18 @@ enum ErrorCode {
   EXECUTION_FAILED = 'EXECUTION_FAILED',
   AUTH_FAILED = 'AUTH_FAILED',
   TOOL_NOT_FOUND = 'TOOL_NOT_FOUND',
-  VALIDATION_FAILED = 'VALIDATION_FAILED'
+  VALIDATION_FAILED = 'VALIDATION_FAILED',
 }
 
 // ✅ CORRECT: Include code but sanitize context
 try {
   const result = await executor.execute(tool, params);
 } catch (error) {
-  throw new MatimoError(
-    'Tool execution failed',
-    ErrorCode.EXECUTION_FAILED,
-    {
-      toolName: tool.name,
-      parameterCount: Object.keys(params).length
-      // DO NOT include: params, error details, stack traces
-    }
-  );
+  throw new MatimoError('Tool execution failed', ErrorCode.EXECUTION_FAILED, {
+    toolName: tool.name,
+    parameterCount: Object.keys(params).length,
+    // DO NOT include: params, error details, stack traces
+  });
 }
 ```
 
@@ -321,10 +307,7 @@ try {
 throw new Error(error.stack);
 
 // ✅ CORRECT: Safe error message
-throw new MatimoError(
-  'Operation failed',
-  ErrorCode.EXECUTION_FAILED
-);
+throw new MatimoError('Operation failed', ErrorCode.EXECUTION_FAILED);
 ```
 
 ---
@@ -341,14 +324,14 @@ logger.info('tool_execution', {
   parameterCount: 2,
   duration: 150,
   statusCode: 200,
-  timestamp: '2026-01-30T12:00:00Z'
+  timestamp: '2026-01-30T12:00:00Z',
 });
 
 logger.info('authentication', {
   provider: 'github',
   userId: 'user-456',
-  hasToken: true,  // Not the token itself
-  authenticated: true
+  hasToken: true, // Not the token itself
+  authenticated: true,
 });
 ```
 
@@ -386,7 +369,7 @@ logger.info('operation_name', {
   // Include safe metadata only
   toolName: tool.name,
   paramCount: Object.keys(params).length,
-  statusCode: response.status
+  statusCode: response.status,
 });
 
 // ✅ Log errors safely
@@ -394,8 +377,8 @@ logger.error('execution_failed', {
   traceId: context.traceId,
   toolName: tool.name,
   errorCode: error.code,
-  errorMessage: error.message,  // Should not contain secrets
-  duration: executionTime
+  errorMessage: error.message, // Should not contain secrets
+  duration: executionTime,
 });
 ```
 
@@ -462,7 +445,7 @@ function dangerous(userInput: string) {
   return execSync(`git clone ${userInput}`);
 }
 
-dangerous('https://repo.git; rm -rf /');  // DISASTER!
+dangerous('https://repo.git; rm -rf /'); // DISASTER!
 
 // ✅ SAFE: Properly escaped
 function safe(userInput: string) {
@@ -470,7 +453,7 @@ function safe(userInput: string) {
   return execSync(escaped);
 }
 
-safe('https://repo.git; rm -rf /');  // Safe - treated as single argument
+safe('https://repo.git; rm -rf /'); // Safe - treated as single argument
 ```
 
 ### Template Substitution
@@ -480,12 +463,10 @@ safe('https://repo.git; rm -rf /');  // Safe - treated as single argument
 const command = 'curl {url} -H "Authorization: Bearer {token}"';
 const escaped = {
   url: shellEscape([userUrl]),
-  token: shellEscape([userToken])
+  token: shellEscape([userToken]),
 };
 
-const final = command
-  .replace('{url}', escaped.url)
-  .replace('{token}', escaped.token);
+const final = command.replace('{url}', escaped.url).replace('{token}', escaped.token);
 ```
 
 ### Environment Variables in Commands
@@ -494,14 +475,14 @@ const final = command
 // ✅ SAFE: Use environment variables
 const env = {
   ...process.env,
-  MATIMO_API_KEY: apiKey,  // Retrieved from process.env.MATIMO_API_KEY
-  MATIMO_TIMEOUT: '5000'
+  MATIMO_API_KEY: apiKey, // Retrieved from process.env.MATIMO_API_KEY
+  MATIMO_TIMEOUT: '5000',
 };
 
 execSync('tool-command', { env });
 
 // ❌ WRONG: Don't pass secrets as command arguments
-execSync(`tool-command --key=${apiKey}`);  // Visible in process list!
+execSync(`tool-command --key=${apiKey}`); // Visible in process list!
 ```
 
 ---
@@ -533,7 +514,7 @@ return { success: true, token: userToken };
 // ✅ FIXED
 logger.info('API authentication successful');
 throw new MatimoError('Authentication failed', ErrorCode.AUTH_FAILED);
-return { success: true };  // No token in response
+return { success: true }; // No token in response
 ```
 
 ### 3. Insecure Deserialization
@@ -556,12 +537,12 @@ const validated = toolSchema.parse(userInput);
 ```typescript
 // ❌ VULNERABLE
 function processUser(user: any) {
-  return database.save(user);  // No validation!
+  return database.save(user); // No validation!
 }
 
 // ✅ SAFE
 function processUser(user: unknown) {
-  const validated = userSchema.parse(user);  // Validate with Zod
+  const validated = userSchema.parse(user); // Validate with Zod
   return database.save(validated);
 }
 ```
@@ -574,7 +555,7 @@ function processUser(user: unknown) {
 // ❌ VULNERABLE: Early return on wrong char
 function checkPassword(input: string, actual: string) {
   for (let i = 0; i < input.length; i++) {
-    if (input[i] !== actual[i]) return false;  // Fast fail
+    if (input[i] !== actual[i]) return false; // Fast fail
   }
   return true;
 }
@@ -583,10 +564,7 @@ function checkPassword(input: string, actual: string) {
 import { timingSafeEqual } from 'crypto';
 
 function checkPassword(input: string, actual: string) {
-  return timingSafeEqual(
-    Buffer.from(input),
-    Buffer.from(actual)
-  );
+  return timingSafeEqual(Buffer.from(input), Buffer.from(actual));
 }
 ```
 
@@ -650,6 +628,7 @@ function checkPassword(input: string, actual: string) {
 ### Security Updates
 
 Security fixes are released as patch versions (MAJOR.MINOR.PATCH) and announced in:
+
 - GitHub releases
 - npm advisories
 - Security mailing list
@@ -661,6 +640,7 @@ Security fixes are released as patch versions (MAJOR.MINOR.PATCH) and announced 
 ### Phase 1 (Current - Foundation)
 
 ✅ **Implemented:**
+
 - Input validation with Zod
 - Secret management (env vars, no hardcoding)
 - Error handling with safe messages
@@ -671,6 +651,7 @@ Security fixes are released as patch versions (MAJOR.MINOR.PATCH) and announced 
 ### Phase 2+ (Coming)
 
 ⏳ **Planned:**
+
 - OAuth2 authentication flow
 - Rate limiting and quota tracking
 - Request signing and verification

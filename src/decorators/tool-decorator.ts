@@ -101,7 +101,7 @@ export function tool(toolName: string) {
   ) {
     // Handle modern experimental decorator API
     // The decorator can be used on methods and will receive the method and context
-    
+
     // Return a new function that intercepts the call
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return async function (this: any, ...args: Args): Promise<unknown> {

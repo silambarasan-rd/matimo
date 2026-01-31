@@ -1,4 +1,8 @@
-import { tool, setGlobalMatimoInstance, getGlobalMatimoInstance } from '../../src/decorators/tool-decorator';
+import {
+  tool,
+  setGlobalMatimoInstance,
+  getGlobalMatimoInstance,
+} from '../../src/decorators/tool-decorator';
 import { MatimoInstance } from '../../src/matimo-instance';
 
 describe('Tool Decorator', () => {
@@ -69,9 +73,9 @@ describe('Tool Decorator', () => {
   it('should throw error when tool not found during execution', async () => {
     const globalInstance = getGlobalMatimoInstance();
 
-    await expect(
-      globalInstance.execute('non-existent-tool', {})
-    ).rejects.toThrow("Tool 'non-existent-tool' not found");
+    await expect(globalInstance.execute('non-existent-tool', {})).rejects.toThrow(
+      "Tool 'non-existent-tool' not found"
+    );
   });
 
   it('should handle tool decorator function wrapping', () => {
