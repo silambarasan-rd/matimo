@@ -7,6 +7,12 @@ import { ToolDefinition } from '../core/schema';
  */
 
 export class CommandExecutor {
+  private cwd?: string;
+
+  constructor(cwd?: string) {
+    this.cwd = cwd;
+  }
+
   /**
    * Execute a tool that runs a shell command
    */
@@ -23,9 +29,17 @@ export class CommandExecutor {
     const templatedArgs = args.map((arg) => this.templateString(arg, params));
 
     return new Promise((resolve) => {
-      const child = spawn(templatedCommand, templatedArgs, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const spawnOptions: any = {
         stdio: ['pipe', 'pipe', 'pipe'],
-      });
+      };
+
+      // Set working directory if provided
+      if (this.cwd) {
+        spawnOptions.cwd = this.cwd;
+      }
+
+      const child = spawn(templatedCommand, templatedArgs, spawnOptions);
 
       let stdout = '';
       let stderr = '';
