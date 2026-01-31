@@ -27,9 +27,9 @@ error_handling:
   retry: 1
 
 examples:
-  - parameters:
-      message: "Hello, Matimo!"
-    result:
+  - name: "Echo hello"
+    description: "Echo a greeting message"
+    params:
       message: "Hello, Matimo!"
 
 tags: [test, echo, basic]
