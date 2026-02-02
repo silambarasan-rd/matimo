@@ -75,29 +75,39 @@ function validateTools(): void {
     process.exit(0);
   }
 
-  const tools = fs.readdirSync(TOOLS_DIR).filter((f) => {
-    const fullPath = path.join(TOOLS_DIR, f);
-    return fs.statSync(fullPath).isDirectory();
-  });
-
   let valid = 0;
   let invalid = 0;
   let skipped = 0;
 
-  tools.forEach((toolDir) => {
-    const toolFile = path.join(TOOLS_DIR, toolDir, 'definition.yaml');
-    if (fs.existsSync(toolFile)) {
-      const result = validateToolFile(toolFile);
-      if (result) {
-        valid++;
-      } else {
-        invalid++;
+  /**
+   * Recursively find and validate all definition.yaml files
+   */
+  function walkDirectory(dir: string): void {
+    const items = fs.readdirSync(dir);
+
+    items.forEach((item) => {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        // Check if this directory has definition.yaml
+        const definitionFile = path.join(fullPath, 'definition.yaml');
+        if (fs.existsSync(definitionFile)) {
+          const result = validateToolFile(definitionFile);
+          if (result) {
+            valid++;
+          } else {
+            invalid++;
+          }
+        } else {
+          // Recursively check subdirectories (e.g., tools/gmail/send-email/)
+          walkDirectory(fullPath);
+        }
       }
-    } else {
-      // Skip directories without definition.yaml (placeholders)
-      skipped++;
-    }
-  });
+    });
+  }
+
+  walkDirectory(TOOLS_DIR);
 
   console.log(`\nResults: ${valid} valid, ${invalid} invalid, ${skipped} skipped (no definition.yaml)`);
   process.exit(invalid > 0 ? 1 : 0);

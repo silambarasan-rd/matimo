@@ -44,6 +44,17 @@ export const ExecutionConfigSchema = z.discriminatedUnion('type', [
     url: z.string(),
     headers: z.record(z.string(), z.string()).optional(),
     body: z.unknown().optional(),
+    query_params: z.record(z.string(), z.string()).optional(),
+    parameter_encoding: z
+      .array(
+        z.object({
+          source: z.array(z.string()),
+          target: z.string(),
+          encoding: z.string(),
+          options: z.record(z.string(), z.unknown()).optional(),
+        })
+      )
+      .optional(),
     timeout: z.number().optional(),
   }),
 ]);
