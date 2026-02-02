@@ -1,6 +1,10 @@
 # 🧰 Matimo — Toolbox For All AI Agents
 
 <p align="center">
+  <img src="./docs/assets/logo.png" alt="Matimo Logo" width="200" />
+</p>
+
+<p align="center">
     <strong>Matimo - Modular AI Tools - "to be powerful"</strong>
 </p>
 
@@ -16,7 +20,7 @@
 
 If you want tools that feel **fast, maintainable, and framework-agnostic**, this is it.
 
-[Documentation](./docs) · [Getting Started](./docs/quick-start.md) · [API Reference](./docs/api.md) · [Tool Spec](./docs/tool-spec.md) · [GitHub](https://github.com/tallclub/matimo)
+[Documentation](./docs) · [Getting Started](./docs/getting-started/QUICK_START.md) · [API Reference](./docs/api-reference/SDK.md) · [Tool Spec](./docs/tool-development/TOOL_SPECIFICATION.md) · [GitHub](https://github.com/tallclub/matimo) · [Why Matimo?](#why-matimo)
 
 ## Quick Start (TL;DR)
 
@@ -39,6 +43,50 @@ const result = await m.execute('calculator', { operation: 'add', a: 5, b: 3 });
 ```
 
 Prefer factory pattern (simple) or decorator pattern (class-based code). See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) for details.
+
+---
+
+## Why Matimo?
+
+### The Problem It Solves
+
+Building agent workflows is exciting but painful: every framework (LangChain, CrewAI, AutoGen, LlamaIndex, custom TS agents, Claude via MCP, etc.) has its own way of defining, calling, and executing tools.
+
+You end up duplicating tool logic, schemas, and integrations repeatedly.
+
+**Matimo fixes this.** Define tools **once** in clean YAML files (with Zod validation for safety) and use them everywhere:
+
+- **Pure TypeScript SDK** (factory or decorator patterns)
+- **LangChain** (examples included)
+- **MCP Server** (Claude-native) — coming soon
+- **REST API** — coming soon
+- **CLI** — coming soon
+- **Python SDK** — coming soon
+- **Tool Marketplace** (2000+ tools goal) — coming soon
+
+**Define once → Plug into any agent ecosystem.**
+
+### Why Open Source?
+
+I built Matimo because I needed it while working on my own agent product — and I couldn't find a truly framework-agnostic, fully open-source alternative (most are paid or tightly coupled to one framework).
+
+I'm a solo developer (nomadic coder at heart), so this project needs **your help** to become the go-to standard for agent tools.
+
+### How You Can Help Right Now
+
+- ⭐ **Star the repo** to show support and increase visibility
+- 🐛 **Open issues** for bugs, missing features, or pain points
+- 💡 **Suggest tools** to add (YAML examples welcome!)
+- 🔀 **Submit PRs** — we follow TDD + Conventional Commits (see CONTRIBUTING.md)
+- 📢 **Spread the word** on X/Twitter, Reddit (r/LocalLLM, r/AI_Agents, etc.), Discord communities
+
+Let's build a simple, powerful shovel for the agentic world together.
+
+With ❤️ 
+[Sajesh](https://www.linkedin.com/in/sajeshnair/)  
+Creator of Matimo
+
+---
 
 ## Built so far
 
@@ -175,15 +223,6 @@ const result = await agent.calculate('add', 5, 3);
 - ✅ **Fully scalable** - Add 100 tools = just add 100 `@tool()` decorated methods, no routing code
 - ✅ **Works with DI** - Uses instance property or global instance
 - ✅ **Method body optional** - Can be empty since decorator replaces it
-
-**How @tool decorator works:**
-
-- ✅ **Replaces the entire method** with decorator logic
-- ✅ **Intercepts calls** - your method body never executes
-- ✅ **Auto-maps arguments** - method args become tool parameters
-- ✅ **Returns tool result** - the result from `matimo.execute()` is returned
-- ✅ **Works with DI** - uses instance property or global instance
-- ✅ **Method body optional** - can be empty since decorator replaces it
 
 ### Level 2: Framework Integration Patterns (With AI Framework)
 
@@ -475,12 +514,14 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ## Documentation
 
-- **[Quick Start](./docs/quick-start.md)** — Get up and running in 5 minutes
-- **[API Reference](./docs/api.md)** — Complete SDK API
-- **[Tool Specification](./docs/tool-spec.md)** — How to write YAML tools
-- **[Decorator Guide](./docs/MATIMO_DECORATOR.md)** — Using @tool decorators
-- **[Commit Guidelines](./docs/COMMIT_GUIDELINES.md)** — Conventional commits
-- **[Development Standards](./DEVELOPMENT_STANDARDS.md)** — Code quality rules
+- **[Quick Start](./docs/getting-started/QUICK_START.md)** — Get up and running in 5 minutes
+- **[API Reference](./docs/api-reference/SDK.md)** — Complete SDK API
+- **[Tool Specification](./docs/tool-development/TOOL_SPECIFICATION.md)** — How to write YAML tools
+- **[Decorator Guide](./docs/tool-development/DECORATOR_GUIDE.md)** — Using @tool decorators
+- **[Commit Guidelines](./docs/community/COMMIT_GUIDELINES.md)** — Conventional commits
+- **[Development Standards](./docs/user-guide/DEVELOPMENT_STANDARDS.md)** — Code quality rules
+- **[Architecture Overview](./docs/architecture/OVERVIEW.md)** — System design and patterns
+- **[Framework Integrations](./docs/framework-integrations/LANGCHAIN.md)** — LangChain, CrewAI patterns
 
 ## Roadmap
 
