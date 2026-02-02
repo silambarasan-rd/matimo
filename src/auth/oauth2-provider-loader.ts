@@ -20,24 +20,7 @@ import path from 'path';
 import YAML from 'yaml';
 import { OAuth2Endpoints } from './oauth2-config';
 import { MatimoError, ErrorCode } from '../errors/matimo-error';
-
-/**
- * Provider definition loaded from YAML
- */
-export interface ProviderDefinition {
-  name: string;
-  type: 'provider';
-  version: string;
-  description?: string;
-  provider: {
-    name: string;
-    displayName?: string;
-    endpoints: OAuth2Endpoints;
-    defaultScopes?: string[];
-    documentation?: string;
-    learnMore?: string;
-  };
-}
+import { validateProviderDefinition, type ProviderDefinition } from '../core/schema';
 
 /**
  * OAuth2ProviderLoader - Loads OAuth2 provider configurations from YAML
@@ -129,60 +112,15 @@ export class OAuth2ProviderLoader {
   }
 
   /**
-   * Validate provider definition structure
+   * Validate provider definition structure using Zod schema
    */
   protected validateProviderDefinition(definition: ProviderDefinition): void {
-    if (!definition.name) {
-      throw new MatimoError(
-        'Provider definition missing required field: name',
-        ErrorCode.INVALID_SCHEMA
-      );
-    }
-
-    if (definition.type !== 'provider') {
-      throw new MatimoError(
-        `Expected type: provider, got: ${definition.type}`,
-        ErrorCode.INVALID_SCHEMA
-      );
-    }
-
-    if (!definition.provider) {
-      throw new MatimoError(
-        'Provider definition missing required field: provider',
-        ErrorCode.INVALID_SCHEMA
-      );
-    }
-
-    const { provider } = definition;
-
-    if (!provider.name) {
-      throw new MatimoError(
-        'Provider definition missing required field: provider.name',
-        ErrorCode.INVALID_SCHEMA
-      );
-    }
-
-    if (!provider.endpoints) {
-      throw new MatimoError(
-        'Provider definition missing required field: provider.endpoints',
-        ErrorCode.INVALID_SCHEMA
-      );
-    }
-
-    if (!provider.endpoints.authorizationUrl) {
-      throw new MatimoError(
-        'Provider endpoints missing required field: authorizationUrl',
-        ErrorCode.INVALID_SCHEMA,
-        { provider: provider.name }
-      );
-    }
-
-    if (!provider.endpoints.tokenUrl) {
-      throw new MatimoError(
-        'Provider endpoints missing required field: tokenUrl',
-        ErrorCode.INVALID_SCHEMA,
-        { provider: provider.name }
-      );
+    try {
+      // Use Zod schema validation for consistency with tool validation
+      validateProviderDefinition(definition);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new MatimoError(`Provider validation failed: ${message}`, ErrorCode.INVALID_SCHEMA);
     }
   }
 

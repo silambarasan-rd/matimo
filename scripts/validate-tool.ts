@@ -7,27 +7,13 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'url';
+import { validateToolDefinition, validateProviderDefinition } from '../src/core/schema';
 
 // ESM compatibility
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOOLS_DIR = path.join(__dirname, '../tools');
-
-/**
- * Represents a loaded tool definition from YAML
- */
-interface ToolDefinition {
-  name?: string;
-  version?: string;
-  description?: string;
-  parameters?: Record<string, unknown>;
-  execution?: {
-    type?: string;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
 
 /**
  * Validate a single tool YAML file
@@ -37,25 +23,19 @@ interface ToolDefinition {
 function validateToolFile(filePath: string): boolean {
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
-    const tool = yaml.load(content) as ToolDefinition;
+    const parsed = yaml.load(content);
 
-    // Check required fields
-    const required: (keyof ToolDefinition)[] = ['name', 'version', 'description', 'parameters', 'execution'];
-    const missing = required.filter((field) => !tool[field]);
+    // Determine type and validate with appropriate Zod schema
+    const type = (parsed as any)?.type;
 
-    if (missing.length > 0) {
-      console.error(`❌ ${filePath}: Missing fields: ${missing.join(', ')}`);
-      return false;
+    if (type === 'provider') {
+      validateProviderDefinition(parsed);
+      console.log(`✅ ${filePath} (provider)`);
+    } else {
+      validateToolDefinition(parsed);
+      console.log(`✅ ${filePath} (tool)`);
     }
 
-    // Check execution type
-    const validExecutionTypes = ['command', 'http'];
-    if (!tool.execution?.type || !validExecutionTypes.includes(tool.execution.type)) {
-      console.error(`❌ ${filePath}: Invalid execution type: ${tool.execution?.type}`);
-      return false;
-    }
-
-    console.log(`✅ ${filePath}`);
     return true;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -99,10 +79,11 @@ function validateTools(): void {
           } else {
             invalid++;
           }
-        } else {
-          // Recursively check subdirectories (e.g., tools/gmail/send-email/)
-          walkDirectory(fullPath);
         }
+
+        // Always recursively check subdirectories, regardless of whether
+        // this directory has definition.yaml (to handle nested structures)
+        walkDirectory(fullPath);
       }
     });
   }

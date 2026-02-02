@@ -54,6 +54,6 @@ export type {
   TokenResponse,
   OAuth2Endpoints,
 } from './auth/oauth2-config';
-export type { ProviderDefinition } from './auth/oauth2-provider-loader';
+export type { ProviderDefinition } from './core/schema';
 export { OAuth2ProviderLoader } from './auth/oauth2-provider-loader';
 export { OAuth2Handler } from './auth/oauth2-handler';
