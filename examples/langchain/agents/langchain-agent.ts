@@ -43,7 +43,8 @@ function convertMatimoToolToLangChain(
       let fieldSchema: any;
 
       // Map Matimo types to Zod types
-      switch (param.type) {
+      const paramType = param.type as string;
+      switch (paramType) {
         case 'string':
           fieldSchema = z.string();
           break;
