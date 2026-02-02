@@ -23,6 +23,10 @@ export { ToolRegistry } from './core/tool-registry';
 export { CommandExecutor } from './executors/command-executor';
 export { HttpExecutor } from './executors/http-executor';
 
+// Parameter Encoding
+export { applyParameterEncodings } from './encodings/parameter-encoding';
+export type { ParameterEncodingConfig } from './encodings/parameter-encoding';
+
 // Decorators
 export {
   tool,
@@ -40,3 +44,16 @@ export {
 
 // Matimo instance and namespace
 export { MatimoInstance, matimo } from './matimo-instance';
+
+// OAuth2 authentication (Phase 2+)
+export type {
+  OAuth2Provider,
+  OAuth2Token,
+  OAuth2Config,
+  AuthorizationOptions,
+  TokenResponse,
+  OAuth2Endpoints,
+} from './auth/oauth2-config';
+export type { ProviderDefinition } from './core/schema';
+export { OAuth2ProviderLoader } from './auth/oauth2-provider-loader';
+export { OAuth2Handler } from './auth/oauth2-handler';

@@ -1,0 +1,63 @@
+name: complex-body-tool
+version: "1.0.0"
+description: "Tool with complex nested body structure to test scanObjectForParams"
+
+parameters:
+  name:
+    type: string
+    description: "User name"
+    required: true
+  email:
+    type: string
+    description: "User email"
+    required: true
+  phone:
+    type: string
+    description: "User phone"
+    required: false
+  token:
+    type: string
+    description: "Authentication token"
+    required: true
+  tags:
+    type: array
+    description: "User tags"
+    items:
+      type: string
+    required: false
+
+execution:
+  type: http
+  method: POST
+  url: "https://httpbin.org/post"
+  headers:
+    Authorization: "Bearer {token}"
+  body:
+    user:
+      name: "{name}"
+      email: "{email}"
+      phone: "{phone}"
+    metadata:
+      tags: ["{tags}"]
+      timestamp: "{token}"
+    items:
+      - name: "{name}"
+        value: "{email}"
+      - name: "{token}"
+        nested:
+          deep:
+            value: "{name}"
+    nested:
+      deeply:
+        nested:
+          value: "{name}"
+
+output_schema:
+  type: object
+  properties:
+    data:
+      type: object
+    json:
+      type: object
+
+tags: [http, nested, test]

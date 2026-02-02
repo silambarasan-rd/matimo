@@ -89,8 +89,9 @@ export class ToolLoader {
         if (!tools.has(tool.name)) {
           tools.set(tool.name, tool);
         }
-      } catch (error) {
-        console.warn(`Failed to load tool from ${file}:`, error);
+      } catch {
+        // Skip files that fail validation - they may not be tool definitions
+        // (e.g., provider definitions are in tools/ directory but are not tools)
       }
     }
 

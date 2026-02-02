@@ -44,6 +44,17 @@ export const ExecutionConfigSchema = z.discriminatedUnion('type', [
     url: z.string(),
     headers: z.record(z.string(), z.string()).optional(),
     body: z.unknown().optional(),
+    query_params: z.record(z.string(), z.string()).optional(),
+    parameter_encoding: z
+      .array(
+        z.object({
+          source: z.array(z.string()),
+          target: z.string(),
+          encoding: z.string(),
+          options: z.record(z.string(), z.unknown()).optional(),
+        })
+      )
+      .optional(),
     timeout: z.number().optional(),
   }),
 ]);
@@ -106,6 +117,33 @@ export const ToolDefinitionSchema = z.object({
 
 export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>;
 
+// OAuth2 provider endpoints schema
+export const OAuth2EndpointsSchema = z.object({
+  authorizationUrl: z.string().url(),
+  tokenUrl: z.string().url(),
+  revokeUrl: z.string().url().optional(),
+});
+
+export type OAuth2Endpoints = z.infer<typeof OAuth2EndpointsSchema>;
+
+// Provider definition schema
+export const ProviderDefinitionSchema = z.object({
+  name: z.string(),
+  type: z.literal('provider'),
+  version: z.string(),
+  description: z.string().optional(),
+  provider: z.object({
+    name: z.string(),
+    displayName: z.string().optional(),
+    endpoints: OAuth2EndpointsSchema,
+    defaultScopes: z.array(z.string()).optional(),
+    documentation: z.string().url().optional(),
+    learnMore: z.string().url().optional(),
+  }),
+});
+
+export type ProviderDefinition = z.infer<typeof ProviderDefinitionSchema>;
+
 /**
  * Validate a tool definition against the schema
  * Provides detailed error messages for validation failures
@@ -137,6 +175,32 @@ export function validateToolDefinition(tool: unknown): ToolDefinition {
       .join('\n');
 
     throw new Error(`Tool schema validation failed:\n${errors}`);
+  }
+
+  return result.data;
+}
+
+/**
+ * Validate a provider definition against the schema
+ * Provides detailed error messages for validation failures
+ *
+ * @param provider - Provider definition to validate
+ * @returns Validated provider definition
+ * @throws {Error} If validation fails with detailed error information
+ */
+export function validateProviderDefinition(provider: unknown): ProviderDefinition {
+  const result = ProviderDefinitionSchema.safeParse(provider);
+
+  if (!result.success) {
+    // Format detailed error messages from Zod v4
+    const errors = result.error.issues
+      .map((issue) => {
+        const path = issue.path.length > 0 ? issue.path.join('.') : 'root';
+        return `  • ${path}: ${issue.message} (${issue.code})`;
+      })
+      .join('\n');
+
+    throw new Error(`Provider schema validation failed:\n${errors}`);
   }
 
   return result.data;

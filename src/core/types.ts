@@ -2,6 +2,8 @@
  * Core type definitions for Matimo tool ecosystem
  */
 
+import { ParameterEncodingConfig } from '../encodings/parameter-encoding';
+
 /**
  * Parameter definition for a tool
  */
@@ -35,6 +37,9 @@ export interface HttpExecution {
   headers?: Record<string, string>;
   body?: Record<string, unknown>;
   params?: Record<string, string>;
+  query_params?: Record<string, string>;
+  parameter_encoding?: ParameterEncodingConfig[];
+  timeout?: number;
 }
 
 /**

@@ -7,6 +7,9 @@
     "agent:decorator": "tsx agents/decorator-pattern-agent.ts",
     "agent:factory": "tsx agents/factory-pattern-agent.ts",
     "agent:langchain": "tsx agents/langchain-agent.ts",
+    "gmail:factory": "tsx gmail/gmail-factory.ts",
+    "gmail:decorator": "tsx gmail/gmail-decorator.ts",
+    "gmail:langchain": "tsx gmail/gmail-langchain.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },

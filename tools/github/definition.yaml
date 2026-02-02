@@ -1,0 +1,41 @@
+# GitHub OAuth2 Provider Definition
+#
+# This file defines the OAuth2 configuration for GitHub.
+# All GitHub tools reference this provider definition.
+#
+# Users can override endpoints via environment variables or runtime config.
+
+name: github-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  GitHub OAuth2 Provider Configuration
+  
+  All GitHub tools use these endpoints for OAuth2 authentication.
+  
+  Setup:
+  1. Go to GitHub Settings → Developer settings → OAuth Apps
+  2. Create new OAuth App
+  3. Note the Client ID and Client Secret
+  4. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables
+  5. Set GITHUB_REDIRECT_URI to your callback URL
+
+provider:
+  name: github
+  displayName: GitHub
+  
+  # OAuth2 Endpoints
+  endpoints:
+    authorizationUrl: https://github.com/login/oauth/authorize
+    tokenUrl: https://github.com/login/oauth/access_token
+  
+  # Standard scopes for GitHub API access
+  # Tools can override with their own scopes
+  defaultScopes:
+    - user:email
+    - repo
+  
+  # Additional metadata
+  documentation: https://docs.github.com/en/developers/apps/building-oauth-apps
+  learnMore: https://github.com/settings/developers
