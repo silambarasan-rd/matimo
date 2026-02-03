@@ -62,7 +62,7 @@ const result = await m.execute('calculator', {
 
 This is an **alpha release**. Not recommended for production without thorough testing.
 
-See [Roadmap](./ROADMAP.md) future features.
+See [Roadmap](./ROADMAP.md) for future features.
 
 ## Contributing
 
