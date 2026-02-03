@@ -126,7 +126,7 @@ v0.1.0-alpha.1  Feb 2026 (Current)
     ↓
 v0.1.0-alpha.2  3rd week Feb 2026.     
     ↓
-v0.1.0-alpha.3  Ist week Mar 2026.    
+v0.1.0-alpha.3  1st week Mar 2026.    
     ↓
 v0.1.0     End of March 2026. 
 ```
