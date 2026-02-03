@@ -289,4 +289,4 @@ All documentation in Matimo follows these standards:
 - ✅ Aligned with actual project practices
 - ✅ Updated whenever code changes
 
-Last updated: January 2026
+Last updated: February 2026
