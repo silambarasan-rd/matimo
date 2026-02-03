@@ -1,4 +1,11 @@
-# Documentation Index
+# Matimo Documentation
+<p align="center">
+<img src="./assets/logo.png" alt="Matimo Logo" width="120" style="border-radius: 8px; margin: 20px 0;" />
+</p>
+
+**Matimo** (Maximum AI Tools in Modular Objects) — Define tools once in YAML, use them everywhere.
+
+> Built to solve the universal tool orchestration problem for AI agents.
 
 Complete documentation for Matimo.
 
@@ -277,16 +284,5 @@ See [Contributing Guidelines](../CONTRIBUTING.md).
 - **Want to contribute?** See [Contributing Guidelines](../CONTRIBUTING.md)
 
 ---
-
-## Documentation Quality
-
-All documentation in Matimo follows these standards:
-
-- ✅ Clear and concise with practical examples
-- ✅ Links between related sections
-- ✅ Code examples that actually work
-- ✅ Type-safe TypeScript (strict mode)
-- ✅ Aligned with actual project practices
-- ✅ Updated whenever code changes
 
 Last updated: February 2026
