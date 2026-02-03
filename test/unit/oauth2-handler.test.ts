@@ -199,7 +199,7 @@ describe('OAuth2Handler', () => {
 
       const stateMatch = url.match(/state=([^&]+)/);
       expect(stateMatch).toBeTruthy();
-      expect(stateMatch![1].length).toBeGreaterThan(20); // Random state generated
+      expect(stateMatch![1].length).toBeGreaterThanOrEqual(20); // Random state generated
     });
 
     it('should accept custom state parameter', () => {

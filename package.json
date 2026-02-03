@@ -1,11 +1,17 @@
 {
   "name": "matimo",
-  "version": "0.0.1",
-  "description": "Maximum AI Tools in Modular Object - Universal configuration-driven AI agent tools ecosystem",
+  "version": "0.1.0-alpha.1",
+  "description": "Framework-agnostic YAML-driven tool ecosystem for AI agents. Define tools once in YAML, use them everywhere: SDK, MCP, CLI, REST API.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "packageManager": "pnpm@8.15.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
@@ -35,10 +41,34 @@
     "llm",
     "claude",
     "langchain",
-    "crewai"
+    "crewai",
+    "ai-agent",
+    "langchain-tools",
+    "claude-tools",
+    "framework-agnostic",
+    "yaml-tools",
+    "agent-toolkit",
+    "typescript-ai"
   ],
-  "author": "",
+  "author": "Sajesh Nair <vsajeshnair@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tallclub/matimo.git"
+  },
+  "homepage": "https://github.com/tallclub/matimo#readme",
+  "bugs": {
+    "url": "https://github.com/tallclub/matimo/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
     "axios": "^1.13.4",
