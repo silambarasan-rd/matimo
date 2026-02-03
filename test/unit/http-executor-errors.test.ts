@@ -3,7 +3,7 @@ import { ToolDefinition } from '../../src/core/schema';
 import { ExecutionResult } from '../../src/core/types';
 
 // Increase timeout for HTTP-based tests (httpbin.org calls can be slow)
-jest.setTimeout(15000);
+jest.setTimeout(30000);
 
 describe('HttpExecutor - Extended Coverage', () => {
   let executor: HttpExecutor;
