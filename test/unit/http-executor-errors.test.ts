@@ -2,6 +2,9 @@ import { HttpExecutor } from '../../src/executors/http-executor';
 import { ToolDefinition } from '../../src/core/schema';
 import { ExecutionResult } from '../../src/core/types';
 
+// Increase timeout for HTTP-based tests (httpbin.org calls can be slow)
+jest.setTimeout(15000);
+
 describe('HttpExecutor - Extended Coverage', () => {
   let executor: HttpExecutor;
 
