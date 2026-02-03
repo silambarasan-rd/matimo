@@ -1,11 +1,10 @@
-# 🧰 Matimo — Toolbox For All AI Agents
+# Matimo — Toolbox For AI Agents
 
 <p align="center">
-  <img src="./docs/assets/logo.png" alt="Matimo Logo" width="200" />
+  <img src="./docs/assets/logo.png" alt="Matimo Logo" width="300" />
 </p>
-
 <p align="center">
-    <strong>Matimo - Modular AI Tools - "to be powerful"</strong>
+    <strong>Matimo - "to be powerful"</strong>
 </p>
 
 <p align="center">
@@ -115,16 +114,31 @@ Creator of Matimo
 - HTTP Client (HTTP execution)
 - Echo Tool (simple command)
 
+**4 Gmail Tools**
+
+- Create Draft
+
+- Get Message
+- List Message
+- Send Email
+
 ## Planned
+**Add Tools** - Github, Slack, Jira, Notion, etc
 
 **MCP Server** — Claude & MCP client integration
+
 **REST API** — HTTP endpoints for tool execution
+
 **CLI** — Command-line tool management & testing
+
 **OAuth2** — GitHub, Google, Slack authentication
+
 **Python SDK** — Multi-language support
+
 **Health Monitoring** — Detect API schema changes
+
 **Rate Limiting** — Token bucket algorithm per tool
-**Tool Marketplace** — Community tools & registry
+
 
 ## Installation
 
@@ -368,13 +382,13 @@ error_handling:
 ```
 ┌─────────────────────────────────────────────┐
 │ AI Agents & Frameworks                      │
-│ (Claude, LangChain, CrewAI, Custom)        │
-└──────────┬────────────────┬────────────────┘
+│ (Claude, LangChain, CrewAI, Custom)         │
+└──────────┬────────────────┬─────────────────┘
            │                │
      ┌─────▼─────┐   ┌─────▼─────┐
      │  SDK      │   │  MCP      │
      │           │   │           │
-     └─────┬─────┘   └─────┬─────┘
+     └─────┬─────┘   └──────┬────┘
            │                │
            └────────┬───────┘
                     │
@@ -604,9 +618,27 @@ MIT © 2026 Matimo Contributors
 
 ## Contributors
 
-![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=for-the-badge)
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-Huge thanks to everyone who’s contributed to Matimo! Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/tallclub"><img src="https://avatars.githubusercontent.com/u/112923179?v=4?s=100" width="50px;" alt="tallclub" style="border-radius: 50%;"/>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## Star History
 
