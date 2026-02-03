@@ -2,6 +2,9 @@ import { MatimoInstance } from '../../src/matimo-instance';
 import { Parameter } from '../../src/core/types';
 import path from 'path';
 
+// Increase timeout for HTTP-based tests (httpbin.org calls can be slow)
+jest.setTimeout(30000);
+
 describe('MatimoInstance - Uncovered Lines Deep Coverage', () => {
   let instance: MatimoInstance;
   const toolsPath = path.join(__dirname, '../fixtures/tools');

@@ -693,6 +693,6 @@ const validated = schema.parse(userInput);
 ## See Also
 
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Contribution guide
-- [COMMIT_GUIDELINES.md](./COMMIT_GUIDELINES.md) — Commit standards
-- [QUICK_START.md](./QUICK_START.md) — Get started
-- [API_REFERENCE.md](./API_REFERENCE.md) — SDK documentation
+- [COMMIT_GUIDELINES.md](../community/COMMIT_GUIDELINES.md) — Commit standards
+- [QUICK_START.md](../getting-started/QUICK_START.md) — Get started
+- [API_REFERENCE.md](../api-reference/SDK.md) — SDK documentation

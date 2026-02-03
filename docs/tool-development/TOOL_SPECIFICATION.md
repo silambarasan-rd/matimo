@@ -738,15 +738,20 @@ error_handling:
 
 ## File Organization
 
-Store tools in directories:
+Store tools in provider directories. Each tool can be a single file or a subdirectory with its own `definition.yaml`:
 
 ```
 tools/
 ├── provider-name/
-│   ├── tool-1.yaml
-│   └── tool-2.yaml
-└── another-provider/
-    └── tool-3.yaml
+│   ├── definition.yaml           # Single tool per provider
+│   └── ...
+├── multi-tool-provider/
+│   ├── tool-1/
+│   │   └── definition.yaml       # Multi-tool provider
+│   └── tool-2/
+│       └── definition.yaml
+└── examples/
+    └── example-tool.yaml
 ```
 
 Example:
@@ -754,22 +759,35 @@ Example:
 ```
 tools/
 ├── github/
-│   ├── create-issue.yaml
-│   ├── create-pull-request.yaml
-│   └── search-repos.yaml
+│   └── definition.yaml
 ├── slack/
-│   ├── send-message.yaml
-│   └── update-profile.yaml
-└── utilities/
-    ├── calculator.yaml
-    └── echo.yaml
+│   └── definition.yaml
+├── gmail/
+│   ├── send-email/
+│   │   └── definition.yaml
+│   ├── create-draft/
+│   │   └── definition.yaml
+│   ├── list-messages/
+│   │   └── definition.yaml
+│   └── definition.yaml              # Optional: shared config
+├── calculator/
+│   └── definition.yaml
+└── examples/
+    ├── http-client.yaml
+    └── echo-tool.yaml
 ```
+
+**Naming conventions:**
+
+- Provider directories: lowercase, kebab-case (`github`, `slack`, `gmail`)
+- Tool subdirectories: lowercase, kebab-case (`send-email`, `create-draft`)
+- Files: Always `definition.yaml` for tool definitions
 
 ---
 
 ## See Also
 
-- [Quick Start](./QUICK_START.md) — Get started in 5 minutes
-- [API Reference](./API_REFERENCE.md) — Complete SDK documentation
+- [Quick Start](../getting-started/QUICK_START.md) — Get started in 5 minutes
+- [API Reference](../api-reference/SDK.md) — Complete SDK documentation
 - [Decorator Guide](./DECORATOR_GUIDE.md) — Use decorators
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Development guide

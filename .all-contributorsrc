@@ -4,6 +4,16 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "imageSize": 100,
-  "contributors": [],
-  "files": ["README.md"]
+  "contributors": [
+    {
+      "login": "tallclub",
+      "name": "tallclub",
+      "avatar_url": "https://avatars.githubusercontent.com/u/112923179?v=4",
+      "profile": "https://github.com/tallclub",
+      "contributions": ["code", "doc", "design", "review", "ideas", "maintenance"]
+    }
+  ],
+  "files": ["README.md"],
+  "commitConvention": "angular"
 }
+

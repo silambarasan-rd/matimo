@@ -627,7 +627,7 @@ export class EchoTool {
 
 ## See Also
 
-- [Quick Start](./QUICK_START.md) — Get started in 5 minutes
-- [API Reference](./API_REFERENCE.md) — Complete SDK documentation
+- [Quick Start](../getting-started/QUICK_START.md) — Get started in 5 minutes
+- [API Reference](../api-reference/SDK.md) — Complete SDK documentation
 - [Tool Specification](./TOOL_SPECIFICATION.md) — YAML tool schema
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Development guide

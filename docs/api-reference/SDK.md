@@ -576,7 +576,7 @@ The executor will throw `ValidationError` if the response doesn't match.
 
 ## See Also
 
-- [Quick Start](./QUICK_START.md) — Get started in 5 minutes
-- [Tool Specification](./TOOL_SPECIFICATION.md) — Write YAML tools
-- [Decorator Guide](./DECORATOR_GUIDE.md) — Use decorators
+- [Quick Start](../getting-started/QUICK_START.md) — Get started in 5 minutes
+- [Tool Specification](../tool-development/TOOL_SPECIFICATION.md) — Write YAML tools
+- [Decorator Guide](../tool-development/DECORATOR_GUIDE.md) — Use decorators
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Development guide

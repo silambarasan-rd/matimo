@@ -62,9 +62,9 @@ console.log(result); // { result: 8 }
 
 ## Next Steps
 
-- **[API Reference](./API_REFERENCE.md)** — Full SDK documentation
-- **[Tool Specification](./TOOL_SPECIFICATION.md)** — Write your own tools
-- **[Decorator Guide](./DECORATOR_GUIDE.md)** — Use TypeScript decorators
+- **[API Reference](../api-reference/SDK.md)** — Full SDK documentation
+- **[Tool Specification](../tool-development/TOOL_SPECIFICATION.md)** — Write your own tools
+- **[Decorator Guide](../tool-development/DECORATOR_GUIDE.md)** — Use TypeScript decorators
 - **[Development Guide](../CONTRIBUTING.md)** — Contributing to Matimo
 
 ## Common Tasks
@@ -128,9 +128,11 @@ console.log('MCP Server running on port 3000');
 project/
 ├── tools/
 │   ├── calculator/
-│   │   └── tool.yaml
+│   │   └── defination.yaml
 │   └── github/
-│       └── create-issue.yaml
+|       └── defination.yaml
+│       └── create-issue
+|            └── defination.yaml
 ├── src/
 │   └── app.ts
 └── package.json
