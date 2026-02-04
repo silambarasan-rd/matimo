@@ -69,7 +69,7 @@ You end up duplicating tool logic, schemas, and integrations repeatedly.
 
 I built Matimo because I needed it while working on my own agent product — and I couldn't find a truly framework-agnostic, fully open-source alternative (most are paid or tightly coupled to one framework).
 
-I'm a solo developer (nomadic coder at heart) vibe coding, **all help is appriciated** to make matimo a go-to standard for agent tools.
+I'm a solo developer (nomadic coder at heart) vibe coding, **all help is appreciated** to make Matimo a go-to standard for agent tools.
 
 ### How You Can Help Right Now
 
