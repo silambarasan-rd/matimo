@@ -7,7 +7,7 @@
 ## What's Improved
 
 ### Release & Distribution
-- Fixed npm publish workflow (dist-tag 'next' for pre-releases)
+- Improved npm publish workflow configuration (pre-releases currently publish under default 'latest' dist-tag)
 - Replaced deprecated GitHub Actions (softprops/action-gh-release@v2)
 - Proper semantic versioning for release titles
 - Fixed broken documentation links in releases
