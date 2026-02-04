@@ -10,10 +10,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./mcp": {
-      "types": "./dist/mcp/mcp-server.d.ts",
-      "default": "./dist/mcp/mcp-server.js"
     }
   },
   "engines": {
