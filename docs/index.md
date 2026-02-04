@@ -206,7 +206,8 @@ See [Quick Start](./getting-started/QUICK_START.md) and [API Reference](./api-re
 Matimo can run as an MCP server, allowing Claude and other clients to discover and use tools:
 
 ```typescript
-import { MCPServer } from 'matimo/mcp';
+// MCP Server - Coming in Phase 2
+// import { MCPServer } from 'matimo/mcp';
 
 const server = new MCPServer({ toolsPath: './tools', port: 3000 });
 await server.start();

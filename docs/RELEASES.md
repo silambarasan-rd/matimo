@@ -1,3 +1,24 @@
+# v0.1.0-alpha.2
+
+> Improved alpha.1 release - Better npm workflow, fixed exports, accurate feature descriptions
+
+**Released**: February 4, 2026
+
+## What's Improved
+
+### Release & Distribution
+- Improved npm publish workflow configuration (pre-releases currently publish under default 'latest' dist-tag)
+- Replaced deprecated GitHub Actions (softprops/action-gh-release@v2)
+- Proper semantic versioning for release titles
+- Fixed broken documentation links in releases
+
+### Package & Exports
+- Explicit package exports for main and MCP modules
+- Accurate npm description (reflects current Phase 1 scope)
+- Proper Node.js module resolution
+
+---
+
 # v0.1.0-alpha.1
 
 > First alpha release - Core OAuth2, tool execution, and SDK patterns

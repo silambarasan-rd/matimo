@@ -110,7 +110,8 @@ try {
 ### Use with MCP Server
 
 ```typescript
-import { MCPServer } from 'matimo/mcp';
+// MCP Server - Coming in Phase 2
+// import { MCPServer } from 'matimo/mcp';
 
 const server = new MCPServer({
   toolsPath: './tools',
