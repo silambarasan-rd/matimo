@@ -1,7 +1,7 @@
 {
   "name": "matimo",
-  "version": "0.1.0-alpha.1",
-  "description": "Framework-agnostic YAML-driven tool ecosystem for AI agents. Define tools once in YAML, use them everywhere: SDK, MCP, CLI, REST API.",
+  "version": "0.1.0-alpha.2",
+  "description": "Framework-agnostic YAML-driven tool ecosystem for AI agents. Define tools once in YAML and run them via a TypeScript/JavaScript SDK.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/mcp-server.d.ts",
+      "default": "./dist/mcp/mcp-server.js"
     }
   },
   "engines": {

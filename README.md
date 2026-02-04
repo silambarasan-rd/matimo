@@ -69,7 +69,7 @@ You end up duplicating tool logic, schemas, and integrations repeatedly.
 
 I built Matimo because I needed it while working on my own agent product — and I couldn't find a truly framework-agnostic, fully open-source alternative (most are paid or tightly coupled to one framework).
 
-I'm a solo developer (nomadic coder at heart), so this project needs **your help** to become the go-to standard for agent tools.
+I'm a solo developer (nomadic coder at heart) vibe coding, **all help is appriciated** to make matimo a go-to standard for agent tools.
 
 ### How You Can Help Right Now
 
@@ -291,7 +291,8 @@ See [SDK Usage Patterns - Level 2](#level-2-framework-integration-patterns-with-
 **MCP Server (Claude Integration)**
 
 ```typescript
-import { MCPServer } from 'matimo/mcp';
+// MCP Server - Coming in Phase 2
+// import { MCPServer } from 'matimo/mcp';
 
 const server = new MCPServer({
   toolsPath: './tools',
@@ -648,4 +649,4 @@ Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guide
 
 **Ready to integrate AI tools across your framework?**
 
-[Get Started Now →](./docs/QUICK_START.md)
+[Get Started Now →](./docs/getting-started/QUICK_START.md)
