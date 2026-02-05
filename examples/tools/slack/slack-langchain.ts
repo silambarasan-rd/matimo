@@ -46,9 +46,9 @@
  *
  * Example conversation:
  *   User: "Send a test message to #general"
- *   Claude: "I'll send a test message to the general channel..."
- *   [Claude calls slack-send-message tool]
- *   Claude: "Done! Message sent successfully."
+ *   AI Agent: "I'll send a test message to the general channel..."
+ *   [AI Agent calls slack-send-message tool]
+ *   AI Agent: "Done! Message sent successfully."
  *
  * ============================================================================
  */
