@@ -11,9 +11,9 @@ version: '1.0.0'
 
 description: |
   Slack OAuth2 Provider Configuration
-  
+
   All Slack tools use these endpoints for OAuth2 authentication.
-  
+
   Setup:
   1. Go to Slack API: https://api.slack.com/apps
   2. Create New App
@@ -26,19 +26,29 @@ description: |
 provider:
   name: slack
   displayName: Slack
-  
+
   # OAuth2 Endpoints
   endpoints:
     authorizationUrl: https://slack.com/oauth/v2/authorize
     tokenUrl: https://slack.com/api/oauth.v2.access
-  
+
   # Standard scopes for Slack API access
   # Tools can override with their own scopes
   defaultScopes:
     - chat:write
     - channels:read
     - users:read
-  
+
   # Additional metadata
   documentation: https://api.slack.com/authentication/oauth-v2
   learnMore: https://api.slack.com/apps
+
+  # UI assets and branding for frontends
+  assets:
+    icon: assets/icon.svg
+    logo: assets/logo.svg
+    logo_light: assets/logo-light.svg
+    logo_dark: assets/logo-dark.svg
+  brand_color: '#4A154B'
+  homepage: 'https://slack.com'
+  alt: 'Slack'
