@@ -118,7 +118,7 @@ Creator of Matimo
 - Zod schema validation
 - ESLint clean
 
-## Built-in Tools (50+ Operations)
+## Built-in Tools
 
 **Communication**
 - **Slack**: Send messages, upload files, manage channels, reactions, threads (16 operations)
