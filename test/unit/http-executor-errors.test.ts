@@ -1,18 +1,37 @@
 import { HttpExecutor } from '../../src/executors/http-executor';
 import { ToolDefinition } from '../../src/core/schema';
 import { ExecutionResult } from '../../src/core/types';
+import axios from 'axios';
 
-// Increase timeout for HTTP-based tests (httpbin.org calls can be slow)
-jest.setTimeout(30000);
+// Mock axios to avoid real HTTP calls
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('HttpExecutor - Extended Coverage', () => {
   let executor: HttpExecutor;
 
   beforeEach(() => {
     executor = new HttpExecutor();
+    jest.clearAllMocks();
   });
 
+  // Helper to mock successful HTTP responses
+  const mockSuccessResponse = (data: unknown = { success: true }) => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data,
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        'content-type': 'application/json',
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+  };
+
   it('should successfully construct and execute GET request', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -31,6 +50,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should successfully execute GET request with query params', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -53,6 +74,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should successfully execute POST request with body', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -72,6 +95,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should successfully execute request with custom headers', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -94,6 +119,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should successfully replace URL placeholders', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -121,6 +148,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should successfully replace header placeholders', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -149,6 +178,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should successfully replace body placeholders', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -182,6 +213,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should handle DELETE requests', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -200,6 +233,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should handle PATCH requests', async () => {
+    mockSuccessResponse({ data: 'patched' });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -215,11 +250,12 @@ describe('HttpExecutor - Extended Coverage', () => {
 
     const result = (await executor.execute(tool, {})) as ExecutionResult;
     expect(result).toBeDefined();
-    // httpbin returns the request data, not a success field
     expect(result.data).toBeDefined();
   });
 
   it('should handle PUT requests', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -239,6 +275,18 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should extract response headers from HTTP response', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        'content-type': 'application/json',
+        'x-custom-header': 'custom-value',
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -259,6 +307,15 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should include status code in response', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: { 'content-type': 'application/json' },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -278,6 +335,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should handle array values in body', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
@@ -302,6 +361,8 @@ describe('HttpExecutor - Extended Coverage', () => {
   });
 
   it('should handle complex nested body structures', async () => {
+    mockSuccessResponse({ success: true });
+
     const tool: ToolDefinition = {
       name: 'test',
       description: 'test',
