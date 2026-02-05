@@ -107,39 +107,39 @@ class SlackDecoratorPatternAgent {
 async function runDecoratorPatternExamples() {
   const botToken = process.env.SLACK_BOT_TOKEN || 'xoxb-default-fake-token';
 
-  console.log('╔════════════════════════════════════════════════════════╗');
-  console.log('║     Slack Tools - Decorator Pattern                    ║');
-  console.log('║     (Uses @tool decorators for automatic execution)    ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('╔════════════════════════════════════════════════════════╗');
+  console.info('║     Slack Tools - Decorator Pattern                    ║');
+  console.info('║     (Uses @tool decorators for automatic execution)    ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   if (botToken === 'xoxb-default-fake-token') {
-    console.log('🔐 Warning: SLACK_BOT_TOKEN not set in environment');
-    console.log('   Set it: export SLACK_BOT_TOKEN="xoxb-xxxx"');
-    console.log('   Get one from: https://api.slack.com/apps\n');
+    console.info('🔐 Warning: SLACK_BOT_TOKEN not set in environment');
+    console.info('   Set it: export SLACK_BOT_TOKEN="xoxb-xxxx"');
+    console.info('   Get one from: https://api.slack.com/apps\n');
   }
 
-  console.log(`🤖 Slack Bot Token: ${botToken.substring(0, 10)}...\n`);
+  console.info(`🤖 Slack Bot Token: ${botToken.substring(0, 10)}...\n`);
 
   try {
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
     setGlobalMatimoInstance(matimo);
 
     const matimoTools = matimo.listTools();
     const slackTools = matimoTools.filter((t) => t.name.startsWith('slack'));
-    console.log(`📦 Loaded ${matimoTools.length} total tools, ${slackTools.length} Slack tools\n`);
+    console.info(`📦 Loaded ${matimoTools.length} total tools, ${slackTools.length} Slack tools\n`);
 
     // Create agent
     const agent = new SlackDecoratorPatternAgent(matimo);
 
-    console.log('🧪 Testing Slack Tools with Decorator Pattern');
-    console.log('═'.repeat(60) + '\n');
+    console.info('🧪 Testing Slack Tools with Decorator Pattern');
+    console.info('═'.repeat(60) + '\n');
 
     // Example 1: List channels
-    console.log('📋 Example 1: List Available Channels');
-    console.log('─'.repeat(60));
+    console.info('📋 Example 1: List Available Channels');
+    console.info('─'.repeat(60));
     try {
       const listResult = await agent.listChannels('public_channel,private_channel', 100);
       
@@ -147,21 +147,21 @@ async function runDecoratorPatternExamples() {
       
       if (listData.ok === true && listData.channels && Array.isArray(listData.channels)) {
         const channels = listData.channels;
-        console.log(`✅ Found ${channels.length} channels:`);
+        console.info(`✅ Found ${channels.length} channels:`);
         channels.slice(0, 5).forEach((ch: any, idx: number) => {
-          console.log(`   ${idx + 1}. #${ch.name} (ID: ${ch.id})`);
+          console.info(`   ${idx + 1}. #${ch.name} (ID: ${ch.id})`);
         });
         if (channels.length > 5) {
-          console.log(`   ... and ${channels.length - 5} more`);
+          console.info(`   ... and ${channels.length - 5} more`);
         }
 
         // Use first available channel for next examples
         const firstChannel = channels[0];
-        console.log(`\n🎯 Using first channel: #${firstChannel.name} (${firstChannel.id})\n`);
+        console.info(`\n🎯 Using first channel: #${firstChannel.name} (${firstChannel.id})\n`);
 
         // Example 2: Send message
-        console.log('💬 Example 2: Send Message to Channel');
-        console.log('─'.repeat(60));
+        console.info('💬 Example 2: Send Message to Channel');
+        console.info('─'.repeat(60));
         try {
           const sendResult = await agent.sendMessage(
             firstChannel.id,
@@ -170,38 +170,38 @@ async function runDecoratorPatternExamples() {
           
           const sendData = (sendResult as any).data || sendResult;
           if (sendData.ok === true) {
-            console.log('✅ Message sent successfully!');
-            if (sendData.ts) console.log(`   Timestamp: ${sendData.ts}`);
-            if (sendData.channel) console.log(`   Channel: ${sendData.channel}`);
+            console.info('✅ Message sent successfully!');
+            if (sendData.ts) console.info(`   Timestamp: ${sendData.ts}`);
+            if (sendData.channel) console.info(`   Channel: ${sendData.channel}`);
           } else {
-            console.log(`❌ Failed: ${sendData.error || 'Unknown error'}`);
+            console.info(`❌ Failed: ${sendData.error || 'Unknown error'}`);
           }
         } catch (error) {
-          console.log(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+          console.info(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
         }
 
         // Example 3: Get channel history
-        console.log('\n📜 Example 3: Get Channel History');
-        console.log('─'.repeat(60));
+        console.info('\n📜 Example 3: Get Channel History');
+        console.info('─'.repeat(60));
         try {
           const historyResult = await agent.getChannelHistory(firstChannel.id, 5);
           
           const historyData = (historyResult as any).data || historyResult;
           if (historyData.ok === true && historyData.messages && Array.isArray(historyData.messages)) {
-            console.log(`✅ Retrieved ${historyData.messages.length} messages from #${firstChannel.name}`);
+            console.info(`✅ Retrieved ${historyData.messages.length} messages from #${firstChannel.name}`);
             historyData.messages.slice(0, 3).forEach((msg: any, idx: number) => {
-              console.log(`   ${idx + 1}. "${msg.text?.substring(0, 50)}..." (${msg.ts})`);
+              console.info(`   ${idx + 1}. "${msg.text?.substring(0, 50)}..." (${msg.ts})`);
             });
           } else {
-            console.log(`❌ Failed: ${historyData.error || 'No messages found'}`);
+            console.info(`❌ Failed: ${historyData.error || 'No messages found'}`);
           }
         } catch (error) {
-          console.log(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+          console.info(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
         }
 
         // Example 4: Set channel topic
-        console.log('\n🏷️  Example 4: Set Channel Topic');
-        console.log('─'.repeat(60));
+        console.info('\n🏷️  Example 4: Set Channel Topic');
+        console.info('─'.repeat(60));
         try {
           const topicResult = await agent.setChannelTopic(
             firstChannel.id,
@@ -210,23 +210,23 @@ async function runDecoratorPatternExamples() {
           
           const topicData = (topicResult as any).data || topicResult;
           if (topicData.ok === true) {
-            console.log('✅ Channel topic updated successfully!');
+            console.info('✅ Channel topic updated successfully!');
           } else {
-            console.log(`❌ Failed: ${topicData.error || 'Unknown error'}`);
+            console.info(`❌ Failed: ${topicData.error || 'Unknown error'}`);
           }
         } catch (error) {
-          console.log(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+          console.info(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
         }
       } else {
-        console.log(`❌ Failed to list channels: ${listData.error || 'Unknown error'}`);
+        console.info(`❌ Failed to list channels: ${listData.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.log(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(`❌ Error: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-    console.log('\n' + '═'.repeat(60));
-    console.log('✨ Decorator Pattern Example Complete!');
-    console.log('═'.repeat(60) + '\n');
+    console.info('\n' + '═'.repeat(60));
+    console.info('✨ Decorator Pattern Example Complete!');
+    console.info('═'.repeat(60) + '\n');
   } catch (error) {
     console.error('❌ Fatal error:', error instanceof Error ? error.message : String(error));
     process.exit(1);

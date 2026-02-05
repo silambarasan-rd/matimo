@@ -92,7 +92,7 @@ class DecoratorPatternAgent {
    * Process a prompt - AI decides which tool to call
    */
   async process(prompt: string): Promise<void> {
-    console.log(`\n❓ Prompt: "${prompt}"`);
+    console.info(`\n❓ Prompt: "${prompt}"`);
 
     try {
       // Prepare system message for tool calling
@@ -166,8 +166,8 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
       if (toolName && toolParams) {
         await this.executeTool(toolName, toolParams);
       } else {
-        console.log(`\n⚠️  No tool call detected in response`);
-        console.log(`Response: ${typeof content === 'string' ? content.substring(0, 200) : content}`);
+        console.info(`\n⚠️  No tool call detected in response`);
+        console.info(`Response: ${typeof content === 'string' ? content.substring(0, 200) : content}`);
       }
     } catch (error) {
       console.error(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -222,16 +222,16 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
         };
       }
 
-      console.log(`\n🔧 Using tool: ${toolName}`);
-      console.log(`   Parameters: ${JSON.stringify(normalizedParams)}`);
+      console.info(`\n🔧 Using tool: ${toolName}`);
+      console.info(`   Parameters: ${JSON.stringify(normalizedParams)}`);
 
       // Find the decorated method for this tool
       const toolMethodMap = this.getToolMethodMap();
       const methodName = toolMethodMap.get(toolName);
 
       if (!methodName) {
-        console.log(`\n❌ Tool '${toolName}' not in agent's API`);
-        console.log(`Available tools: ${Array.from(toolMethodMap.keys()).join(', ')}`);
+        console.info(`\n❌ Tool '${toolName}' not in agent's API`);
+        console.info(`Available tools: ${Array.from(toolMethodMap.keys()).join(', ')}`);
         return;
       }
 
@@ -239,7 +239,7 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
       // The decorator intercepts the call and executes the tool
       const method = (this as any)[methodName];
       if (typeof method !== 'function') {
-        console.log(`\n❌ Method '${methodName}' for tool '${toolName}' not found`);
+        console.info(`\n❌ Method '${methodName}' for tool '${toolName}' not found`);
         return;
       }
 
@@ -253,20 +253,20 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
         if (resultData.stdout) {
           try {
             const parsed = JSON.parse(resultData.stdout);
-            console.log(`\n✅ Result:`, parsed);
+            console.info(`\n✅ Result:`, parsed);
           } catch {
-            console.log(`\n✅ Result:`, resultData.stdout);
+            console.info(`\n✅ Result:`, resultData.stdout);
           }
         } else if (resultData.data) {
           // HTTP response
-          console.log(
+          console.info(
             `\n✅ Result (HTTP ${resultData.statusCode}):`,
             typeof resultData.data === 'string'
               ? resultData.data.substring(0, 200)
               : JSON.stringify(resultData.data).substring(0, 200)
           );
         } else {
-          console.log(`\n✅ Result:`, result);
+          console.info(`\n✅ Result:`, result);
         }
       }
     } catch (error) {
@@ -296,10 +296,10 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
  * Run decorator pattern agent with prompts
  */
 async function runDecoratorPatternAgent() {
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║   Matimo Decorator Pattern - True AI Agent             ║');
-  console.log('║   (AI decides which tool to use based on prompt)       ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('\n╔════════════════════════════════════════════════════════╗');
+  console.info('║   Matimo Decorator Pattern - True AI Agent             ║');
+  console.info('║   (AI decides which tool to use based on prompt)       ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   try {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -309,7 +309,7 @@ async function runDecoratorPatternAgent() {
     }
 
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
 
@@ -317,14 +317,14 @@ async function runDecoratorPatternAgent() {
     setGlobalMatimoInstance(matimo);
 
     const matimoTools = matimo.listTools();
-    console.log(`📦 Loaded ${matimoTools.length} tools:\n`);
+    console.info(`📦 Loaded ${matimoTools.length} tools:\n`);
     matimoTools.forEach((t) => {
-      console.log(`  • ${t.name}`);
-      console.log(`    ${t.description}\n`);
+      console.info(`  • ${t.name}`);
+      console.info(`    ${t.description}\n`);
     });
 
     // Initialize OpenAI LLM
-    console.log('🤖 Initializing OpenAI LLM (gpt-3.5-turbo)...\n');
+    console.info('🤖 Initializing OpenAI LLM (gpt-3.5-turbo)...\n');
     const llm = new ChatOpenAI({
       modelName: 'gpt-4o-mini',
       temperature: 0,
@@ -341,15 +341,15 @@ async function runDecoratorPatternAgent() {
       '🌐 Fetch the GitHub user profile for octocat using HTTP GET',
     ];
 
-    console.log('🧪 Testing AI Agent with 3 Different Prompts');
-    console.log('═'.repeat(60));
+    console.info('🧪 Testing AI Agent with 3 Different Prompts');
+    console.info('═'.repeat(60));
 
     for (const prompt of prompts) {
       await agent.process(prompt);
-      console.log('\n' + '─'.repeat(60));
+      console.info('\n' + '─'.repeat(60));
     }
 
-    console.log('\n✅ Decorator pattern AI agent test complete!\n');
+    console.info('\n✅ Decorator pattern AI agent test complete!\n');
   } catch (error) {
     console.error('❌ Agent failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);

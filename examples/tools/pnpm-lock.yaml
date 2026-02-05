@@ -1021,8 +1021,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
-  /matimo@0.1.0-alpha.2(hono@4.11.7):
-    resolution: {integrity: sha512-XUArbuUwal6xls1SFgaf9auqoV9DI1ksZzKrsVuasByNxmGyv+tgnji4hkDf/RMFn+F5HA0XExaLuh4Y0l/D5A==}
+  /matimo@0.1.0-alpha.3(hono@4.11.7):
+    resolution: {integrity: sha512-NZfABXtJtI+KkNCwd3CnPN3qCXSx6TzuYyX5dYrEv59PBk1wJkNm7GxW4fAY0hhPqSZ61JpZhG9bVoI21LDqeg==}
     engines: {node: '>=18.0.0', pnpm: '>=8.0.0'}
     dependencies:
       '@modelcontextprotocol/sdk': 1.25.3(hono@4.11.7)(zod@4.3.6)

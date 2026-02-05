@@ -185,46 +185,45 @@ async function runSlackAIAgent() {
     }
   }
 
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║     Slack AI Agent - LangChain + OpenAI               ║');
-  console.log('║     True autonomous agent with LLM reasoning          ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('\n╔════════════════════════════════════════════════════════╗');
+  console.info('║     Slack AI Agent - LangChain + OpenAI               ║');
+  console.info('║     True autonomous agent with LLM reasoning          ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   // Check required environment variables
   const botToken = process.env.SLACK_BOT_TOKEN;
   if (!botToken) {
     console.error('❌ Error: SLACK_BOT_TOKEN not set in .env');
-    console.log('   Set it: export SLACK_BOT_TOKEN="xoxb-..."');
-    console.log('   Get one from: https://api.slack.com/apps');
+    console.info('   Set it: export SLACK_BOT_TOKEN="xoxb-..."');
+    console.info('   Get one from: https://api.slack.com/apps');
     process.exit(1);
   }
 
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!openaiKey) {
     console.error('❌ Error: OPENAI_API_KEY not set in .env');
-    console.log('   Set it: export OPENAI_API_KEY="sk-..."');
+    console.info('   Set it: export OPENAI_API_KEY="sk-..."');
     process.exit(1);
   }
 
-  console.log(`🤖 Slack Bot Token: ${botToken.slice(0, 10)}...`);
-  console.log(`🔑 OpenAI Key: ${openaiKey.slice(0, 10)}...`);
-  console.log(`📍 Target Channel: ${channelId}`);
-  console.log(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
+  
+  console.info(`📍 Target Channel: ${channelId}`);
+  console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
 
   try {
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
 
     // Get Slack tools and convert to LangChain format
-    console.log('💬 Loading Slack tools...');
+    console.info('💬 Loading Slack tools...');
     const matimoTools = matimo.listTools();
     const slackTools = matimoTools.filter((t) => t.name.startsWith('slack'));
-    console.log(`✅ Loaded ${slackTools.length} Slack tools\n`);
+    console.info(`✅ Loaded ${slackTools.length} Slack tools\n`);
 
     // Find an available channel before creating agent
-    console.log('📋 Finding an available channel...');
+    console.info('📋 Finding an available channel...');
     const listChannelsResult = await matimo.execute('slack-list-channels', {
       types: 'public_channel,private_channel',
       limit: 10,
@@ -237,12 +236,12 @@ async function runSlackAIAgent() {
       const defaultChannelExists = listData.channels.some((ch: any) => ch.id === channelId);
       if (!defaultChannelExists) {
         activeChannel = listData.channels[0].id;
-        console.log(`   Using first available channel: #${listData.channels[0].name} (${activeChannel})\n`);
+        console.info(`   Using first available channel: #${listData.channels[0].name} (${activeChannel})\n`);
       } else {
-        console.log(`   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})\n`);
+        console.info(`   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})\n`);
       }
     } else {
-      console.log(`   ⚠️  Could not list channels, using default: ${channelId}\n`);
+      console.info(`   ⚠️  Could not list channels, using default: ${channelId}\n`);
     }
 
     // Convert to LangChain tools (select key ones for agent)
@@ -261,14 +260,14 @@ async function runSlackAIAgent() {
     );
 
     // Initialize OpenAI LLM
-    console.log('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');
+    console.info('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');
     const model = new ChatOpenAI({
       modelName: 'gpt-4o-mini',
       temperature: 0.7,
     });
 
     // Create agent
-    console.log('🔧 Creating agent...\n');
+    console.info('🔧 Creating agent...\n');
     const agent = await createAgent({
       model,
       tools: langchainTools,
@@ -290,14 +289,14 @@ async function runSlackAIAgent() {
       },
     ];
 
-    console.log('🧪 Running AI Agent Tasks');
-    console.log('═'.repeat(60));
+    console.info('🧪 Running AI Agent Tasks');
+    console.info('═'.repeat(60));
 
     // Run each task through the agent
     for (const task of userRequests) {
-      console.log(`\n${task.title}`);
-      console.log('─'.repeat(60));
-      console.log(`👤 User: "${task.request}"\n`);
+      console.info(`\n${task.title}`);
+      console.info('─'.repeat(60));
+      console.info(`👤 User: "${task.request}"\n`);
 
       try {
         const response = await agent.invoke({
@@ -313,24 +312,24 @@ async function runSlackAIAgent() {
         const lastMessage = response.messages[response.messages.length - 1];
         if (lastMessage) {
           if (typeof lastMessage.content === 'string') {
-            console.log(`🤖 Agent: ${lastMessage.content}\n`);
+            console.info(`🤖 Agent: ${lastMessage.content}\n`);
           } else {
-            console.log(`🤖 Agent:`, lastMessage.content, '\n');
+            console.info(`🤖 Agent:`, lastMessage.content, '\n');
           }
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        console.log(`⚠️  Agent error: ${errorMsg}\n`);
+        console.info(`⚠️  Agent error: ${errorMsg}\n`);
       }
     }
 
-    console.log('═'.repeat(60));
-    console.log('✨ AI Agent Examples Complete!\n');
-    console.log('Key Features:');
-    console.log('  ✅ Real LLM (OpenAI) decides which tools to use');
-    console.log('  ✅ Natural language requests, not API calls');
-    console.log('  ✅ LLM generates tool parameters based on context');
-    console.log('  ✅ Agentic reasoning and decision-making\n');
+    console.info('═'.repeat(60));
+    console.info('✨ AI Agent Examples Complete!\n');
+    console.info('Key Features:');
+    console.info('  ✅ Real LLM (OpenAI) decides which tools to use');
+    console.info('  ✅ Natural language requests, not API calls');
+    console.info('  ✅ LLM generates tool parameters based on context');
+    console.info('  ✅ Agentic reasoning and decision-making\n');
   } catch (error) {
     console.error('❌ Error:', error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {
