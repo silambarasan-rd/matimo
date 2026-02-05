@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as YAML from 'js-yaml';
 import { ToolDefinition, validateToolDefinition } from './schema';
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
 
 /**
  * Tool Loader - Loads and validates YAML/JSON tool definitions
@@ -18,7 +19,9 @@ export class ToolLoader {
   loadToolFromFile(filePath: string): ToolDefinition {
     // Read file
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Tool file not found: ${filePath}`);
+      throw new MatimoError(`Tool file not found: ${filePath}`, ErrorCode.FILE_NOT_FOUND, {
+        filePath,
+      });
     }
 
     const content = fs.readFileSync(filePath, 'utf-8');
@@ -32,7 +35,14 @@ export class ToolLoader {
     } else if (ext === '.json') {
       parsed = JSON.parse(content);
     } else {
-      throw new Error(`Unsupported file format: ${ext}. Use .yaml or .json`);
+      throw new MatimoError(
+        `Unsupported file format: ${ext}. Use .yaml or .json`,
+        ErrorCode.INVALID_SCHEMA,
+        {
+          filePath,
+          fileExtension: ext,
+        }
+      );
     }
 
     // Validate against schema
@@ -40,7 +50,14 @@ export class ToolLoader {
       return validateToolDefinition(parsed);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new Error(`Invalid tool definition in ${filePath}:\n${message}`);
+      throw new MatimoError(
+        `Invalid tool definition in ${filePath}:\n${message}`,
+        ErrorCode.INVALID_SCHEMA,
+        {
+          filePath,
+          originalError: message,
+        }
+      );
     }
   }
 
@@ -54,7 +71,9 @@ export class ToolLoader {
     const tools = new Map<string, ToolDefinition>();
 
     if (!fs.existsSync(dirPath)) {
-      throw new Error(`Tools directory not found: ${dirPath}`);
+      throw new MatimoError(`Tools directory not found: ${dirPath}`, ErrorCode.FILE_NOT_FOUND, {
+        directoryPath: dirPath,
+      });
     }
 
     // Recursively find all definition files (definition.yaml/definition.json preferred)
