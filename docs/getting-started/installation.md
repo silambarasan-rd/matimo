@@ -16,7 +16,7 @@ npm install matimo
 pnpm add matimo
 ```
 
-**Note**: v0.1.0-alpha.1 is available on npm. Stable v1.0.0 release coming in Q4 2026.
+**Note**: v0.1.0-alpha.3 is available on npm. Stable v1.0.0 release coming in Q4 2026.
 
 ### Option 2: From Source (Recommended for Contributors)
 

@@ -1,6 +1,6 @@
 # Troubleshooting & FAQ
 
-Common issues and solutions for Matimo v0.1.0-alpha.1
+Common issues and solutions for Matimo v0.1.0-alpha.3
 
 ## Installation & Setup
 
@@ -343,7 +343,7 @@ const tool = m.getTool('gmail-send-email');
 
 ---
 
-## v0.1.0-alpha.1 Specific
+## v0.1.0-alpha.3 Specific
 
 ### Features NOT in this version
 

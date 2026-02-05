@@ -4,7 +4,7 @@
 
 Matimo tools integrate seamlessly with LangChain for AI-powered agents. This guide shows how to use Matimo tools in LangChain applications.
 
-## v0.1.0-alpha.1 Status
+## v0.1.0-alpha.3 Status
 
 **✅ Implemented**: Direct SDK usage with LangChain tools interface
 **🔜 Future**: LangChain adapters and plugins
