@@ -110,103 +110,103 @@ async function runDecoratorPatternExamples() {
     }
   }
 
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║     Gmail Tools - Decorator Pattern                    ║');
-  console.log('║     (Uses @tool decorators for automatic execution)    ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('\n╔════════════════════════════════════════════════════════╗');
+  console.info('║     Gmail Tools - Decorator Pattern                    ║');
+  console.info('║     (Uses @tool decorators for automatic execution)    ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   const accessToken = process.env.GMAIL_ACCESS_TOKEN;
   if (!accessToken) {
     console.error('❌ Error: GMAIL_ACCESS_TOKEN not set in .env');
-    console.log('   Set it: export GMAIL_ACCESS_TOKEN="ya29...."');
-    console.log('   Or get a token from: https://developers.google.com/oauthplayground');
+    console.info('   Set it: export GMAIL_ACCESS_TOKEN="ya29...."');
+    console.info('   Or get a token from: https://developers.google.com/oauthplayground');
     process.exit(1);
   }
 
-  console.log(`📧 User Email: ${userEmail}\n`);
+  console.info(`📧 User Email: ${userEmail}\n`);
 
   try {
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
     setGlobalMatimoInstance(matimo);
 
     const matimoTools = matimo.listTools();
-    console.log(`📦 Loaded ${matimoTools.length} tools:\n`);
+    console.info(`📦 Loaded ${matimoTools.length} tools:\n`);
     matimoTools.forEach((t) => {
-      console.log(`  • ${t.name}`);
-      console.log(`    ${t.description}\n`);
+      console.info(`  • ${t.name}`);
+      console.info(`    ${t.description}\n`);
     });
 
     // Create agent
     const agent = new DecoratorPatternAgent(matimo);
 
-    console.log('🧪 Testing Gmail Tools with Decorator Pattern');
-    console.log('═'.repeat(60));
+    console.info('🧪 Testing Gmail Tools with Decorator Pattern');
+    console.info('═'.repeat(60));
 
     // Example 1: List Messages via decorator
-    console.log('\n📬 Example 1: List Messages via @tool Decorator');
-    console.log('─'.repeat(60));
+    console.info('\n📬 Example 1: List Messages via @tool Decorator');
+    console.info('─'.repeat(60));
     try {
       const listResult = await agent.listMessages('', 5);
-      console.log('✅ Messages retrieved successfully!');
+      console.info('✅ Messages retrieved successfully!');
       if (typeof listResult === 'object' && listResult !== null) {
         const data = listResult as any;
         if (data.messages && Array.isArray(data.messages)) {
-          console.log(`   Found ${data.messages.length} recent messages:`);
+          console.info(`   Found ${data.messages.length} recent messages:`);
           data.messages.slice(0, 3).forEach((msg: any, idx: number) => {
-            console.log(`   ${idx + 1}. ID: ${msg.id.substring(0, 15)}...`);
+            console.info(`   ${idx + 1}. ID: ${msg.id.substring(0, 15)}...`);
           });
         } else {
-          console.log('   No messages or unexpected format');
+          console.info('   No messages or unexpected format');
         }
       }
     } catch (error) {
-      console.log(`⚠️  List failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(`⚠️  List failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     // Example 2: Send Email via decorator
-    console.log('\n📧 Example 2: Send Email via @tool Decorator');
-    console.log('─'.repeat(60));
+    console.info('\n📧 Example 2: Send Email via @tool Decorator');
+    console.info('─'.repeat(60));
     try {
       const sendResult = await agent.sendEmail(
         userEmail,
         'Hello from Decorator Pattern',
         'This email was sent using the @tool decorator'
       );
-      console.log('✅ Email sent successfully!');
+      console.info('✅ Email sent successfully!');
       if (typeof sendResult === 'object' && sendResult !== null) {
         const data = sendResult as any;
-        if (data.id) console.log(`   Message ID: ${data.id}`);
+        if (data.id) console.info(`   Message ID: ${data.id}`);
       }
     } catch (error) {
-      console.log(`⚠️  Send failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(`⚠️  Send failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     // Example 3: Create Draft via decorator
-    console.log('\n✏️  Example 3: Create Draft via @tool Decorator');
-    console.log('─'.repeat(60));
+    console.info('\n✏️  Example 3: Create Draft via @tool Decorator');
+    console.info('─'.repeat(60));
     try {
       const draftResult = await agent.createDraft(
         userEmail,
         'Decorator Pattern Draft',
         'This draft was created using the @tool decorator'
       );
-      console.log('✅ Draft created successfully!');
+      console.info('✅ Draft created successfully!');
       if (typeof draftResult === 'object' && draftResult !== null) {
         const data = draftResult as any;
-        if (data.id) console.log(`   Draft ID: ${data.id}`);
+        if (data.id) console.info(`   Draft ID: ${data.id}`);
       }
     } catch (error) {
-      console.log(`⚠️  Draft failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(`⚠️  Draft failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-    console.log('\n' + '═'.repeat(60));
-    console.log('✨ Decorator Pattern Examples Complete!\n');
-    console.log('Usage:');
-    console.log('  npm run gmail:decorator');
-    console.log('  npm run gmail:decorator -- --email:your-email@gmail.com\n');
+    console.info('\n' + '═'.repeat(60));
+    console.info('✨ Decorator Pattern Examples Complete!\n');
+    console.info('Usage:');
+    console.info('  npm run gmail:decorator');
+    console.info('  npm run gmail:decorator -- --email:your-email@gmail.com\n');
   } catch (error) {
     console.error('❌ Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);

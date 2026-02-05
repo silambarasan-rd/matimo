@@ -1,4 +1,5 @@
 import { ToolDefinition } from './schema';
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
 
 /**
  * Tool Registry - In-memory store for loaded tools
@@ -15,7 +16,10 @@ export class ToolRegistry {
    */
   register(tool: ToolDefinition): void {
     if (this.tools.has(tool.name)) {
-      throw new Error(`Tool '${tool.name}' is already registered`);
+      throw new MatimoError(`Tool '${tool.name}' is already registered`, ErrorCode.TOOL_NOT_FOUND, {
+        toolName: tool.name,
+        reason: 'duplicate_registration',
+      });
     }
 
     this.tools.set(tool.name, tool);

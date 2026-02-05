@@ -10,23 +10,31 @@ import path from 'path';
 
 describe('Gmail Tools', () => {
   let loader: ToolLoader;
-  let registry: ToolRegistry;
 
   beforeEach(() => {
     loader = new ToolLoader();
-    registry = new ToolRegistry();
   });
 
   describe('Tool Loading', () => {
     it('should load all 5 Gmail tools from nested structure', async () => {
-      const toolsPath = path.join(__dirname, '../../tools');
+      const toolsPath = path.resolve(__dirname, '../../tools');
       const tools = await loader.loadToolsFromDirectory(toolsPath);
 
       // Filter for Gmail tools
-      const gmailTools = Array.from(tools.values()).filter((t) => t.name.startsWith('gmail-'));
+      const gmailTools = Array.from(tools.values()).filter((t: unknown) => {
+        const tool = t as { name?: string };
+        return tool.name?.startsWith('gmail-');
+      });
 
       expect(gmailTools).toHaveLength(5);
-      expect(gmailTools.map((t) => t.name).sort()).toEqual([
+      expect(
+        gmailTools
+          .map((t: unknown) => {
+            const tool = t as { name?: string };
+            return tool.name;
+          })
+          .sort()
+      ).toEqual([
         'gmail-create-draft',
         'gmail-delete-message',
         'gmail-get-message',
@@ -36,7 +44,7 @@ describe('Gmail Tools', () => {
     });
 
     it('should load send-email tool with correct structure', async () => {
-      const toolsPath = path.join(__dirname, '../../tools');
+      const toolsPath = path.resolve(__dirname, '../../tools');
       const tools = await loader.loadToolsFromDirectory(toolsPath);
       const sendEmailTool = tools.get('gmail-send-email');
 
@@ -89,8 +97,12 @@ describe('Gmail Tools', () => {
     it('should register all Gmail tools in registry', async () => {
       const toolsPath = path.join(__dirname, '../../tools');
       const tools = await loader.loadToolsFromDirectory(toolsPath);
-      const gmailTools = Array.from(tools.values()).filter((t) => t.name.startsWith('gmail-'));
+      const gmailTools = Array.from(tools.values()).filter((t: unknown) => {
+        const tool = t as { name?: string };
+        return tool.name?.startsWith('gmail-');
+      });
 
+      const registry = new ToolRegistry();
       registry.registerAll(gmailTools);
 
       expect(registry.get('gmail-send-email')).toBeDefined();
@@ -103,8 +115,12 @@ describe('Gmail Tools', () => {
     it('should retrieve tools by exact name', async () => {
       const toolsPath = path.join(__dirname, '../../tools');
       const tools = await loader.loadToolsFromDirectory(toolsPath);
-      const gmailTools = Array.from(tools.values()).filter((t) => t.name.startsWith('gmail-'));
+      const gmailTools = Array.from(tools.values()).filter((t: unknown) => {
+        const tool = t as { name?: string };
+        return tool.name?.startsWith('gmail-');
+      });
 
+      const registry = new ToolRegistry();
       registry.registerAll(gmailTools);
 
       const tool = registry.get('gmail-list-messages');
@@ -262,10 +278,14 @@ describe('Gmail Tools', () => {
     it('all Gmail tools should have retry configuration', async () => {
       const toolsPath = path.join(__dirname, '../../tools');
       const tools = await loader.loadToolsFromDirectory(toolsPath);
-      const gmailTools = Array.from(tools.values()).filter((t) => t.name.startsWith('gmail-'));
+      const gmailTools = Array.from(tools.values()).filter((t: unknown) => {
+        const tool = t as { name?: string };
+        return tool.name?.startsWith('gmail-');
+      });
 
-      gmailTools.forEach((tool) => {
-        const errorHandling = tool.error_handling as ErrorHandlingConfig | undefined;
+      gmailTools.forEach((tool: unknown) => {
+        const gmailTool = tool as { error_handling?: ErrorHandlingConfig };
+        const errorHandling = gmailTool.error_handling as ErrorHandlingConfig | undefined;
         expect(errorHandling?.retry).toBe(3);
         expect(errorHandling?.backoff_type).toBe('exponential');
         expect(errorHandling?.initial_delay_ms).toBeGreaterThan(0);

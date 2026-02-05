@@ -6,6 +6,8 @@
  * No tool-specific code needed - keeps Matimo universal.
  */
 
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
+
 /**
  * Encoding configuration from YAML
  */
@@ -63,7 +65,14 @@ function encodeParameters(
     case 'url_encoded':
       return encodeUrlParams(sourceValues);
     default:
-      throw new Error(`Unknown parameter encoding type: ${encoding}`);
+      throw new MatimoError(
+        `Unknown parameter encoding type: ${encoding}`,
+        ErrorCode.INVALID_PARAMETER,
+        {
+          encodingType: encoding,
+          supportedTypes: ['mime_rfc2822_base64url', 'json_compact', 'url_encoded'],
+        }
+      );
   }
 }
 
@@ -80,7 +89,14 @@ function encodeMimeRfc2822(sourceValues: Record<string, unknown>): string {
   const isHtml = (sourceValues.is_html as boolean) || false;
 
   if (!to || !subject || !body) {
-    throw new Error('MIME encoding requires: to, subject, body parameters');
+    throw new MatimoError(
+      'MIME encoding requires: to, subject, body parameters',
+      ErrorCode.INVALID_PARAMETER,
+      {
+        requiredFields: ['to', 'subject', 'body'],
+        providedFields: Object.keys(sourceValues),
+      }
+    );
   }
 
   // Build RFC 2822 MIME message

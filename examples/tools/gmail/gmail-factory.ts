@@ -84,77 +84,77 @@ async function runFactoryPatternExamples() {
     }
   }
 
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║     Gmail Tools - Factory Pattern                      ║');
-  console.log('║     (Direct execution - simplest approach)             ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('\n╔════════════════════════════════════════════════════════╗');
+  console.info('║     Gmail Tools - Factory Pattern                      ║');
+  console.info('║     (Direct execution - simplest approach)             ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   const accessToken = process.env.GMAIL_ACCESS_TOKEN;
   if (!accessToken) {
     console.error('❌ Error: GMAIL_ACCESS_TOKEN not set in .env');
-    console.log('   Set it: export GMAIL_ACCESS_TOKEN="ya29...."');
-    console.log('   Or get a token from: https://developers.google.com/oauthplayground');
+    console.info('   Set it: export GMAIL_ACCESS_TOKEN="ya29...."');
+    console.info('   Or get a token from: https://developers.google.com/oauthplayground');
     process.exit(1);
   }
 
-  console.log(`📧 User Email: ${userEmail}\n`);
+  console.info(`📧 User Email: ${userEmail}\n`);
 
   try {
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
 
     const matimoTools = matimo.listTools();
-    console.log(`📦 Loaded ${matimoTools.length} tools:\n`);
+    console.info(`📦 Loaded ${matimoTools.length} tools:\n`);
     matimoTools.forEach((t) => {
-      console.log(`  • ${t.name}`);
-      console.log(`    ${t.description}\n`);
+      console.info(`  • ${t.name}`);
+      console.info(`    ${t.description}\n`);
     });
 
     // Filter to Gmail tools
     const gmailTools = matimoTools.filter((t) => t.name.startsWith('gmail-'));
-    console.log(`📧 Found ${gmailTools.length} Gmail tools\n`);
+    console.info(`📧 Found ${gmailTools.length} Gmail tools\n`);
 
-    console.log('🧪 Testing Gmail Tools with Factory Pattern');
-    console.log('═'.repeat(60));
+    console.info('🧪 Testing Gmail Tools with Factory Pattern');
+    console.info('═'.repeat(60));
 
     // Example 1: List Messages (GET emails)
-    console.log('\n📬 Example 1: List Your Recent Messages');
-    console.log('─'.repeat(60));
+    console.info('\n📬 Example 1: List Your Recent Messages');
+    console.info('─'.repeat(60));
     try {
       const listResult = await matimo.execute('gmail-list-messages', {
         maxResults: 5,
         GMAIL_ACCESS_TOKEN: accessToken,
       });
-      console.log('📤 Raw Result:', JSON.stringify(listResult, null, 2));
+      console.info('📤 Raw Result:', JSON.stringify(listResult, null, 2));
       
       if (typeof listResult === 'object' && listResult !== null) {
         const data = listResult as any;
         if (data.data?.messages && Array.isArray(data.data.messages)) {
-          console.log(`✅ Found ${data.data.messages.length} recent messages:`);
+          console.info(`✅ Found ${data.data.messages.length} recent messages:`);
           data.data.messages.slice(0, 3).forEach((msg: any, idx: number) => {
-            console.log(`   ${idx + 1}. ID: ${msg.id}`);
-            console.log(`      Thread: ${msg.threadId}`);
+            console.info(`   ${idx + 1}. ID: ${msg.id}`);
+            console.info(`      Thread: ${msg.threadId}`);
           });
         } else if (data.messages && Array.isArray(data.messages)) {
-          console.log(`✅ Found ${data.messages.length} recent messages:`);
+          console.info(`✅ Found ${data.messages.length} recent messages:`);
           data.messages.slice(0, 3).forEach((msg: any, idx: number) => {
-            console.log(`   ${idx + 1}. ID: ${msg.id}`);
-            console.log(`      Thread: ${msg.threadId}`);
+            console.info(`   ${idx + 1}. ID: ${msg.id}`);
+            console.info(`      Thread: ${msg.threadId}`);
           });
         } else {
-          console.log('❌ Unexpected response format');
+          console.info('❌ Unexpected response format');
         }
       }
     } catch (error) {
-      console.log(`❌ List failed: ${error instanceof Error ? error.message : String(error)}`);
-      console.log(JSON.stringify(error, null, 2));
+      console.info(`❌ List failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(JSON.stringify(error, null, 2));
     }
 
     // Example 2: Send Email
-    console.log('\n📧 Example 2: Send Email');
-    console.log('─'.repeat(60));
+    console.info('\n📧 Example 2: Send Email');
+    console.info('─'.repeat(60));
     try {
       // Simple API - just pass to, subject, body
       // Matimo automatically converts to MIME format (defined in YAML)
@@ -164,30 +164,30 @@ async function runFactoryPatternExamples() {
         body: 'This is a test email from the Factory pattern',
         GMAIL_ACCESS_TOKEN: accessToken,
       });
-      console.log('📤 Raw Result:', JSON.stringify(sendResult, null, 2));
+      console.info('📤 Raw Result:', JSON.stringify(sendResult, null, 2));
       
       if (typeof sendResult === 'object' && sendResult !== null) {
         const data = sendResult as any;
         if (data.data?.id) {
-          console.log(`✅ Email sent successfully!`);
-          console.log(`   Message ID: ${data.data.id}`);
-          console.log(`   Thread ID: ${data.data.threadId || 'N/A'}`);
+          console.info(`✅ Email sent successfully!`);
+          console.info(`   Message ID: ${data.data.id}`);
+          console.info(`   Thread ID: ${data.data.threadId || 'N/A'}`);
         } else if (data.id) {
-          console.log(`✅ Email sent successfully!`);
-          console.log(`   Message ID: ${data.id}`);
-          console.log(`   Thread ID: ${data.threadId || 'N/A'}`);
+          console.info(`✅ Email sent successfully!`);
+          console.info(`   Message ID: ${data.id}`);
+          console.info(`   Thread ID: ${data.threadId || 'N/A'}`);
         } else {
-          console.log('❌ Unexpected response format');
+          console.info('❌ Unexpected response format');
         }
       }
     } catch (error) {
-      console.log(`❌ Send failed: ${error instanceof Error ? error.message : String(error)}`);
-      console.log(JSON.stringify(error, null, 2));
+      console.info(`❌ Send failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(JSON.stringify(error, null, 2));
     }
 
     // Example 3: Create Draft
-    console.log('\n✏️  Example 3: Create Draft');
-    console.log('─'.repeat(60));
+    console.info('\n✏️  Example 3: Create Draft');
+    console.info('─'.repeat(60));
     try {
       // Simple API - just pass to, subject, body
       // Matimo automatically converts to MIME format (defined in YAML)
@@ -197,31 +197,31 @@ async function runFactoryPatternExamples() {
         body: 'This is a draft created by the Factory pattern',
         GMAIL_ACCESS_TOKEN: accessToken,
       });
-      console.log('📤 Raw Result:', JSON.stringify(draftResult, null, 2));
+      console.info('📤 Raw Result:', JSON.stringify(draftResult, null, 2));
       
       if (typeof draftResult === 'object' && draftResult !== null) {
         const data = draftResult as any;
         if (data.data?.id) {
-          console.log(`✅ Draft created successfully!`);
-          console.log(`   Draft ID: ${data.data.id}`);
-          console.log(`   Message ID: ${data.data.message?.id || 'N/A'}`);
+          console.info(`✅ Draft created successfully!`);
+          console.info(`   Draft ID: ${data.data.id}`);
+          console.info(`   Message ID: ${data.data.message?.id || 'N/A'}`);
         } else if (data.id) {
-          console.log(`✅ Draft created successfully!`);
-          console.log(`   Draft ID: ${data.id}`);
+          console.info(`✅ Draft created successfully!`);
+          console.info(`   Draft ID: ${data.id}`);
         } else {
-          console.log('❌ Unexpected response format');
+          console.info('❌ Unexpected response format');
         }
       }
     } catch (error) {
-      console.log(`❌ Draft failed: ${error instanceof Error ? error.message : String(error)}`);
-      console.log(JSON.stringify(error, null, 2));
+      console.info(`❌ Draft failed: ${error instanceof Error ? error.message : String(error)}`);
+      console.info(JSON.stringify(error, null, 2));
     }
 
-    console.log('\n' + '═'.repeat(60));
-    console.log('✨ Factory Pattern Examples Complete!\n');
-    console.log('Usage:');
-    console.log('  npm run gmail:factory');
-    console.log('  npm run gmail:factory -- --email:your-email@gmail.com\n');
+    console.info('\n' + '═'.repeat(60));
+    console.info('✨ Factory Pattern Examples Complete!\n');
+    console.info('Usage:');
+    console.info('  npm run gmail:factory');
+    console.info('  npm run gmail:factory -- --email:your-email@gmail.com\n');
   } catch (error) {
     console.error('❌ Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);

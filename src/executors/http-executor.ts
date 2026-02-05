@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 import { ToolDefinition } from '../core/schema';
 import { applyParameterEncodings } from '../encodings/parameter-encoding';
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
 
 /**
  * HttpExecutor - Executes HTTP requests
@@ -13,7 +14,10 @@ export class HttpExecutor {
    */
   async execute(tool: ToolDefinition, params: Record<string, unknown>): Promise<unknown> {
     if (tool.execution.type !== 'http') {
-      throw new Error('Tool execution type is not http');
+      throw new MatimoError('Tool execution type is not http', ErrorCode.EXECUTION_FAILED, {
+        expectedType: 'http',
+        actualType: tool.execution.type,
+      });
     }
 
     const {

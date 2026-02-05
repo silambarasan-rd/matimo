@@ -84,16 +84,16 @@ function convertMatimoToolToLangChain(
   return tool(
     async (input: Record<string, unknown>) => {
       try {
-        console.log(`\n  🔌 [MATIMO] Executing tool via Matimo SDK: ${toolName}`);
-        console.log(`  📥 [MATIMO] Input parameters: ${JSON.stringify(input)}`);
+        console.info(`\n  🔌 [MATIMO] Executing tool via Matimo SDK: ${toolName}`);
+        console.info(`  📥 [MATIMO] Input parameters: ${JSON.stringify(input)}`);
         
         const result = await matimo.execute(toolName, input);
         
-        console.log(`  ✅ [MATIMO] Execution successful`);
+        console.info(`  ✅ [MATIMO] Execution successful`);
         return JSON.stringify(result, null, 2);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        console.log(`  ❌ [MATIMO] Execution failed: ${errorMsg}`);
+        console.info(`  ❌ [MATIMO] Execution failed: ${errorMsg}`);
         return JSON.stringify({ error: errorMsg, success: false }, null, 2);
       }
     },
@@ -109,32 +109,32 @@ function convertMatimoToolToLangChain(
  * Run LangChain-style agent with Matimo tools
  */
 async function runLangChainAgent() {
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║   Matimo + LangChain Agent (Official API)               ║');
-  console.log('║   Using createAgent() with tool() function              ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('\n╔════════════════════════════════════════════════════════╗');
+  console.info('║   Matimo + LangChain Agent (Official API)               ║');
+  console.info('║   Using createAgent() with tool() function              ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   try {
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
 
     const matimoTools = matimo.listTools();
-    console.log(`📦 Loaded ${matimoTools.length} tools:\n`);
+    console.info(`📦 Loaded ${matimoTools.length} tools:\n`);
     matimoTools.forEach((t) => {
-      console.log(`  • ${t.name}`);
-      console.log(`    ${t.description}\n`);
+      console.info(`  • ${t.name}`);
+      console.info(`    ${t.description}\n`);
     });
 
     // Convert Matimo tools to LangChain tools
-    console.log('🔧 Converting Matimo tools to LangChain tools...\n');
+    console.info('🔧 Converting Matimo tools to LangChain tools...\n');
     const langchainTools = matimoTools.map((tool) =>
       convertMatimoToolToLangChain(matimo, tool.name)
     );
 
     // Create agent using official LangChain API
-    console.log('🤖 Creating LangChain agent with createAgent()...\n');
+    console.info('🤖 Creating LangChain agent with createAgent()...\n');
     const agent = await createAgent({
       model: 'gpt-4o-mini',
       tools: langchainTools,
@@ -147,11 +147,11 @@ async function runLangChainAgent() {
       '🌐 Fetch the GitHub user profile for octocat',
     ];
 
-    console.log('🧪 Testing LangChain Agent with Tool Calling\n');
-    console.log('═'.repeat(60));
+    console.info('🧪 Testing LangChain Agent with Tool Calling\n');
+    console.info('═'.repeat(60));
 
     for (const userPrompt of prompts) {
-      console.log(`\n❓ User: "${userPrompt}"\n`);
+      console.info(`\n❓ User: "${userPrompt}"\n`);
 
       try {
         // Invoke the agent with the user message
@@ -168,9 +168,9 @@ async function runLangChainAgent() {
         const lastMessage = result.messages[result.messages.length - 1];
         if (lastMessage) {
           if (typeof lastMessage.content === 'string') {
-            console.log(`✅ Agent Response:\n${lastMessage.content}`);
+            console.info(`✅ Agent Response:\n${lastMessage.content}`);
           } else {
-            console.log(`✅ Agent Response:`, lastMessage.content);
+            console.info(`✅ Agent Response:`, lastMessage.content);
           }
         }
       } catch (error) {
@@ -178,10 +178,10 @@ async function runLangChainAgent() {
         console.error(`❌ Error: ${errorMsg}`);
       }
 
-      console.log('\n' + '─'.repeat(60));
+      console.info('\n' + '─'.repeat(60));
     }
 
-    console.log('\n✅ LangChain agent test complete!\n');
+    console.info('\n✅ LangChain agent test complete!\n');
   } catch (error) {
     console.error('❌ Agent failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);

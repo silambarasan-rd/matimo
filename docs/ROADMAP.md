@@ -1,6 +1,6 @@
 # Matimo Roadmap
 
-## v0.1.0-alpha.1 (Current Release)
+## v0.1.0-alpha.3 (Current Release)
 
 ### ✅ Core Features Implemented
 
@@ -113,7 +113,9 @@
 
 ## How to Use This Roadmap
 
-- **v0.1.0-alpha.1**: Use current implementation for OAuth2, tool execution, and SDK patterns
+- **v0.1.0-alpha.1**: Initial SDK implementation with OAuth2 and tool execution
+- **v0.1.0-alpha.2**: Npm workflow improvements and export fixes
+- **v0.1.0-alpha.3**: Slack tools, error standardization, comprehensive examples
 - **Future Releases**: These are planned but not yet implemented. Contributions welcome!
 - **Contributing**: See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to help
 
@@ -124,10 +126,14 @@
 ```
 v0.1.0-alpha.1  Feb 2026.
     ↓
-v0.1.0-alpha.2  Feb 2026 (Current).
+v0.1.0-alpha.2  Feb 2026.
     ↓
-v0.1.0-alpha.3  Feb 2026.    
+v0.1.0-alpha.3  Feb 2026 (Current).
     ↓
+    |
+    |
+    |
+    |
 v0.1.0     End of March 2026. 
 ```
 

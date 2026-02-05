@@ -1,7 +1,7 @@
 {
   "name": "matimo",
-  "version": "0.1.0-alpha.2",
-  "description": "Framework-agnostic YAML-driven tool ecosystem for AI agents. Define tools once in YAML and run them via a TypeScript/JavaScript SDK.",
+  "version": "0.1.0-alpha.3",
+  "description": "Universal tool provider SDK: Framework-agnostic YAML-driven tool ecosystem for AI agents. Execute a library of pre-built tools (Slack, Gmail, GitHub, AWS, etc.) or define your own in YAML.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -62,9 +62,9 @@
   },
   "files": [
     "dist",
+    "tools",
     "README.md",
-    "LICENSE",
-    "docs"
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"

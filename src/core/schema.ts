@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
 
 /**
  * Core Zod validation schemas for all Matimo tool properties.
@@ -174,7 +175,9 @@ export function validateToolDefinition(tool: unknown): ToolDefinition {
       })
       .join('\n');
 
-    throw new Error(`Tool schema validation failed:\n${errors}`);
+    throw new MatimoError(`Tool schema validation failed:\n${errors}`, ErrorCode.INVALID_SCHEMA, {
+      issues: result.error.issues,
+    });
   }
 
   return result.data;
@@ -186,7 +189,7 @@ export function validateToolDefinition(tool: unknown): ToolDefinition {
  *
  * @param provider - Provider definition to validate
  * @returns Validated provider definition
- * @throws {Error} If validation fails with detailed error information
+ * @throws {MatimoError} If validation fails with detailed error information
  */
 export function validateProviderDefinition(provider: unknown): ProviderDefinition {
   const result = ProviderDefinitionSchema.safeParse(provider);
@@ -200,7 +203,13 @@ export function validateProviderDefinition(provider: unknown): ProviderDefinitio
       })
       .join('\n');
 
-    throw new Error(`Provider schema validation failed:\n${errors}`);
+    throw new MatimoError(
+      `Provider schema validation failed:\n${errors}`,
+      ErrorCode.INVALID_SCHEMA,
+      {
+        issues: result.error.issues,
+      }
+    );
   }
 
   return result.data;

@@ -4,7 +4,7 @@
 
 Matimo tools integrate seamlessly with LangChain for AI-powered agents. This guide shows how to use Matimo tools in LangChain applications.
 
-## v0.1.0-alpha.1 Status
+## v0.1.0-alpha.3 Status
 
 **✅ Implemented**: Direct SDK usage with LangChain tools interface
 **🔜 Future**: LangChain adapters and plugins
@@ -149,7 +149,7 @@ await agent.sendEmail(
 
 ## Working Examples
 
-See [examples/langchain/](../../examples/langchain/) for complete examples:
+See [examples/tools/](../../examples/tools/) for complete examples:
 
 - `gmail-langchain.ts` - Gmail tool integration with LangChain
 - `gmail-decorator.ts` - Decorator pattern example
@@ -158,7 +158,7 @@ See [examples/langchain/](../../examples/langchain/) for complete examples:
 Run them:
 
 ```bash
-cd examples/langchain
+cd examples/tools
 pnpm install
 pnpm gmail:langchain --email:your@email.com
 ```

@@ -262,7 +262,7 @@ See [Contributing Guidelines](../CONTRIBUTING.md).
 
 ### Integrate with LangChain
 1. See [Framework Integrations](./framework-integrations/LANGCHAIN.md) for patterns
-2. Check `examples/langchain/` for working examples
+2. Check `examples/tools/` for working examples
 3. Follow [Architecture Overview](./architecture/OVERVIEW.md) for design decisions
 
 ### Contribute Code

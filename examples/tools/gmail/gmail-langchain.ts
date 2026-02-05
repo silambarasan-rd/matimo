@@ -181,40 +181,40 @@ async function runGmailAIAgent() {
     }
   }
 
-  console.log('\n╔════════════════════════════════════════════════════════╗');
-  console.log('║     Gmail AI Agent - LangChain + OpenAI               ║');
-  console.log('║     True autonomous agent with LLM reasoning          ║');
-  console.log('╚════════════════════════════════════════════════════════╝\n');
+  console.info('\n╔════════════════════════════════════════════════════════╗');
+  console.info('║     Gmail AI Agent - LangChain + OpenAI               ║');
+  console.info('║     True autonomous agent with LLM reasoning          ║');
+  console.info('╚════════════════════════════════════════════════════════╝\n');
 
   // Check required environment variables
   const accessToken = process.env.GMAIL_ACCESS_TOKEN;
   if (!accessToken) {
     console.error('❌ Error: GMAIL_ACCESS_TOKEN not set in .env');
-    console.log('   Set it: export GMAIL_ACCESS_TOKEN="ya29...."');
+    console.info('   Set it: export GMAIL_ACCESS_TOKEN="ya29...."');
     process.exit(1);
   }
 
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!openaiKey) {
     console.error('❌ Error: OPENAI_API_KEY not set in .env');
-    console.log('   Set it: export OPENAI_API_KEY="sk-..."');
+    console.info('   Set it: export OPENAI_API_KEY="sk-..."');
     process.exit(1);
   }
 
-  console.log(`📧 User Email: ${userEmail}`);
-  console.log(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
+  console.info(`📧 User Email: ${userEmail}`);
+  console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
 
   try {
     // Initialize Matimo
-    console.log('🚀 Initializing Matimo...');
+    console.info('🚀 Initializing Matimo...');
     const toolsPath = path.resolve(__dirname, '../../../tools');
     const matimo = await MatimoInstance.init(toolsPath);
 
     // Get Gmail tools and convert to LangChain format
-    console.log('📬 Loading Gmail tools...');
+    console.info('📬 Loading Gmail tools...');
     const matimoTools = matimo.listTools();
     const gmailTools = matimoTools.filter((t) => t.name.startsWith('gmail-'));
-    console.log(`✅ Loaded ${gmailTools.length} Gmail tools\n`);
+    console.info(`✅ Loaded ${gmailTools.length} Gmail tools\n`);
 
     // Convert to LangChain tools
     const langchainTools = gmailTools.map((toolDef) =>
@@ -222,14 +222,14 @@ async function runGmailAIAgent() {
     );
 
     // Initialize OpenAI LLM
-    console.log('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');
+    console.info('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');
     const model = new ChatOpenAI({
       modelName: 'gpt-4o-mini',
       temperature: 0.7,
     });
 
     // Create agent
-    console.log('🔧 Creating agent...\n');
+    console.info('🔧 Creating agent...\n');
     const agent = await createAgent({
       model,
       tools: langchainTools,
@@ -251,14 +251,14 @@ async function runGmailAIAgent() {
       },
     ];
 
-    console.log('🧪 Running AI Agent Tasks');
-    console.log('═'.repeat(60));
+    console.info('🧪 Running AI Agent Tasks');
+    console.info('═'.repeat(60));
 
     // Run each task through the agent
     for (const task of userRequests) {
-      console.log(`\n${task.title}`);
-      console.log('─'.repeat(60));
-      console.log(`👤 User: "${task.request}"\n`);
+      console.info(`\n${task.title}`);
+      console.info('─'.repeat(60));
+      console.info(`👤 User: "${task.request}"\n`);
 
       try {
         const response = await agent.invoke({
@@ -274,24 +274,24 @@ async function runGmailAIAgent() {
         const lastMessage = response.messages[response.messages.length - 1];
         if (lastMessage) {
           if (typeof lastMessage.content === 'string') {
-            console.log(`🤖 Agent: ${lastMessage.content}\n`);
+            console.info(`🤖 Agent: ${lastMessage.content}\n`);
           } else {
-            console.log(`🤖 Agent:`, lastMessage.content, '\n');
+            console.info(`🤖 Agent:`, lastMessage.content, '\n');
           }
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        console.log(`⚠️  Agent error: ${errorMsg}\n`);
+        console.info(`⚠️  Agent error: ${errorMsg}\n`);
       }
     }
 
-    console.log('═'.repeat(60));
-    console.log('✨ AI Agent Examples Complete!\n');
-    console.log('Key Features:');
-    console.log('  ✅ Real LLM (OpenAI) decides which tools to use');
-    console.log('  ✅ Natural language requests, not API calls');
-    console.log('  ✅ LLM generates tool parameters based on context');
-    console.log('  ✅ Agentic reasoning and decision-making\n');
+    console.info('═'.repeat(60));
+    console.info('✨ AI Agent Examples Complete!\n');
+    console.info('Key Features:');
+    console.info('  ✅ Real LLM (OpenAI) decides which tools to use');
+    console.info('  ✅ Natural language requests, not API calls');
+    console.info('  ✅ LLM generates tool parameters based on context');
+    console.info('  ✅ Agentic reasoning and decision-making\n');
   } catch (error) {
     console.error('❌ Error:', error instanceof Error ? error.message : String(error));
     if (error instanceof Error && error.stack) {

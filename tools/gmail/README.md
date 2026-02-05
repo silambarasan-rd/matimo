@@ -544,7 +544,7 @@ export GMAIL_ACCESS_TOKEN="ya29.a0AfH6SMBx...your-token..."
 ### 3️⃣ Test It! (2 minutes)
 
 ```bash
-cd /Users/sajesh/My\ Work\ Directory/matimo/examples/langchain
+cd /Users/sajesh/My\ Work\ Directory/matimo/examples/tools
 
 # Install dependencies
 pnpm install

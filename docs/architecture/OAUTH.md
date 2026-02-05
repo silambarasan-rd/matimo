@@ -965,7 +965,7 @@ async function handleOAuthCallback(code, userId) {
 ### Example 1: Gmail with Factory Pattern
 
 ```typescript
-// examples/langchain/gmail/gmail-factory.ts
+// examples/tools/gmail/gmail-factory.ts
 
 import { MatimoInstance, ToolLoader } from '../../../src';
 
@@ -1011,7 +1011,7 @@ console.log(repo.name);  // 'linux'
 ### Example 3: AI Agent Deciding Which Tool to Use
 
 ```typescript
-// examples/langchain/gmail/gmail-langchain.ts
+// examples/tools/gmail/gmail-langchain.ts
 
 import { MatimoInstance, ToolLoader } from '../../../src';
 import { ChatOpenAI } from '@langchain/openai';

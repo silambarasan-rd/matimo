@@ -1,6 +1,6 @@
 # SDK Usage Patterns
 
-Learn the two main ways to use Matimo SDK in v0.1.0-alpha.1.
+Learn the three main ways to use Matimo SDK in v0.1.0-alpha.3.
 
 ## Pattern 1: Factory Pattern (Recommended for Simple Use Cases)
 

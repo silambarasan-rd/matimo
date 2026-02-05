@@ -1,5 +1,6 @@
 import { ToolDefinition } from '../core/types.js';
 import type { MatimoInstance } from '../matimo-instance.js';
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
 
 /**
  * Global Matimo instance for decorator usage
@@ -39,8 +40,9 @@ export function setGlobalMatimoInstance(instance: MatimoInstance | null): void {
  */
 export function getGlobalMatimoInstance(): MatimoInstance {
   if (!globalMatimoInstance) {
-    throw new Error(
-      'Global MatimoInstance not set. Call setGlobalMatimoInstance() before using @tool decorator.'
+    throw new MatimoError(
+      'Global MatimoInstance not set. Call setGlobalMatimoInstance() before using @tool decorator.',
+      ErrorCode.TOOL_NOT_FOUND
     );
   }
   return globalMatimoInstance;
@@ -132,16 +134,24 @@ export async function executeToolViaDecorator(
   }
 
   if (!matimoInstance) {
-    throw new Error(
+    throw new MatimoError(
       `Matimo instance not found for @tool('${toolName}') decorator. ` +
-        `Either add matimo property to class or call setGlobalMatimoInstance() first.`
+        `Either add matimo property to class or call setGlobalMatimoInstance() first.`,
+      ErrorCode.TOOL_NOT_FOUND,
+      { toolName }
     );
   }
 
   // Get tool definition
   const toolDef = matimoInstance.getTool(toolName);
   if (!toolDef) {
-    throw new Error(`Tool '${toolName}' not found in Matimo registry`);
+    throw new MatimoError(
+      `Tool '${toolName}' not found in Matimo registry`,
+      ErrorCode.TOOL_NOT_FOUND,
+      {
+        toolName,
+      }
+    );
   }
 
   // Convert positional arguments to parameters object
