@@ -209,7 +209,7 @@ Result returned to LangChain
 ## 📁 Project Structure
 
 ````
-examples/langchain/
+examples/tools/
 ├── agents/
 │   ├── langchain-agent.ts              # ⭐ LangChain Official API (recommended)
 │   ├── decorator-pattern-agent.ts      # Uses @tool decorator with MatimoInstance
@@ -468,10 +468,7 @@ pnpm test test/integration/
 ```bash
 cd ../..
 pnpm build
-cd examples/langchain
-npm install
-```
-
+cd examples/tools
 ### "OPENAI_API_KEY is not set"
 
 **Solution:** Create `.env` with your API key:
@@ -497,7 +494,7 @@ npm install
 ```bash
 cd ../..
 pnpm build
-cd examples/langchain
+cd examples/tools
 npm run agent:langchain   # or agent:decorator, agent:factory
 ```
 
