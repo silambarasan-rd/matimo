@@ -149,7 +149,7 @@ await agent.sendEmail(
 
 ## Working Examples
 
-See [examples/langchain/](../../examples/langchain/) for complete examples:
+See [examples/tools/](../../examples/tools/) for complete examples:
 
 - `gmail-langchain.ts` - Gmail tool integration with LangChain
 - `gmail-decorator.ts` - Decorator pattern example
@@ -158,7 +158,7 @@ See [examples/langchain/](../../examples/langchain/) for complete examples:
 Run them:
 
 ```bash
-cd examples/langchain
+cd examples/tools
 pnpm install
 pnpm gmail:langchain --email:your@email.com
 ```
