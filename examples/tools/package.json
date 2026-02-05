@@ -1,7 +1,7 @@
 {
-  "name": "matimo-langchain-examples",
+  "name": "matimo-examples",
   "version": "1.0.0",
-  "description": "Matimo + LangChain.js agent examples - Decorator Pattern and Factory Pattern",
+  "description": "Matimo SDK examples - Factory Pattern, Decorator Pattern, and LangChain integration with Slack and Gmail",
   "type": "module",
   "scripts": {
     "agent:decorator": "tsx agents/decorator-pattern-agent.ts",
@@ -10,6 +10,10 @@
     "gmail:factory": "tsx gmail/gmail-factory.ts",
     "gmail:decorator": "tsx gmail/gmail-decorator.ts",
     "gmail:langchain": "tsx gmail/gmail-langchain.ts",
+    "slack:factory": "tsx slack/slack-factory.ts",
+    "slack:decorator": "tsx slack/slack-decorator.ts",
+    "slack:langchain": "tsx slack/slack-langchain.ts",
+    "slack:test-all": "tsx slack/slack-all-tools-test.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -17,7 +21,7 @@
     "@langchain/core": "^1.1.18",
     "@langchain/openai": "^1.2.4",
     "langchain": "^1.2.16",
-    "matimo": "file:../..",
+    "matimo": "^0.1.0-alpha.2",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },

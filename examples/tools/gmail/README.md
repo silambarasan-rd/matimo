@@ -55,7 +55,7 @@ ya29.a0AfH6SMBx1234567890abcdefghijklmnopqrstuvwxyz...
 
 1. **Create `.env` file** in this directory:
    ```bash
-   cd examples/langchain/gmail
+   cd examples/tools/gmail
    cat > .env << EOF
    GMAIL_ACCESS_TOKEN=ya29.a0AfH6SMBx...your-token-here...
    OPENAI_API_KEY=sk-...your-openai-key...
@@ -87,7 +87,7 @@ cp .env.example .env
 ### Prerequisites
 ```bash
 # Install dependencies (if not already done)
-cd /Users/sajesh/My\ Work\ Directory/matimo/examples/langchain
+cd /Users/sajesh/My\ Work\ Directory/matimo/examples/tools
 pnpm install
 ```
 

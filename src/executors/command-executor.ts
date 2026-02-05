@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { ToolDefinition } from '../core/schema';
+import { MatimoError, ErrorCode } from '../errors/matimo-error';
 
 /**
  * CommandExecutor - Executes shell commands
@@ -18,7 +19,10 @@ export class CommandExecutor {
    */
   async execute(tool: ToolDefinition, params: Record<string, unknown>): Promise<unknown> {
     if (tool.execution.type !== 'command') {
-      throw new Error('Tool execution type is not command');
+      throw new MatimoError('Tool execution type is not command', ErrorCode.EXECUTION_FAILED, {
+        expectedType: 'command',
+        actualType: tool.execution.type,
+      });
     }
 
     const { command, args = [], timeout = 30000 } = tool.execution;
