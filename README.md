@@ -36,9 +36,19 @@ pnpm build
 pnpm test
 
 # Start using
-const { matimo } = require('matimo');
-const m = await matimo.init('./tools');
-const result = await m.execute('calculator', { operation: 'add', a: 5, b: 3 });
+const { MatimoInstance } = require('matimo');
+
+// Use built-in tools from npm package
+const matimo = await MatimoInstance.init('./node_modules/matimo/tools');
+
+// Execute built-in Slack tool
+const result = await matimo.execute('slack_send_message', { 
+  channel: '#general', 
+  message: 'Hello from Matimo!' 
+});
+
+// Or add custom tools alongside built-in ones
+const customMatimo = await MatimoInstance.init('./tools');
 ```
 
 Prefer factory pattern (simple) or decorator pattern (class-based code). See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) for details.
@@ -108,23 +118,37 @@ Creator of Matimo
 - Zod schema validation
 - ESLint clean
 
-**3 Example Tools**
+## Built-in Tools (50+ Operations)
 
-- Calculator (command execution)
-- HTTP Client (HTTP execution)
-- Echo Tool (simple command)
+**Communication**
+- **Slack**: Send messages, upload files, manage channels, reactions, threads (16 operations)
+- **Gmail**: Send emails, create drafts, list messages, get message details (4 operations)
 
-**4 Gmail Tools**
+**Development**
+- **GitHub**: Repository operations, issues, PRs, commits (coming soon)
+- **HTTP Client**: Generic REST API calls with auth support
 
-- Create Draft
+**Data & Infrastructure**
+- **AWS**: EC2, S3, Lambda operations (coming soon)
+- **Stripe**: Payment processing, subscriptions (coming soon)
 
-- Get Message
-- List Message
-- Send Email
+**Utilities**
+- **Calculator**: Arithmetic operations
+- **Echo Tool**: Simple command testing
 
-## Planned
+All tools include:
+- ✅ Full TypeScript/JavaScript support
+- ✅ OAuth2 authentication (where applicable)
+- ✅ Parameter validation with Zod
+- ✅ Response schema validation
+- ✅ Error handling with retry logic
+- ✅ Comprehensive documentation
 
-**Add Tools** - Github, Slack, Jira, Notion, etc
+## Planned Features
+
+**More Tools** - Jira, Notion, Linear, HubSpot, Twilio, etc
+
+**Tool Marketplace** — Community-contributed tools registry
 
 **MCP Server** — Claude & MCP client integration
 
