@@ -29,14 +29,16 @@ export interface LangChainTool {
 }
 
 // Lazy load LangChain to avoid hard dependency
-let langChainToolFn: ((
-  fn: (input: Record<string, unknown>) => Promise<unknown>,
-  options: {
-    name: string;
-    description: string;
-    schema: z.ZodSchema;
-  }
-) => LangChainTool) | null = null;
+let langChainToolFn:
+  | ((
+      fn: (input: Record<string, unknown>) => Promise<unknown>,
+      options: {
+        name: string;
+        description: string;
+        schema: z.ZodSchema;
+      }
+    ) => LangChainTool)
+  | null = null;
 
 async function getLangChainTool(): Promise<
   (
