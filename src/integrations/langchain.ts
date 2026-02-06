@@ -1,310 +1,168 @@
 /**
  * LangChain Integration for Matimo
- * ═════════════════════════════════════════════════════════════════════════
  *
- * Converts Matimo tool definitions to LangChain-compatible tool schemas.
+ * Converts Matimo tools to LangChain-compatible format.
+ * Simple, lightweight, scales to 2000+ tools.
  *
- * Features:
- * ✅ Automatic Zod schema generation from Matimo parameters
- * ✅ Type mapping (Matimo types → Zod types)
- * ✅ Parameter validation
- * ✅ Secret injection (API keys, tokens, etc.)
- * ✅ Result formatting for LLM consumption
- *
- * NOTE: This integration requires @langchain/core as a peer dependency.
+ * NOTE: Requires @langchain/core as peer dependency.
  * Install with: npm install @langchain/core langchain
  *
  * Usage:
- * ───────────────────────────────────────────────────────────────────────
- *   import { convertToolsToLangChain } from 'matimo';
- *
  *   const matimo = await MatimoInstance.init('./tools');
- *   const tools = matimo.listTools().filter(t => t.name.startsWith('slack-'));
- *
- *   const langchainTools = convertToolsToLangChain(tools, matimo, {
- *     SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN!,
- *   });
- *
- *   const agent = await createAgent({ model, tools: langchainTools });
- *
+ *   const langchainTools = await convertToolsToLangChain(
+ *     matimo.listTools(),
+ *     matimo,
+ *     { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN }
+ *   );
  */
 
 import { z } from 'zod';
 import type { ToolDefinition, Parameter } from '../core/types';
 import type { MatimoInstance } from '../matimo-instance';
 
-// Lazy load LangChain to avoid hard dependency
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let langChainToolFn: any = null;
+// LangChain tool type - dynamically imported to avoid hard dependency
+export interface LangChainTool {
+  name: string;
+  description: string;
+  schema: z.ZodSchema;
+  invoke: (input: Record<string, unknown>) => Promise<unknown>;
+}
 
-async function getLangChainTool() {
+// Lazy load LangChain to avoid hard dependency
+let langChainToolFn: ((
+  fn: (input: Record<string, unknown>) => Promise<unknown>,
+  options: {
+    name: string;
+    description: string;
+    schema: z.ZodSchema;
+  }
+) => LangChainTool) | null = null;
+
+async function getLangChainTool(): Promise<
+  (
+    fn: (input: Record<string, unknown>) => Promise<unknown>,
+    options: {
+      name: string;
+      description: string;
+      schema: z.ZodSchema;
+    }
+  ) => LangChainTool
+> {
   if (!langChainToolFn) {
     try {
-      // Dynamically import to avoid hard dependency using Function constructor
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const importFn = new Function('modulePath', 'return import(modulePath)') as any;
-      const langChainModule = await importFn('@langchain/core/tools');
+      const langChainModule = await import('@langchain/core/tools');
       langChainToolFn = langChainModule.tool;
     } catch {
-      throw new Error(
-        'LangChain is not installed. Install with: npm install @langchain/core langchain'
-      );
+      throw new Error('LangChain not installed. Install: npm install @langchain/core langchain');
     }
   }
   return langChainToolFn;
 }
 
 /**
- * LangChain tool type (generic Tool interface)
+ * Convert parameter to Zod schema
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type LangChainTool = any; // Tool type from @langchain/core/tools
+function parameterToZod(param: Parameter): z.ZodType<unknown> {
+  let schema: z.ZodType<unknown>;
 
-/**
- * Convert Matimo parameter type to Zod schema
- *
- * Handles all Matimo parameter types and converts them to appropriate Zod validators.
- *
- * @param param - Matimo parameter definition
- * @returns Zod schema for the parameter
- */
-function createZodSchemaForParameter(param: Parameter): z.ZodType<unknown> {
-  let fieldSchema: z.ZodType<unknown>;
-
-  // Map Matimo type to Zod type
   switch (param.type) {
     case 'string':
-      fieldSchema = z.string();
+      schema = z.string();
       break;
     case 'number':
-      fieldSchema = z.number();
+      schema = z.number();
       break;
     case 'boolean':
-      fieldSchema = z.boolean();
+      schema = z.boolean();
       break;
-    case 'array':
-      if (param.items) {
-        const itemsSchema = createZodSchemaForParameter(param.items);
-        fieldSchema = z.array(itemsSchema);
-      } else {
-        fieldSchema = z.array(z.unknown());
-      }
+    case 'array': {
+      const itemSchema = param.items ? parameterToZod(param.items) : z.unknown();
+      schema = z.array(itemSchema);
       break;
-    case 'object':
-      if (param.properties) {
-        const propSchemas: Record<string, z.ZodType<unknown>> = {};
-        Object.entries(param.properties).forEach(([key, prop]) => {
-          propSchemas[key] = createZodSchemaForParameter(prop);
-        });
-        fieldSchema = z.object(propSchemas);
-      } else {
-        fieldSchema = z.record(z.string(), z.unknown());
-      }
-      break;
-    default:
-      fieldSchema = z.unknown();
-  }
-
-  // Add description if available
-  if (param.description) {
-    fieldSchema = fieldSchema.describe(param.description);
-  }
-
-  // Add enum constraint if available
-  if (param.enum && param.enum.length > 0 && param.type === 'string') {
-    const enumValues = param.enum as string[];
-    if (enumValues.length === 1) {
-      fieldSchema = z.literal(enumValues[0]);
-    } else if (enumValues.length > 1) {
-      fieldSchema = z.enum(enumValues as [string, ...string[]]);
     }
-    // Note: z.enum only works with string literals, so we can't easily apply to other types
+    case 'object': {
+      if (param.properties) {
+        const props: Record<string, z.ZodType<unknown>> = {};
+        for (const [key, prop] of Object.entries(param.properties)) {
+          props[key] = parameterToZod(prop);
+        }
+        schema = z.object(props);
+      } else {
+        schema = z.record(z.string(), z.unknown());
+      }
+      break;
+    }
+    default:
+      schema = z.unknown();
   }
 
-  // Make optional if not required
+  if (param.description) {
+    schema = schema.describe(param.description);
+  }
+
   if (!param.required) {
-    fieldSchema = fieldSchema.optional();
+    schema = schema.optional();
   }
 
-  return fieldSchema;
+  return schema;
 }
 
 /**
- * Build Zod object schema from Matimo tool parameters
- *
- * Filters out internal parameters (those matching pattern MATIMO_* or provider tokens)
- * and creates a Zod schema for LangChain.
- *
- * @param tool - Matimo tool definition
- * @param secretParamNames - Parameters that are secrets (will be auto-injected)
- * @returns Zod object schema
+ * Build Zod schema for tool input, excluding secret parameters
  */
-function buildZodSchema(
+function buildInputSchema(
   tool: ToolDefinition,
-  secretParamNames: Set<string>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): z.ZodObject<any> {
-  const schemaShape: Record<string, z.ZodType<unknown>> = {};
-
-  // Handle tools with no parameters
+  secretParams: Set<string>
+): z.ZodObject<Record<string, z.ZodTypeAny>> {
   if (!tool.parameters) {
     return z.object({});
   }
 
-  Object.entries(tool.parameters).forEach(([paramName, param]) => {
-    // Skip secret parameters - they'll be injected automatically
-    if (secretParamNames.has(paramName)) {
-      return;
+  const shape: Record<string, z.ZodTypeAny> = {};
+
+  for (const [name, param] of Object.entries(tool.parameters)) {
+    if (secretParams.has(name)) {
+      continue; // Skip secrets - they're injected
     }
+    shape[name] = parameterToZod(param);
+  }
 
-    // Skip internal Matimo parameters
-    if (paramName.startsWith('MATIMO_')) {
-      return;
-    }
-
-    schemaShape[paramName] = createZodSchemaForParameter(param);
-  });
-
-  return z.object(schemaShape);
+  return z.object(shape);
 }
 
 /**
- * Format tool execution result for LLM consumption
- *
- * Takes the raw Matimo execution result and formats it nicely for the LLM
- * to understand and reason about.
- *
- * @param result - Raw result from matimo.execute()
- * @returns Formatted string suitable for LLM
+ * Convert Matimo tool to LangChain format
  */
-function formatResultForLLM(result: unknown): string {
-  if (result === null || result === undefined) {
-    return 'No result returned.';
-  }
-
-  if (typeof result === 'string') {
-    return result;
-  }
-
-  if (typeof result !== 'object') {
-    return String(result);
-  }
-
-  const obj = result as Record<string, unknown>;
-
-  // Special handling for common response patterns
-  if ('ok' in obj && obj.ok === true) {
-    return 'Operation completed successfully.';
-  }
-
-  if ('error' in obj) {
-    return `Error: ${obj.error}`;
-  }
-
-  if ('items' in obj && Array.isArray(obj.items)) {
-    const items = obj.items as unknown[];
-    const count = items.length;
-    if (count === 0) {
-      return 'No items found.';
-    }
-    return `Found ${count} item(s). First result: ${JSON.stringify(items[0], null, 2)}`;
-  }
-
-  if ('messages' in obj && Array.isArray(obj.messages)) {
-    const messages = obj.messages as unknown[];
-    const count = messages.length;
-    if (count === 0) {
-      return 'No messages found.';
-    }
-    return `Found ${count} message(s). First: ${JSON.stringify(messages[0], null, 2)}`;
-  }
-
-  if ('channels' in obj && Array.isArray(obj.channels)) {
-    const channels = obj.channels as unknown[];
-    const count = channels.length;
-    if (count === 0) {
-      return 'No channels found.';
-    }
-    return `Found ${count} channel(s). First: ${JSON.stringify(channels[0], null, 2)}`;
-  }
-
-  if ('data' in obj) {
-    return `Result: ${JSON.stringify(obj.data, null, 2)}`;
-  }
-
-  // Default: return first 2 key-value pairs
-  const entries = Object.entries(obj).slice(0, 2);
-  return `Result: ${JSON.stringify(Object.fromEntries(entries), null, 2)}`;
-}
-
-/**
- * Convert a single Matimo tool to LangChain format
- *
- * Creates a LangChain-compatible tool that can be used with agents like Claude.
- *
- * @param matimo - MatimoInstance for executing tools
- * @param toolDef - Matimo tool definition
- * @param secrets - Secret values to inject (API keys, tokens, etc.)
- * @returns LangChain tool
- */
-async function convertSingleTool(
+async function convertTool(
   matimo: MatimoInstance,
-  toolDef: ToolDefinition,
+  tool: ToolDefinition,
+  secretParams: Set<string>,
   secrets: Record<string, string>
 ): Promise<LangChainTool> {
-  // Determine which parameters are secrets (will be auto-injected)
-  const secretParamNames = new Set<string>();
-  if (toolDef.parameters) {
-    Object.keys(toolDef.parameters).forEach((paramName) => {
-      // Common secret parameter patterns
-      if (
-        paramName.toUpperCase().includes('TOKEN') ||
-        paramName.toUpperCase().includes('KEY') ||
-        paramName.toUpperCase().includes('SECRET') ||
-        paramName.toUpperCase().includes('PASSWORD') ||
-        paramName === 'SLACK_BOT_TOKEN' ||
-        paramName === 'GMAIL_ACCESS_TOKEN' ||
-        paramName === 'GITHUB_TOKEN' ||
-        paramName === 'STRIPE_API_KEY'
-      ) {
-        secretParamNames.add(paramName);
-      }
-    });
-  }
+  const toolFn = await getLangChainTool();
+  const schema = buildInputSchema(tool, secretParams);
 
-  // Build Zod schema without secret parameters
-  const zodSchema = buildZodSchema(toolDef, secretParamNames);
-
-  // Create the LangChain tool
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const toolFn: any = await getLangChainTool();
   return toolFn(
     async (input: Record<string, unknown>) => {
+      const params: Record<string, unknown> = { ...input };
+
+      // Inject secrets
+      for (const param of secretParams) {
+        if (param in secrets) {
+          params[param] = secrets[param];
+        }
+      }
+
       try {
-        // Build complete parameters by injecting secrets
-        const params: Record<string, unknown> = { ...input };
-
-        // Inject secrets into parameters
-        secretParamNames.forEach((paramName) => {
-          if (paramName in secrets) {
-            params[paramName] = secrets[paramName];
-          }
-        });
-
-        // Execute tool via Matimo
-        const result = await matimo.execute(toolDef.name, params);
-
-        // Format result for LLM consumption
-        return formatResultForLLM(result);
+        return await matimo.execute(tool.name, params);
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        throw new Error(`Tool execution failed: ${errorMsg}`);
+        return `Error: ${error instanceof Error ? error.message : String(error)}`;
       }
     },
     {
-      name: toolDef.name,
-      description: toolDef.description || `Tool: ${toolDef.name}`,
-      schema: zodSchema,
+      name: tool.name,
+      description: tool.description || tool.name,
+      schema,
     }
   );
 }
@@ -312,35 +170,29 @@ async function convertSingleTool(
 /**
  * Convert Matimo tools to LangChain format
  *
- * Batch converts multiple Matimo tool definitions to LangChain-compatible tools.
- * Handles Zod schema generation, parameter validation, and secret injection.
- *
- * @param tools - Array of Matimo tool definitions
- * @param matimo - MatimoInstance for executing tools
- * @param secrets - Secret values to inject (API keys, tokens, etc.)
- * @returns Array of LangChain tools ready for use with agents
+ * @param tools - Matimo tools
+ * @param matimo - MatimoInstance
+ * @param secrets - Map of parameter names to secret values
+ * @param secretParamNames - Explicitly declared secret parameters (optional)
+ * @returns LangChain tools
  *
  * @example
- * ```typescript
- * const matimo = await MatimoInstance.init('./tools');
- * const slackTools = matimo.listTools()
- *   .filter(t => t.name.startsWith('slack-'));
- *
- * const langchainTools = await convertToolsToLangChain(slackTools, matimo, {
- *   SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN!,
- * });
- *
- * const agent = await createAgent({
- *   model: new ChatOpenAI({ modelName: 'gpt-4o-mini' }),
- *   tools: langchainTools,
- * });
+ * ```ts
+ * const tools = await convertToolsToLangChain(
+ *   matimo.listTools().filter(t => t.name.startsWith('slack')),
+ *   matimo,
+ *   { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN }
+ * );
  * ```
  */
 export async function convertToolsToLangChain(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tools: any[],
+  tools: ToolDefinition[],
   matimo: MatimoInstance,
-  secrets: Record<string, string> = {}
+  secrets: Record<string, string> = {},
+  secretParamNames?: Set<string>
 ): Promise<LangChainTool[]> {
-  return Promise.all(tools.map((toolDef) => convertSingleTool(matimo, toolDef, secrets)));
+  // Auto-detect secret params from the secrets map
+  const detectedSecrets = secretParamNames || new Set(Object.keys(secrets));
+
+  return Promise.all(tools.map((tool) => convertTool(matimo, tool, detectedSecrets, secrets)));
 }
