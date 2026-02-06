@@ -1013,25 +1013,26 @@ console.log(repo.name);  // 'linux'
 ```typescript
 // examples/tools/gmail/gmail-langchain.ts
 
-import { MatimoInstance, ToolLoader } from '../../../src';
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
 import { ChatOpenAI } from '@langchain/openai';
-import { createToolsForAgent } from '@langchain/core/tools';
+import { createAgent } from 'langchain/agents';
 
-const loader = new ToolLoader('./tools');
-const tools = await loader.loadToolsFromDirectory();
-const matimo = new MatimoInstance(tools);
+const matimo = await MatimoInstance.init('./tools');
 
-// Set access tokens
-process.env.GMAIL_ACCESS_TOKEN = 'ya29.a0AXooCg...';
+// Get Gmail-specific tools
+const gmailTools = matimo.listTools()
+  .filter(t => t.name.startsWith('gmail-'));
 
-// Create LangChain tools from YAML
-const langchainTools = createToolsForAgent(
-  tools.filter(t => t.name.startsWith('gmail-'))
+// Convert to LangChain format with OAuth token
+const langchainTools = await convertToolsToLangChain(
+  gmailTools,
+  matimo,
+  { GMAIL_ACCESS_TOKEN: process.env.GMAIL_ACCESS_TOKEN! }
 );
 
 // Agent decides which tool to use based on user request
-const agent = new OpenAIAgent({
-  llm: new ChatOpenAI({ model: 'gpt-4' }),
+const agent = await createAgent({
+  model: new ChatOpenAI({ modelName: 'gpt-4' }),
   tools: langchainTools
 });
 
