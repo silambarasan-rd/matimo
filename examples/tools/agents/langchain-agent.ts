@@ -17,93 +17,10 @@
 import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createAgent, tool } from 'langchain';
-import { z } from 'zod';
-import { MatimoInstance } from 'matimo';
+import { createAgent } from 'langchain';
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-/**
- * Convert a Matimo tool to a LangChain tool using the tool() function
- */
-function convertMatimoToolToLangChain(
-  matimo: MatimoInstance,
-  toolName: string
-) {
-  const matimoTool = matimo.getTool(toolName);
-  if (!matimoTool) {
-    throw new Error(`Tool not found: ${toolName}`);
-  }
-
-  // Build Zod schema from Matimo parameters
-  const schemaShape: any = {};
-
-  if (matimoTool.parameters) {
-    Object.entries(matimoTool.parameters).forEach(([paramName, param]) => {
-      let fieldSchema: any;
-
-      // Map Matimo types to Zod types
-      const paramType = param.type as string;
-      switch (paramType) {
-        case 'string':
-          fieldSchema = z.string();
-          break;
-        case 'number':
-          fieldSchema = z.number();
-          break;
-        case 'integer':
-          fieldSchema = z.number().int();
-          break;
-        case 'boolean':
-          fieldSchema = z.boolean();
-          break;
-        case 'array':
-          fieldSchema = z.array(z.unknown());
-          break;
-        default:
-          fieldSchema = z.unknown();
-      }
-
-      // Add description if available
-      if (param.description) {
-        fieldSchema = fieldSchema.describe(param.description);
-      }
-
-      // Make required/optional based on schema
-      if (!param.required) {
-        fieldSchema = fieldSchema.optional();
-      }
-
-      schemaShape[paramName] = fieldSchema;
-    });
-  }
-
-  const zodSchema = z.object(schemaShape);
-
-  // Create LangChain tool using the tool() function
-  return tool(
-    async (input: Record<string, unknown>) => {
-      try {
-        console.info(`\n  🔌 [MATIMO] Executing tool via Matimo SDK: ${toolName}`);
-        console.info(`  📥 [MATIMO] Input parameters: ${JSON.stringify(input)}`);
-        
-        const result = await matimo.execute(toolName, input);
-        
-        console.info(`  ✅ [MATIMO] Execution successful`);
-        return JSON.stringify(result, null, 2);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.info(`  ❌ [MATIMO] Execution failed: ${errorMsg}`);
-        return JSON.stringify({ error: errorMsg, success: false }, null, 2);
-      }
-    },
-    {
-      name: matimoTool.name,
-      description: matimoTool.description,
-      schema: zodSchema,
-    }
-  );
-}
 
 /**
  * Run LangChain-style agent with Matimo tools
@@ -111,7 +28,7 @@ function convertMatimoToolToLangChain(
 async function runLangChainAgent() {
   console.info('\n╔════════════════════════════════════════════════════════╗');
   console.info('║   Matimo + LangChain Agent (Official API)               ║');
-  console.info('║   Using createAgent() with tool() function              ║');
+  console.info('║   Using createAgent() with convertToolsToLangChain      ║');
   console.info('╚════════════════════════════════════════════════════════╝\n');
 
   try {
@@ -127,11 +44,9 @@ async function runLangChainAgent() {
       console.info(`    ${t.description}\n`);
     });
 
-    // Convert Matimo tools to LangChain tools
+    // ✅ Convert Matimo tools to LangChain tools using the new integration
     console.info('🔧 Converting Matimo tools to LangChain tools...\n');
-    const langchainTools = matimoTools.map((tool) =>
-      convertMatimoToolToLangChain(matimo, tool.name)
-    );
+    const langchainTools = await convertToolsToLangChain(matimoTools, matimo);
 
     // Create agent using official LangChain API
     console.info('🤖 Creating LangChain agent with createAgent()...\n');

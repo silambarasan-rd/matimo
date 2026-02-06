@@ -18,8 +18,8 @@ dependencies:
     specifier: ^1.2.16
     version: 1.2.16(@langchain/core@1.1.18)
   matimo:
-    specifier: ^0.1.0-alpha.3
-    version: 0.1.0-alpha.3(hono@4.11.7)
+    specifier: file:../..
+    version: file:../..(hono@4.11.7)
   zod:
     specifier: ^4.3.6
     version: 4.3.6
@@ -1021,23 +1021,6 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
-  /matimo@0.1.0-alpha.3(hono@4.11.7):
-    resolution: {integrity: sha512-NZfABXtJtI+KkNCwd3CnPN3qCXSx6TzuYyX5dYrEv59PBk1wJkNm7GxW4fAY0hhPqSZ61JpZhG9bVoI21LDqeg==}
-    engines: {node: '>=18.0.0', pnpm: '>=8.0.0'}
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.25.3(hono@4.11.7)(zod@4.3.6)
-      axios: 1.13.4
-      dotenv: 17.2.3
-      js-yaml: 4.1.1
-      yaml: 2.8.2
-      zod: 4.3.6
-    transitivePeerDependencies:
-      - '@cfworker/json-schema'
-      - debug
-      - hono
-      - supports-color
-    dev: false
-
   /media-typer@1.1.0:
     resolution: {integrity: sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw==}
     engines: {node: '>= 0.8'}
@@ -1435,4 +1418,23 @@ packages:
 
   /zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+    dev: false
+
+  file:../..(hono@4.11.7):
+    resolution: {directory: ../.., type: directory}
+    id: file:../..
+    name: matimo
+    engines: {node: '>=18.0.0', pnpm: '>=8.0.0'}
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.25.3(hono@4.11.7)(zod@4.3.6)
+      axios: 1.13.4
+      dotenv: 17.2.3
+      js-yaml: 4.1.1
+      yaml: 2.8.2
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - debug
+      - hono
+      - supports-color
     dev: false

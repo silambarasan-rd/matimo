@@ -14,6 +14,7 @@ export type {
   OutputSchema,
   RateLimitConfig,
   ErrorHandlingConfig,
+  ToolDefinition,
 } from './core/types';
 export { ParameterSchema, AuthConfigSchema, ExecutionConfigSchema } from './core/schema';
 export { ToolLoader } from './core/tool-loader';
@@ -57,3 +58,7 @@ export type {
 export type { ProviderDefinition } from './core/schema';
 export { OAuth2ProviderLoader } from './auth/oauth2-provider-loader';
 export { OAuth2Handler } from './auth/oauth2-handler';
+
+// LangChain integration
+export { convertToolsToLangChain } from './integrations/langchain';
+export type { LangChainTool } from './integrations/langchain';
