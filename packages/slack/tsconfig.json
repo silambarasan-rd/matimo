@@ -1,0 +1,10 @@
+{
+  "extends": "../../internal/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": [],
+  "exclude": ["node_modules", "test", "**/*.test.ts", "**/*.spec.ts"]
+}

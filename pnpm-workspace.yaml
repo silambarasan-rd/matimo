@@ -1,0 +1,6 @@
+packages:
+  - "packages/core"
+  - "packages/slack"
+  - "packages/gmail"
+  - "packages/cli"
+  - "examples/tools"
