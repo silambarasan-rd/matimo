@@ -3,7 +3,7 @@
  * Tests end-to-end execution using MatimoInstance (production-grade)
  */
 
-import { MatimoInstance } from 'matimo';
+import { MatimoInstance } from '../../../core/src/matimo-instance';
 import axios from 'axios';
 import path from 'path';
 
