@@ -1,13 +1,18 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src', '<rootDir>/test'],
+  roots: ['<rootDir>/packages'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
+  moduleNameMapper: {
+    '^matimo$': '<rootDir>/packages/core/src/index.ts',
+    // Map relative .js imports to .ts files for ESM compatibility (only local imports)
+    '^(\\.{1,2}/.*)\\.js$': '$1'
+  },
   collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/index.ts'
+    'packages/*/src/**/*.ts',
+    '!packages/*/src/**/*.d.ts',
+    '!packages/*/src/**/index.ts'
   ],
   coveragePathIgnorePatterns: [
     '/node_modules/',
@@ -16,10 +21,10 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70
+      branches: 85,
+      functions: 90,
+      lines: 90,
+      statements: 90
     }
   },
   testPathIgnorePatterns: [
