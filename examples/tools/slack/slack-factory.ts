@@ -107,10 +107,9 @@ async function runFactoryPatternExamples() {
   console.info(`🤖 Bot Token: ${botToken.slice(0, 10)}...`);
   console.info(`📍 Target Channel: ${channelId}\n`);
 
-  // Initialize Matimo
+  // Initialize Matimo with auto-discovery to find all @matimo/* packages
   console.info('🚀 Initializing Matimo...');
-  const toolsPath = path.resolve(__dirname, '../../../tools');
-  const matimo = await MatimoInstance.init(toolsPath);
+  const matimo = await MatimoInstance.init({ autoDiscover: true });
 
   const allTools = matimo.listTools();
   console.info(`✅ Loaded ${allTools.length} tools\n`);
@@ -127,15 +126,19 @@ async function runFactoryPatternExamples() {
   });
   const listData = (listResult as any).data || listResult;
   let activeChannel = channelId;
-  
+
   if (listData.ok === true && listData.channels && listData.channels.length > 0) {
     // Use first available channel if default is not found
     const defaultChannelExists = listData.channels.some((ch: any) => ch.id === channelId);
     if (!defaultChannelExists) {
       activeChannel = listData.channels[0].id;
-      console.info(`   Using first available channel: #${listData.channels[0].name} (${activeChannel})`);
+      console.info(
+        `   Using first available channel: #${listData.channels[0].name} (${activeChannel})`
+      );
     } else {
-      console.info(`   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})`);
+      console.info(
+        `   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})`
+      );
     }
   } else {
     console.info(`   ⚠️  Could not list channels, using default: ${channelId}`);
@@ -210,7 +213,6 @@ async function runFactoryPatternExamples() {
       console.info(`   ❌ Failed: ${historyData.error || 'Unknown error'}`);
       console.info(`      Response: ${JSON.stringify(historyData)}\n`);
     }
-
   } catch (error) {
     console.error('❌ Error:', error);
     process.exit(1);

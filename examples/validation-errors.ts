@@ -1,10 +1,10 @@
 /**
  * Example: Enhanced Zod Error Messages
- * 
+ *
  * This demonstrates the improved error handling with detailed validation messages
  */
 
-import { validateToolDefinition } from '../src/core/schema';
+import { validateToolDefinition } from '../packages/core/src/core/schema';
 
 // Example 1: Missing required field
 console.log('Example 1: Missing required field\n');
@@ -15,10 +15,10 @@ try {
     parameters: {},
     execution: {
       type: 'command',
-      command: 'echo test'
-    }
+      command: 'echo test',
+    },
   };
-  
+
   validateToolDefinition(invalidTool);
 } catch (error) {
   console.log('Error caught:');
@@ -34,16 +34,16 @@ try {
     version: '1.0.0',
     parameters: {
       myParam: {
-        type: 'string'
+        type: 'string',
         // Missing 'description' - required field
-      }
+      },
     },
     execution: {
       type: 'command',
-      command: 'echo test'
-    }
+      command: 'echo test',
+    },
   };
-  
+
   validateToolDefinition(invalidTool);
 } catch (error) {
   console.log('Error caught:');
@@ -59,10 +59,10 @@ try {
     version: '1.0.0',
     parameters: {},
     execution: {
-      type: 'invalid-type' // Not 'command' or 'http'
-    }
+      type: 'invalid-type', // Not 'command' or 'http'
+    },
   };
-  
+
   validateToolDefinition(invalidTool);
 } catch (error) {
   console.log('Error caught:');
@@ -81,24 +81,24 @@ try {
       operation: {
         type: 'string',
         description: 'The operation to perform',
-        enum: ['add', 'subtract', 'multiply', 'divide']
+        enum: ['add', 'subtract', 'multiply', 'divide'],
       },
       a: {
         type: 'number',
-        description: 'First number'
+        description: 'First number',
       },
       b: {
         type: 'number',
-        description: 'Second number'
-      }
+        description: 'Second number',
+      },
     },
     execution: {
       type: 'command',
       command: 'calculator',
-      args: ['--op', '{operation}', '{a}', '{b}']
-    }
+      args: ['--op', '{operation}', '{a}', '{b}'],
+    },
   };
-  
+
   const validated = validateToolDefinition(validTool);
   console.log('✓ Tool validated successfully');
   console.log('Tool name:', validated.name);

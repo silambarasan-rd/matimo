@@ -50,7 +50,7 @@ class SlackDecoratorPatternAgent {
     // Manually execute to avoid sending undefined parameters
     const result = await this.matimo.execute('slack-send-message', {
       channel,
-      text
+      text,
     });
     return result;
   }
@@ -121,10 +121,9 @@ async function runDecoratorPatternExamples() {
   console.info(`🤖 Slack Bot Token: ${botToken.substring(0, 10)}...\n`);
 
   try {
-    // Initialize Matimo
+    // Initialize Matimo with auto-discovery
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
     setGlobalMatimoInstance(matimo);
 
     const matimoTools = matimo.listTools();
@@ -142,9 +141,9 @@ async function runDecoratorPatternExamples() {
     console.info('─'.repeat(60));
     try {
       const listResult = await agent.listChannels('public_channel,private_channel', 100);
-      
+
       const listData = (listResult as any).data || listResult;
-      
+
       if (listData.ok === true && listData.channels && Array.isArray(listData.channels)) {
         const channels = listData.channels;
         console.info(`✅ Found ${channels.length} channels:`);
@@ -167,7 +166,7 @@ async function runDecoratorPatternExamples() {
             firstChannel.id,
             `👋 Hello from Matimo! Decorator pattern test at ${new Date().toISOString()}`
           );
-          
+
           const sendData = (sendResult as any).data || sendResult;
           if (sendData.ok === true) {
             console.info('✅ Message sent successfully!');
@@ -185,10 +184,16 @@ async function runDecoratorPatternExamples() {
         console.info('─'.repeat(60));
         try {
           const historyResult = await agent.getChannelHistory(firstChannel.id, 5);
-          
+
           const historyData = (historyResult as any).data || historyResult;
-          if (historyData.ok === true && historyData.messages && Array.isArray(historyData.messages)) {
-            console.info(`✅ Retrieved ${historyData.messages.length} messages from #${firstChannel.name}`);
+          if (
+            historyData.ok === true &&
+            historyData.messages &&
+            Array.isArray(historyData.messages)
+          ) {
+            console.info(
+              `✅ Retrieved ${historyData.messages.length} messages from #${firstChannel.name}`
+            );
             historyData.messages.slice(0, 3).forEach((msg: any, idx: number) => {
               console.info(`   ${idx + 1}. "${msg.text?.substring(0, 50)}..." (${msg.ts})`);
             });
@@ -207,7 +212,7 @@ async function runDecoratorPatternExamples() {
             firstChannel.id,
             '🎯 Matimo Testing Channel - Decorator Pattern Example'
           );
-          
+
           const topicData = (topicResult as any).data || topicResult;
           if (topicData.ok === true) {
             console.info('✅ Channel topic updated successfully!');

@@ -100,15 +100,13 @@ async function runSlackAIAgent() {
     process.exit(1);
   }
 
-  
   console.info(`📍 Target Channel: ${channelId}`);
   console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
 
   try {
-    // Initialize Matimo
+    // Initialize Matimo with auto-discovery
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     // Get Slack tools and convert to LangChain format
     console.info('💬 Loading Slack tools...');
@@ -122,17 +120,21 @@ async function runSlackAIAgent() {
       types: 'public_channel,private_channel',
       limit: 10,
     });
-    
+
     const listData = (listChannelsResult as any).data || listChannelsResult;
     let activeChannel = channelId;
-    
+
     if (listData.ok === true && listData.channels && listData.channels.length > 0) {
       const defaultChannelExists = listData.channels.some((ch: any) => ch.id === channelId);
       if (!defaultChannelExists) {
         activeChannel = listData.channels[0].id;
-        console.info(`   Using first available channel: #${listData.channels[0].name} (${activeChannel})\n`);
+        console.info(
+          `   Using first available channel: #${listData.channels[0].name} (${activeChannel})\n`
+        );
       } else {
-        console.info(`   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})\n`);
+        console.info(
+          `   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})\n`
+        );
       }
     } else {
       console.info(`   ⚠️  Could not list channels, using default: ${channelId}\n`);

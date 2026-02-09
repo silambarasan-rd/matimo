@@ -82,7 +82,7 @@ Extract the tool name and parameters, then respond with JSON.`;
         },
         {
           type: 'human',
-          content: `User request: ${prompt}\n\nAvailable tools: ${toolSchemas.map(t => `${t.function.name}: ${t.function.description}`).join(', ')}\n\nRespond with JSON: {"tool": "<tool_name>", "parameters": {...}}`,
+          content: `User request: ${prompt}\n\nAvailable tools: ${toolSchemas.map((t) => `${t.function.name}: ${t.function.description}`).join(', ')}\n\nRespond with JSON: {"tool": "<tool_name>", "parameters": {...}}`,
         },
       ];
 
@@ -95,7 +95,7 @@ Extract the tool name and parameters, then respond with JSON.`;
 
       // Try to extract tool call from response
       const content = response.content;
-      
+
       if (typeof content === 'string') {
         // Try to parse as JSON
         try {
@@ -122,7 +122,9 @@ Extract the tool name and parameters, then respond with JSON.`;
         await this.executeTool(toolName, toolParams);
       } else {
         console.log(`\n⚠️  No tool call detected in response`);
-        console.log(`Response: ${typeof content === 'string' ? content.substring(0, 200) : content}`);
+        console.log(
+          `Response: ${typeof content === 'string' ? content.substring(0, 200) : content}`
+        );
       }
     } catch (error) {
       console.error(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -143,7 +145,7 @@ Extract the tool name and parameters, then respond with JSON.`;
 
       // Normalize parameters based on tool
       let normalizedParams = params;
-      
+
       // Calculator: Handle "operands" array format by converting to a, b
       if (toolName === 'calculator' && params.operands && Array.isArray(params.operands)) {
         const [a, b] = params.operands as number[];
@@ -171,10 +173,12 @@ Extract the tool name and parameters, then respond with JSON.`;
           }
         } else if (resultData.data) {
           // HTTP response
-          console.log(`\n✅ Result (HTTP ${resultData.statusCode}):`, 
-            typeof resultData.data === 'string' 
-              ? resultData.data.substring(0, 200) 
-              : JSON.stringify(resultData.data).substring(0, 200));
+          console.log(
+            `\n✅ Result (HTTP ${resultData.statusCode}):`,
+            typeof resultData.data === 'string'
+              ? resultData.data.substring(0, 200)
+              : JSON.stringify(resultData.data).substring(0, 200)
+          );
         } else {
           console.log(`\n✅ Result:`, result);
         }
@@ -203,8 +207,7 @@ async function runFactoryPatternAgent() {
 
     // Initialize Matimo
     console.log('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     const matimoTools = matimo.listTools();
     console.log(`📦 Loaded ${matimoTools.length} tools:\n`);

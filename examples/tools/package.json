@@ -13,7 +13,7 @@
     "slack:factory": "tsx slack/slack-factory.ts",
     "slack:decorator": "tsx slack/slack-decorator.ts",
     "slack:langchain": "tsx slack/slack-langchain.ts",
-    "slack:test-all": "tsx slack/slack-all-tools-test.ts",
+
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -21,12 +21,15 @@
     "@langchain/core": "^1.1.18",
     "@langchain/openai": "^1.2.4",
     "langchain": "^1.2.16",
-    "matimo": "file:../..",
+    "matimo": "workspace:*",
+    "@matimo/slack": "workspace:*",
+    "@matimo/gmail": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.1.0",
+    "better-sqlite3": "^12.6.2",
     "typescript": "^5.9.3",
     "tsx": "^4.21.0"
   },
