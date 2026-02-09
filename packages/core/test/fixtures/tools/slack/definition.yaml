@@ -1,0 +1,23 @@
+name: slack-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  Slack OAuth2 Provider Configuration
+
+  All Slack tools use these endpoints for OAuth2 authentication.
+
+provider:
+  name: slack
+  displayName: Slack
+
+  endpoints:
+    authorizationUrl: https://slack.com/oauth/v2/authorize
+    tokenUrl: https://slack.com/api/oauth.v2.access
+
+  defaultScopes:
+    - chat:write
+    - channels:read
+    - users:read
+
+  documentation: https://api.slack.com/authentication/oauth-v2

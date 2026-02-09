@@ -1,0 +1,33 @@
+{
+  "name": "@matimo/slack",
+  "version": "0.1.0-alpha.4",
+  "description": "Slack workspace tools for Matimo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "tools",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "matimo": "^0.1.0-alpha.4"
+  },
+  "devDependencies": {
+    "matimo": "workspace:*"
+  },
+  "matimo": {
+    "provider": "slack",
+    "tools": [
+      "slack-send-message",
+      "slack-list-channels",
+      "slack-get-channel-info",
+      "slack-list-messages",
+      "slack-add-reaction",
+      "slack-get-user-info"
+    ],
+    "authentication": {
+      "type": "api_key",
+      "envVar": "SLACK_BOT_TOKEN"
+    }
+  }
+}

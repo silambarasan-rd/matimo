@@ -1,0 +1,32 @@
+{
+  "name": "@matimo/gmail",
+  "version": "0.1.0-alpha.4",
+  "description": "Gmail tools for Matimo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "tools",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "matimo": "^0.1.0-alpha.4"
+  },
+  "devDependencies": {
+    "matimo": "workspace:*"
+  },
+  "matimo": {
+    "provider": "gmail",
+    "tools": [
+      "gmail-send-email",
+      "gmail-list-messages",
+      "gmail-read-message",
+      "gmail-draft-email",
+      "gmail-search-messages"
+    ],
+    "authentication": {
+      "type": "oauth2",
+      "envVar": "GMAIL_ACCESS_TOKEN"
+    }
+  }
+}

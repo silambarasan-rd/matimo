@@ -1,0 +1,49 @@
+# Google OAuth2 Provider Definition
+#
+# This file defines the OAuth2 configuration for Google.
+# All Gmail tools reference this provider definition.
+#
+# Users can override these endpoints via:
+# 1. Runtime config (highest priority)
+# 2. Environment variables: OAUTH_GOOGLE_AUTH_URL, OAUTH_GOOGLE_TOKEN_URL, etc.
+# 3. This YAML definition (lowest priority)
+#
+# Pattern: Define once, use everywhere
+
+name: google-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  Google OAuth2 Provider Configuration
+
+  All Gmail tools and Google-dependent tools use these endpoints.
+
+  Setup:
+  1. Create Google Cloud project
+  2. Enable Gmail API
+  3. Create OAuth2 credentials (web application)
+  4. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables
+  5. Set GOOGLE_REDIRECT_URI to your callback URL
+
+provider:
+  name: google
+  displayName: Google
+
+  # OAuth2 Endpoints
+  # Standard Google OAuth2 endpoints - change only if using custom proxy
+  endpoints:
+    authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
+    tokenUrl: https://oauth2.googleapis.com/token
+    revokeUrl: https://oauth2.googleapis.com/revoke
+
+  # Standard scopes for Gmail access
+  # Tools can override with their own scopes
+  defaultScopes:
+    - https://www.googleapis.com/auth/gmail.readonly
+    - https://www.googleapis.com/auth/gmail.send
+    - https://www.googleapis.com/auth/gmail.compose
+
+  # Additional metadata
+  documentation: https://developers.google.com/gmail/api
+  learnMore: https://developers.google.com/oauthplayground

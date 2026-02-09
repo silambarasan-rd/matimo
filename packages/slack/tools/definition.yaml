@@ -1,0 +1,54 @@
+# Slack OAuth2 Provider Definition
+#
+# This file defines the OAuth2 configuration for Slack.
+# All Slack tools reference this provider definition.
+#
+# Users can override endpoints via environment variables or runtime config.
+
+name: slack-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  Slack OAuth2 Provider Configuration
+
+  All Slack tools use these endpoints for OAuth2 authentication.
+
+  Setup:
+  1. Go to Slack API: https://api.slack.com/apps
+  2. Create New App
+  3. Go to OAuth & Permissions
+  4. Set Redirect URLs to your callback URL
+  5. Copy Client ID and Client Secret
+  6. Set SLACK_CLIENT_ID and SLACK_CLIENT_SECRET environment variables
+  7. Set SLACK_REDIRECT_URI to your callback URL
+
+provider:
+  name: slack
+  displayName: Slack
+
+  # OAuth2 Endpoints
+  endpoints:
+    authorizationUrl: https://slack.com/oauth/v2/authorize
+    tokenUrl: https://slack.com/api/oauth.v2.access
+
+  # Standard scopes for Slack API access
+  # Tools can override with their own scopes
+  defaultScopes:
+    - chat:write
+    - channels:read
+    - users:read
+
+  # Additional metadata
+  documentation: https://api.slack.com/authentication/oauth-v2
+  learnMore: https://api.slack.com/apps
+
+  # UI assets and branding for frontends
+  assets:
+    icon: assets/icon.svg
+    logo: assets/logo.svg
+    logo_light: assets/logo-light.svg
+    logo_dark: assets/logo-dark.svg
+  brand_color: '#4A154B'
+  homepage: 'https://slack.com'
+  alt: 'Slack'

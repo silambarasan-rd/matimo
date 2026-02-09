@@ -1,0 +1,41 @@
+name: edge-case-tool
+version: '1.0.0'
+description: 'Tool with edge case values to test defensive code paths'
+
+parameters:
+  value1:
+    type: string
+    description: 'Value 1'
+    required: true
+  value2:
+    type: string
+    description: 'Value 2'
+    required: true
+
+execution:
+  type: http
+  method: POST
+  url: 'https://httpbin.org/post'
+  headers:
+    X-Custom: '{value1}'
+  body:
+    string_value: '{value1}'
+    number_value: 123
+    boolean_value: true
+    null_value: null
+    empty_object: {}
+    empty_array: []
+    nested_null:
+      value: null
+    deep_nesting:
+      level1:
+        level2:
+          level3:
+            level4:
+              level5:
+                value: '{value2}'
+
+output_schema:
+  type: object
+
+tags: [http, edge-case, test]

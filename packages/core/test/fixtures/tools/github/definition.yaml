@@ -1,0 +1,22 @@
+name: github-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  GitHub OAuth2 Provider Configuration
+
+  All GitHub tools use these endpoints for OAuth2 authentication.
+
+provider:
+  name: github
+  displayName: GitHub
+
+  endpoints:
+    authorizationUrl: https://github.com/login/oauth/authorize
+    tokenUrl: https://github.com/login/oauth/access_token
+
+  defaultScopes:
+    - user:email
+    - repo
+
+  documentation: https://docs.github.com/en/developers/apps/building-oauth-apps

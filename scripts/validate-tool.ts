@@ -7,13 +7,13 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'url';
-import { validateToolDefinition, validateProviderDefinition } from '../src/core/schema';
+import { validateToolDefinition, validateProviderDefinition } from '../packages/core/src/core/schema';
 
 // ESM compatibility
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const TOOLS_DIR = path.join(__dirname, '../tools');
+const PACKAGES_DIR = path.join(__dirname, '../packages');
 
 /**
  * Validate a single tool YAML file
@@ -45,13 +45,13 @@ function validateToolFile(filePath: string): boolean {
 }
 
 /**
- * Validate all tools in the tools directory
+ * Validate all tools in all packages
  */
 function validateTools(): void {
   console.log('Validating tools...\n');
 
-  if (!fs.existsSync(TOOLS_DIR)) {
-    console.log('Tools directory not found');
+  if (!fs.existsSync(PACKAGES_DIR)) {
+    console.log('Packages directory not found');
     process.exit(0);
   }
 
@@ -88,7 +88,18 @@ function validateTools(): void {
     });
   }
 
-  walkDirectory(TOOLS_DIR);
+  // Check tools in each package
+  const packageItems = fs.readdirSync(PACKAGES_DIR);
+  packageItems.forEach((packageName) => {
+    const packagePath = path.join(PACKAGES_DIR, packageName);
+    const stat = fs.statSync(packagePath);
+    if (stat.isDirectory()) {
+      const toolsPath = path.join(packagePath, 'tools');
+      if (fs.existsSync(toolsPath)) {
+        walkDirectory(toolsPath);
+      }
+    }
+  });
 
   console.log(`\nResults: ${valid} valid, ${invalid} invalid, ${skipped} skipped (no definition.yaml)`);
   process.exit(invalid > 0 ? 1 : 0);

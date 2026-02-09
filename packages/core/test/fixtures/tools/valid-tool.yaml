@@ -1,0 +1,22 @@
+name: valid-tool
+version: '1.0.0'
+description: 'A valid test tool for fixtures'
+
+parameters:
+  input:
+    type: string
+    description: 'Test input'
+    required: true
+
+execution:
+  type: command
+  command: 'echo'
+  args: ['{input}']
+
+output_schema:
+  type: object
+  properties:
+    output:
+      type: string
+
+tags: [test, fixture]
