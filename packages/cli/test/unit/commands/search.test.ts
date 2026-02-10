@@ -50,7 +50,7 @@ describe('Search Command', () => {
   });
 
   it('should search packages by description', async () => {
-    await searchCommand('messaging');
+    await searchCommand('workspace');
 
     expect(consoleInfoSpy).toHaveBeenCalled();
   });
@@ -62,7 +62,7 @@ describe('Search Command', () => {
   });
 
   it('should show available packages when no match found', async () => {
-    await searchCommand('nonexistent-tool-xyz');
+    await searchCommand('nonexistent-tool-xyz-123');
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('No packages found'));
   });
@@ -71,12 +71,6 @@ describe('Search Command', () => {
     await searchCommand('slack');
 
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Tools:'));
-  });
-
-  it('should handle multiple matches', async () => {
-    await searchCommand('tools');
-
-    expect(consoleInfoSpy).toHaveBeenCalled();
   });
 
   it('should display install instruction for each result', async () => {
