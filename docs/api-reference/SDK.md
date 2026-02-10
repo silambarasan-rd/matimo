@@ -113,12 +113,11 @@ try {
   });
   console.log('Result:', result); // { result: 15 }
 
-  // Execute with timeout
-  const slackResult = await matimo.execute(
-    'slack-send-message',
-    { channel: '#general', text: 'Hello' },
-    { timeout: 5000 }
-  );
+  // Execute another tool
+  const slackResult = await matimo.execute('slack-send-message', {
+    channel: '#general',
+    text: 'Hello',
+  });
   console.log('Message sent:', slackResult);
 } catch (error) {
   if (error instanceof MatimoError) {
