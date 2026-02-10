@@ -206,10 +206,10 @@ All examples use these tools (real implementations):
 ### Slack Tools
 - `slack-send-message` — Send channel messages
 - `slack-list-channels` — List all channels
-- `slack-get-channel-info` — Get channel details
-- `slack-list-messages` — List channel messages
-- `slack-add-reaction` — Add emoji reactions
-- `slack-get-user-info` — Get user profiles
+- `slack_get_channel_history` — Retrieve message history from a channel
+- `slack_add_reaction` — Add emoji reactions
+- `slack_get_user_info` — Get user profiles
+- `slack_send_dm` — Send direct messages
 
 ### Gmail Tools
 - `gmail-send-email` — Send emails
