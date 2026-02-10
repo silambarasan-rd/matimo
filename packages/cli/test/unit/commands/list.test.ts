@@ -10,19 +10,23 @@ const path = require('path');
 describe('List Command', () => {
   let consoleErrorSpy: jest.SpyInstance;
   let consoleInfoSpy: jest.SpyInstance;
+  let processExitSpy: jest.SpyInstance;
 
   beforeEach(() => {
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation();
+    processExitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit');
+    });
     jest.clearAllMocks();
 
-    // Setup default mocks - return true for any path with 'node_modules'
-    // This allows getNodeModulesPath() fallback to find the real node_modules
-    fs.existsSync.mockImplementation((dir: string) => {
-      return dir.includes('node_modules');
-    });
+    // Setup default mocks
+    // Mock fs.existsSync to return true for everything (so getNodeModulesPath finds one)
+    fs.existsSync.mockImplementation((_dir: string) => true);
+    fs.statSync.mockImplementation(() => ({ isDirectory: () => true }));
     fs.readdirSync.mockReturnValue([]);
     fs.readFileSync.mockReturnValue(JSON.stringify({}));
+    // Mock path methods for correct directory traversal
     path.join.mockImplementation((...args: string[]) => args.join('/'));
     path.dirname.mockImplementation((dir: string) => {
       const parts = dir.split('/');
@@ -34,6 +38,7 @@ describe('List Command', () => {
   afterEach(() => {
     consoleErrorSpy.mockRestore();
     consoleInfoSpy.mockRestore();
+    processExitSpy.mockRestore();
   });
 
   it('should show message when no tools installed', () => {

@@ -63,21 +63,26 @@ export async function listCommand(): Promise<void> {
 }
 
 function getNodeModulesPath(): string | null {
-  try {
-    const resolved = require.resolve('@matimo/slack/package.json');
-    return resolved.replace(/\/node_modules\/@matimo\/slack\/package\.json$/, '/node_modules');
-  } catch {
-    // Fallback
-    let currentPath = process.cwd();
-    for (let i = 0; i < 10; i++) {
-      const nodeModules = path.join(currentPath, 'node_modules');
-      if (fs.existsSync(nodeModules)) {
-        return nodeModules;
-      }
-      currentPath = path.dirname(currentPath);
+  // Walk up from current working directory to find node_modules
+  // This is the appropriate approach for a CLI tool
+  let currentPath = process.cwd();
+  const maxLevels = 20; // Prevent infinite loops
+
+  for (let i = 0; i < maxLevels; i++) {
+    const nodeModules = path.join(currentPath, 'node_modules');
+    if (fs.existsSync(nodeModules) && fs.statSync(nodeModules).isDirectory()) {
+      return nodeModules;
     }
-    return null;
+
+    const parent = path.dirname(currentPath);
+    if (parent === currentPath) {
+      // Reached filesystem root
+      break;
+    }
+    currentPath = parent;
   }
+
+  return null;
 }
 
 // Export for testing
