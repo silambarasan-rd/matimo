@@ -86,7 +86,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Calculator Tool Execution', () => {
-  let m: Awaited<ReturnType<typeof matimo.init>>;
+  let m: Awaited<ReturnType<typeof MatimoInstance.init>>;
 
   beforeAll(async () => {
     m = await MatimoInstance.init('./tools');
@@ -145,7 +145,7 @@ import { describe, it, expect } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Calculator Parameter Validation', () => {
-  let m: Awaited<ReturnType<typeof matimo.init>>;
+  let m: Awaited<ReturnType<typeof MatimoInstance.init>>;
 
   beforeAll(async () => {
     m = await MatimoInstance.init('./tools');
@@ -193,7 +193,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Gmail Tool Execution', () => {
-  let m: Awaited<ReturnType<typeof matimo.init>>;
+  let m: Awaited<ReturnType<typeof MatimoInstance.init>>;
 
   beforeAll(async () => {
     // Ensure GMAIL_ACCESS_TOKEN is set in environment
@@ -265,7 +265,7 @@ import { describe, it, expect } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Error Handling', () => {
-  let m: Awaited<ReturnType<typeof matimo.init>>;
+  let m: Awaited<ReturnType<typeof MatimoInstance.init>>;
 
   beforeAll(async () => {
     m = await MatimoInstance.init('./tools');
