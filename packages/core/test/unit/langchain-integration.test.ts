@@ -1186,4 +1186,192 @@ describe('convertToolsToLangChain', () => {
       });
     });
   });
+
+  describe('Enum constraints - 100% lines', () => {
+    it('should validate enum constraints for string parameters', async () => {
+      const tool: ToolDefinition = {
+        name: 'enum-tool',
+        version: '1.0.0',
+        description: 'Tool with enum parameter',
+        parameters: {
+          status: {
+            type: 'string',
+            required: true,
+            description: 'Status enum',
+            enum: ['active', 'inactive', 'pending'],
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ ok: true });
+      const langTools = await convertToolsToLangChain([tool], matimo);
+
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+      const statusSchema = schema.shape.status;
+
+      // Valid enum values should pass
+      expect(() => statusSchema.parse('active')).not.toThrow();
+      expect(() => statusSchema.parse('inactive')).not.toThrow();
+      expect(() => statusSchema.parse('pending')).not.toThrow();
+
+      // Invalid values should fail
+      expect(() => statusSchema.parse('invalid')).toThrow();
+    });
+
+    it('should validate enum constraints for number parameters', async () => {
+      const tool: ToolDefinition = {
+        name: 'number-enum-tool',
+        version: '1.0.0',
+        description: 'Tool with number enum',
+        parameters: {
+          level: {
+            type: 'number',
+            required: true,
+            description: 'Level enum',
+            enum: [1, 2, 3],
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ ok: true });
+      const langTools = await convertToolsToLangChain([tool], matimo);
+
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+      const levelSchema = schema.shape.level;
+
+      // Valid enum values should pass
+      expect(() => levelSchema.parse(1)).not.toThrow();
+      expect(() => levelSchema.parse(2)).not.toThrow();
+      expect(() => levelSchema.parse(3)).not.toThrow();
+
+      // Invalid values should fail
+      expect(() => levelSchema.parse(4)).toThrow();
+      expect(() => levelSchema.parse('1')).toThrow();
+    });
+
+    it('should prioritize enum over type validation', async () => {
+      const tool: ToolDefinition = {
+        name: 'enum-priority-tool',
+        version: '1.0.0',
+        description: 'Tool where enum takes priority',
+        parameters: {
+          mode: {
+            type: 'string',
+            required: true,
+            description: 'Mode with enum',
+            enum: ['read', 'write'],
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ ok: true });
+      const langTools = await convertToolsToLangChain([tool], matimo);
+
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+      const modeSchema = schema.shape.mode;
+
+      // Only enum values allowed
+      expect(() => modeSchema.parse('read')).not.toThrow();
+      expect(() => modeSchema.parse('write')).not.toThrow();
+      expect(() => modeSchema.parse('any-string')).toThrow();
+    });
+  });
+
+  describe('Default values - 100% lines', () => {
+    it('should apply default values to parameters', async () => {
+      const tool: ToolDefinition = {
+        name: 'default-tool',
+        version: '1.0.0',
+        description: 'Tool with default values',
+        parameters: {
+          timeout: {
+            type: 'number',
+            required: false,
+            description: 'Timeout in ms',
+            default: 5000,
+          },
+          format: {
+            type: 'string',
+            required: false,
+            description: 'Output format',
+            default: 'json',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ ok: true });
+      const langTools = await convertToolsToLangChain([tool], matimo);
+
+      // Invoke with no arguments - defaults should be applied
+      await langTools[0].invoke({});
+      expect(matimo.execute).toHaveBeenCalledWith('default-tool', {
+        timeout: 5000,
+        format: 'json',
+      });
+    });
+
+    it('should allow overriding default values', async () => {
+      const tool: ToolDefinition = {
+        name: 'override-default-tool',
+        version: '1.0.0',
+        description: 'Tool with overrideable defaults',
+        parameters: {
+          retries: {
+            type: 'number',
+            required: false,
+            description: 'Number of retries',
+            default: 3,
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ ok: true });
+      const langTools = await convertToolsToLangChain([tool], matimo);
+
+      // Override the default
+      await langTools[0].invoke({ retries: 5 });
+      expect(matimo.execute).toHaveBeenCalledWith('override-default-tool', {
+        retries: 5,
+      });
+    });
+
+    it('should combine enum and default values', async () => {
+      const tool: ToolDefinition = {
+        name: 'enum-default-tool',
+        version: '1.0.0',
+        description: 'Tool with both enum and default',
+        parameters: {
+          priority: {
+            type: 'string',
+            required: false,
+            description: 'Priority level',
+            enum: ['low', 'medium', 'high'],
+            default: 'medium',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ ok: true });
+      const langTools = await convertToolsToLangChain([tool], matimo);
+
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+      const prioritySchema = schema.shape.priority;
+
+      // Default value should apply
+      await langTools[0].invoke({});
+      expect(matimo.execute).toHaveBeenCalledWith('enum-default-tool', {
+        priority: 'medium',
+      });
+
+      // But enum validation still applies
+      expect(() => prioritySchema.parse('invalid')).toThrow();
+      expect(() => prioritySchema.parse('high')).not.toThrow();
+    });
+  });
 });

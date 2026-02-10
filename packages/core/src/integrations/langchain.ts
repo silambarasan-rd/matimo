@@ -63,43 +63,62 @@ async function getLangChainTool(): Promise<
 
 /**
  * Convert parameter to Zod schema
+ *
+ * Supports:
+ * - enum constraints (if present, validates against allowed values)
+ * - default values (sets default in schema)
+ * - type validation (string, number, boolean, array, object)
+ * - description and required metadata
  */
 function parameterToZod(param: Parameter): z.ZodType<unknown> {
   let schema: z.ZodType<unknown>;
 
-  switch (param.type) {
-    case 'string':
-      schema = z.string();
-      break;
-    case 'number':
-      schema = z.number();
-      break;
-    case 'boolean':
-      schema = z.boolean();
-      break;
-    case 'array': {
-      const itemSchema = param.items ? parameterToZod(param.items) : z.unknown();
-      schema = z.array(itemSchema);
-      break;
-    }
-    case 'object': {
-      if (param.properties) {
-        const props: Record<string, z.ZodType<unknown>> = {};
-        for (const [key, prop] of Object.entries(param.properties)) {
-          props[key] = parameterToZod(prop);
-        }
-        schema = z.object(props);
-      } else {
-        schema = z.record(z.string(), z.unknown());
+  // If enum is present, validate against allowed values
+  if (param.enum && param.enum.length > 0) {
+    // Create enum schema from allowed values using z.union for mixed types
+    const enumSchemas = param.enum.map((value) => z.literal(value));
+    // Build union from array of literal schemas (type-safe via unknown cast)
+    schema = z.union(enumSchemas as unknown as [z.ZodTypeAny, ...z.ZodTypeAny[]]);
+  } else {
+    switch (param.type) {
+      case 'string':
+        schema = z.string();
+        break;
+      case 'number':
+        schema = z.number();
+        break;
+      case 'boolean':
+        schema = z.boolean();
+        break;
+      case 'array': {
+        const itemSchema = param.items ? parameterToZod(param.items) : z.unknown();
+        schema = z.array(itemSchema);
+        break;
       }
-      break;
+      case 'object': {
+        if (param.properties) {
+          const props: Record<string, z.ZodType<unknown>> = {};
+          for (const [key, prop] of Object.entries(param.properties)) {
+            props[key] = parameterToZod(prop);
+          }
+          schema = z.object(props);
+        } else {
+          schema = z.record(z.string(), z.unknown());
+        }
+        break;
+      }
+      default:
+        schema = z.unknown();
     }
-    default:
-      schema = z.unknown();
   }
 
   if (param.description) {
     schema = schema.describe(param.description);
+  }
+
+  // Apply default value if present
+  if (param.default !== undefined) {
+    schema = schema.default(param.default);
   }
 
   if (!param.required) {
