@@ -2,12 +2,11 @@
   "name": "@matimo/gmail",
   "version": "0.1.0-alpha.4",
   "description": "Gmail tools for Matimo",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "type": "module",
   "files": [
     "tools",
-    "README.md"
+    "README.md",
+    "definition.yaml"
   ],
   "peerDependencies": {
     "matimo": "^0.1.0-alpha.4"
@@ -15,19 +14,5 @@
   "devDependencies": {
     "@matimo/core": "workspace:*",
     "axios": "^1.13.4"
-  },
-  "matimo": {
-    "provider": "gmail",
-    "tools": [
-      "gmail-send-email",
-      "gmail-list-messages",
-      "gmail-get-message",
-      "gmail-create-draft",
-      "gmail-delete-message"
-    ],
-    "authentication": {
-      "type": "oauth2",
-      "envVar": "GMAIL_ACCESS_TOKEN"
-    }
   }
 }

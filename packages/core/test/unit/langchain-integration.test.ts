@@ -1,6 +1,7 @@
 import { convertToolsToLangChain } from '../../src/integrations/langchain';
 import { ToolDefinition, Parameter } from '../../src/core/types';
 import { MatimoInstance } from '../../src/matimo-instance';
+import { z } from 'zod';
 
 /**
  * LangChain Integration Tests - Complete Coverage
@@ -944,10 +945,12 @@ describe('convertToolsToLangChain', () => {
       };
 
       matimo.execute = jest.fn().mockResolvedValue({ success: true });
-      const langTools = await convertToolsToLangChain([tool], matimo, { slack_bot_token: 'secret123' });
+      const langTools = await convertToolsToLangChain([tool], matimo, {
+        slack_bot_token: 'secret123',
+      });
 
       // slack_bot_token should not be in schema (auto-detected as secret)
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('slack_bot_token');
       expect(schema.shape).toHaveProperty('channel');
 
@@ -983,7 +986,7 @@ describe('convertToolsToLangChain', () => {
       const langTools = await convertToolsToLangChain([tool], matimo, { api_key: 'key789' });
 
       // api_key should not be in schema (auto-detected as secret)
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('api_key');
       expect(schema.shape).toHaveProperty('endpoint');
 
@@ -1019,7 +1022,7 @@ describe('convertToolsToLangChain', () => {
       const langTools = await convertToolsToLangChain([tool], matimo, { api_secret: 'mysecret' });
 
       // api_secret should not be in schema (auto-detected as secret)
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('api_secret');
       expect(schema.shape).toHaveProperty('query');
     });
@@ -1048,7 +1051,7 @@ describe('convertToolsToLangChain', () => {
       const langTools = await convertToolsToLangChain([tool], matimo, { db_password: 'pass123' });
 
       // db_password should not be in schema (auto-detected as secret)
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('db_password');
       expect(schema.shape).toHaveProperty('username');
     });
@@ -1085,7 +1088,7 @@ describe('convertToolsToLangChain', () => {
       });
 
       // Both should be auto-detected as secrets despite case differences
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('ApiKey');
       expect(schema.shape).not.toHaveProperty('PASSWORD');
       expect(schema.shape).toHaveProperty('normalParam');
@@ -1134,7 +1137,7 @@ describe('convertToolsToLangChain', () => {
         new Set(['custom_secret']) // Explicit declaration
       );
 
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('api_key'); // Auto-detected
       expect(schema.shape).not.toHaveProperty('custom_secret'); // Explicitly declared
       expect(schema.shape).toHaveProperty('normal_param');
@@ -1171,7 +1174,7 @@ describe('convertToolsToLangChain', () => {
       const langTools = await convertToolsToLangChain([tool], matimo, {}); // No secrets provided
 
       // api_key is auto-detected as secret but not in schema
-      const schema = langTools[0].schema as any;
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
       expect(schema.shape).not.toHaveProperty('api_key');
       expect(schema.shape).toHaveProperty('data');
 
