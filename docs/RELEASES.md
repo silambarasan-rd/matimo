@@ -1,3 +1,23 @@
+## v0.1.0-alpha.4
+
+> Packaging restructure, Matimo CLI, independent tools package publishing, and docs
+
+**Released**: February 10, 2026
+
+## What's New
+
+- **Monorepo packaging**: repository updated to a workspace layout. Core packages are split under `packages/` and publishable as separate npm packages.
+- **Matimo CLI**: cli operations for list, search, install, help within Matimo eco-system. 
+- **CI publish update**: GitHub Actions updated to publish workspace packages via `pnpm -r publish` so non-private workspace packages are released together.
+- **Tools packages**: Tool YAML and assets live under `package/<provider-name>` folders and are published as separate npm packages with in `@matimo/<provider-name>`
+- **Examples & docs**: Updated examples and docs to reflect packaging changes and improved quick-start guidance.
+- **Build & test fixes**: Ensured `pnpm build` and `pnpm test` run across workspace packages.
+
+## Notes
+- The release workflow now publishes all non-private workspace packages (filterable if needed).
+
+
+
 # v0.1.0-alpha.3
 
 > Slack integration suite, standardized error handling, improved test coverage, and comprehensive documentation
