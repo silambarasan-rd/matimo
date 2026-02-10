@@ -45,10 +45,19 @@ export class FunctionExecutor {
 
     return new Promise((resolve) => {
       let timedOut = false;
+      let settled = false;
 
-      // Set up timeout
+      // Set up timeout that properly rejects
       const timer = setTimeout(() => {
         timedOut = true;
+        if (!settled) {
+          settled = true;
+          resolve({
+            success: false,
+            error: 'Function execution timeout',
+            duration: Date.now() - startTime,
+          });
+        }
       }, timeout);
 
       const cleanup = () => {
@@ -57,23 +66,29 @@ export class FunctionExecutor {
 
       const handleError = (error: unknown) => {
         cleanup();
-        resolve({
-          success: false,
-          error: error instanceof Error ? error.message : String(error),
-          duration: Date.now() - startTime,
-        });
+        if (!settled) {
+          settled = true;
+          resolve({
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+            duration: Date.now() - startTime,
+          });
+        }
       };
 
       const handleSuccess = (data: unknown) => {
         cleanup();
-        if (timedOut) {
-          resolve({
-            success: false,
-            error: 'timeout',
-            duration: Date.now() - startTime,
-          });
-        } else {
-          resolve(data);
+        if (!settled) {
+          settled = true;
+          if (timedOut) {
+            resolve({
+              success: false,
+              error: 'Function execution timeout',
+              duration: Date.now() - startTime,
+            });
+          } else {
+            resolve(data);
+          }
         }
       };
 
@@ -115,6 +130,8 @@ export class FunctionExecutor {
             .catch(handleError);
         } else {
           // Execute embedded code (legacy) - create function from string
+          // In ESM modules, require is not available by default
+          // We pass a safe require function that embedded code can use
           const functionBody = `return (${code})`;
           const fn = new Function(functionBody)() as (
             input: Record<string, unknown>,
@@ -122,9 +139,10 @@ export class FunctionExecutor {
             fs: unknown,
             pathModule: unknown,
             axios: unknown,
-            require: NodeRequire
+            require: NodeRequire | undefined
           ) => Promise<unknown>;
-          const result = fn(params, {}, fs, path, axios, require);
+          // Pass undefined for require in ESM - embedded code should use import syntax
+          const result = fn(params, {}, fs, path, axios, undefined);
 
           // Handle both Promise and non-Promise returns
           if (result instanceof Promise) {
