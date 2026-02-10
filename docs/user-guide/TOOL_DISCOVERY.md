@@ -12,7 +12,7 @@ Matimo automatically discovers tools from installed packages in `node_modules`. 
 import { MatimoInstance } from 'matimo';
 
 // Auto-discovery: scans node_modules for @matimo/* packages
-const m = await MatimoInstance.init('./tools');
+const m = await MatimoInstance.init({ autoDiscover: true });
 
 // All tools from installed providers are now available
 const allTools = m.listTools();
@@ -36,7 +36,7 @@ Tools are automatically discovered from these providers:
 // @matimo/gmail      → gmail-send-email, gmail-list-messages, etc.
 // @matimo/github     → github-create-issue, github-list-repos, etc.
 
-const m = await MatimoInstance.init('./tools');
+const m = await MatimoInstance.init({ autoDiscover: true });
 const allTools = m.listTools();
 
 allTools.forEach((tool) => {
@@ -69,14 +69,14 @@ Restart your Matimo instance to pick up newly installed providers:
 
 ```typescript
 // Before: only some tools loaded
-const m1 = await MatimoInstance.init('./tools');
+const m1 = await MatimoInstance.init({ autoDiscover: true });
 console.log(m1.listTools().length); // e.g., 12 tools
 
 // After installing @matimo/github:
 // Restart your app/service
 
 // Now: GitHub tools are included
-const m2 = await MatimoInstance.init('./tools');
+const m2 = await MatimoInstance.init({ autoDiscover: true });
 console.log(m2.listTools().length); // e.g., 18 tools (12 + 6 GitHub tools)
 ```
 
@@ -86,7 +86,10 @@ Auto-discovery also loads tools from the local `./tools` directory if provided:
 
 ```typescript
 // Load from both node_modules (auto-discovery) AND local ./tools directory
-const m = await MatimoInstance.init('./tools');
+const m = await MatimoInstance.init({ 
+  autoDiscover: true, 
+  toolPaths: ['./tools'] 
+});
 
 // Includes:
 // 1. All @matimo/* provider packages from node_modules
@@ -115,7 +118,10 @@ project/
 ```typescript
 import { MatimoInstance } from 'matimo';
 
-const m = await MatimoInstance.init('./tools');
+const m = await MatimoInstance.init({ 
+  autoDiscover: true, 
+  toolPaths: ['./tools'] 
+});
 
 // List all loaded tools
 const allTools = m.listTools();
