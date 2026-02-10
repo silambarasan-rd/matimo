@@ -20,9 +20,9 @@
     "tools": [
       "gmail-send-email",
       "gmail-list-messages",
-      "gmail-read-message",
-      "gmail-draft-email",
-      "gmail-search-messages"
+      "gmail-get-message",
+      "gmail-create-draft",
+      "gmail-delete-message"
     ],
     "authentication": {
       "type": "oauth2",

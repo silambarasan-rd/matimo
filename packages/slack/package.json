@@ -20,10 +20,20 @@
     "tools": [
       "slack-send-message",
       "slack-list-channels",
-      "slack-get-channel-info",
-      "slack-list-messages",
-      "slack-add-reaction",
-      "slack-get-user-info"
+      "slack-get-user",
+      "slack_add_reaction",
+      "slack_create_channel",
+      "slack_get_channel_history",
+      "slack_get_reactions",
+      "slack_get_thread_replies",
+      "slack_get_user_info",
+      "slack_join_channel",
+      "slack_reply_to_message",
+      "slack_search_messages",
+      "slack_send_channel_message",
+      "slack_send_dm",
+      "slack_set_channel_topic",
+      "slack_upload_file"
     ],
     "authentication": {
       "type": "api_key",
