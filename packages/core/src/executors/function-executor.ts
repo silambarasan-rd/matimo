@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'node:url';
 import axios from 'axios';
 import { ToolDefinition } from '../core/schema';
 import { MatimoError, ErrorCode } from '../errors/matimo-error';
@@ -110,9 +111,9 @@ export class FunctionExecutor {
           }
 
           const absolutePath = path.resolve(toolDir, code);
-          const fileUrl = new URL(`file://${absolutePath}`).href;
+          const fileUrl = pathToFileURL(absolutePath).href;
 
-          // Use dynamic import() for ESM/TypeScript compatibility
+          // Use dynamic import() for ESM/TypeScript compatibility with robust URL handling
           import(fileUrl)
             .then((module) => {
               const fn = (module.default || module) as (
