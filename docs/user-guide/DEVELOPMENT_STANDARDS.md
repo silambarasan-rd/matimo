@@ -446,7 +446,6 @@ const validated = paramSchema.parse(params);
 
 // ❌ DON'T: Trust user input
 const command = `git clone ${userUrl}`;  // Dangerous!
-````
 
 ### Secret Management
 
