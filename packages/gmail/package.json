@@ -13,7 +13,8 @@
     "matimo": "^0.1.0-alpha.4"
   },
   "devDependencies": {
-    "matimo": "workspace:*"
+    "@matimo/core": "workspace:*",
+    "axios": "^1.13.4"
   },
   "matimo": {
     "provider": "gmail",
