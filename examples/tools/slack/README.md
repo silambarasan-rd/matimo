@@ -222,7 +222,7 @@ All patterns have access to these 19 Slack tools:
 - `slack_get_user_info` - User details
 - `slack-get-user` - User alias
 
-See [packages/slack/tools/README.md](../../packages/slack/tools/README.md) for complete reference.
+See [packages/slack/tools/README.md](../../../packages/slack/tools/README.md) for complete reference.
 
 ## 🔧 Customization
 
