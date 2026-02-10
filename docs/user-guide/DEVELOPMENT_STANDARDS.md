@@ -102,10 +102,10 @@ class ToolLoader {}
 
 ```typescript
 // kebab-case for files
-tool - loader.ts;
-command - executor.ts;
-error - codes.ts;
-matimo - error.ts;
+tool-loader.ts
+command-executor.ts
+error-codes.ts
+matimo-error.ts
 
 // Descriptive names
 // ✓ command-executor.ts
