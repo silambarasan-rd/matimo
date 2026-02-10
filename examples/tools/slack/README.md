@@ -277,7 +277,7 @@ pnpm slack:test-all
 ## 📖 Full Documentation
 
 - **[Comprehensive Guide](README-COMPREHENSIVE.md)** - Detailed guide with all examples
-- **[Tool Reference](../../packages/slack/tools/README.md)** - All 19 tools documented
+- **[Tool Reference](../../../packages/slack/tools/README.md)** - All 19 tools documented
 - **[Slack API Docs](https://docs.slack.dev/)** - Official Slack reference
 
 ## ✅ What's Working
