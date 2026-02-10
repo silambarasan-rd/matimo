@@ -22,7 +22,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 class DecoratorPatternAgent {
   private llm: ChatOpenAI;
 
-  constructor(private matimo: MatimoInstance, llm: ChatOpenAI) {
+  constructor(
+    private matimo: MatimoInstance,
+    llm: ChatOpenAI
+  ) {
     this.llm = llm;
   }
 
@@ -105,19 +108,21 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
       const toolSchemas = this.getToolSchemas();
 
       // Build detailed tool specifications for the prompt
-      const toolSpecifications = toolSchemas.map(t => {
-        const paramSpecs = Object.entries(t.function.parameters.properties)
-          .map(([paramName, prop]: [string, any]) => {
-            let spec = `${paramName} (${prop.type})`;
-            if (prop.enum) {
-              spec += ` - valid values: [${prop.enum.join(', ')}]`;
-            }
-            spec += ` - ${prop.description}`;
-            return spec;
-          })
-          .join('; ');
-        return `${t.function.name}: ${t.function.description}\n    Parameters: ${paramSpecs}`;
-      }).join('\n\n');
+      const toolSpecifications = toolSchemas
+        .map((t) => {
+          const paramSpecs = Object.entries(t.function.parameters.properties)
+            .map(([paramName, prop]: [string, any]) => {
+              let spec = `${paramName} (${prop.type})`;
+              if (prop.enum) {
+                spec += ` - valid values: [${prop.enum.join(', ')}]`;
+              }
+              spec += ` - ${prop.description}`;
+              return spec;
+            })
+            .join('; ');
+          return `${t.function.name}: ${t.function.description}\n    Parameters: ${paramSpecs}`;
+        })
+        .join('\n\n');
 
       // Create a message with proper formatting for function calling
       const messages = [
@@ -140,7 +145,7 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
 
       // Try to extract tool call from response
       const content = response.content;
-      
+
       if (typeof content === 'string') {
         // Try to parse as JSON
         try {
@@ -167,7 +172,9 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
         await this.executeTool(toolName, toolParams);
       } else {
         console.info(`\n⚠️  No tool call detected in response`);
-        console.info(`Response: ${typeof content === 'string' ? content.substring(0, 200) : content}`);
+        console.info(
+          `Response: ${typeof content === 'string' ? content.substring(0, 200) : content}`
+        );
       }
     } catch (error) {
       console.error(`\n❌ Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -180,10 +187,12 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
    */
   private getToolMethodMap(): Map<string, string> {
     const toolMap = new Map<string, string>();
-    
+
     // Get all methods decorated with @tool
     // The decorator stores tool name in a metadata property
-    for (const [methodName, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(this)))) {
+    for (const [methodName, descriptor] of Object.entries(
+      Object.getOwnPropertyDescriptors(Object.getPrototypeOf(this))
+    )) {
       if (typeof descriptor.value === 'function') {
         // Check if method has tool metadata (added by decorator)
         const method = descriptor.value as any;
@@ -192,13 +201,13 @@ Respond ONLY with valid JSON in this format: {"tool": "<tool_name>", "parameters
         }
       }
     }
-    
+
     // Manual mapping as fallback (decorators should set __toolName)
     // This ensures we catch all @tool decorated methods
     toolMap.set('calculator', 'calculate');
     toolMap.set('echo-tool', 'echo');
     toolMap.set('http-client', 'fetch');
-    
+
     return toolMap;
   }
 
@@ -308,10 +317,9 @@ async function runDecoratorPatternAgent() {
       process.exit(1);
     }
 
-    // Initialize Matimo
+    // Initialize Matimo with auto-discovery
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     // Set global Matimo instance for @tool decorators
     setGlobalMatimoInstance(matimo);

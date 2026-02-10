@@ -1,0 +1,23 @@
+name: google-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  Google OAuth2 Provider Configuration
+
+  All Google/Gmail tools use these endpoints for OAuth2 authentication.
+
+provider:
+  name: google
+  displayName: Google
+
+  endpoints:
+    authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
+    tokenUrl: https://oauth2.googleapis.com/token
+    revokeUrl: https://oauth2.googleapis.com/revoke
+
+  defaultScopes:
+    - https://www.googleapis.com/auth/gmail.send
+    - https://www.googleapis.com/auth/gmail.readonly
+
+  documentation: https://developers.google.com/identity/protocols/oauth2

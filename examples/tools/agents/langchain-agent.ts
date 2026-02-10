@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 /**
- * Matimo + LangChain Agent - Using Native LangChain Tool Integration
+ * Matimo + LangChain Agent - Proper ReAct Agent Pattern
  *
- * This agent converts Matimo tools to LangChain StructuredTools and uses
- * LangChain's tool calling capability for automatic tool selection.
+ * This demonstrates a complete agent loop:
+ * 1. LLM decides which tool to use based on goal
+ * 2. Tool is executed via Matimo
+ * 3. Result is fed back to LLM
+ * 4. Process repeats until agent reaches conclusion
  *
  * Key advantages:
- * - No manual schema extraction/duplication
- * - LangChain handles tool schema generation and validation
- * - Clean conversion from Matimo → LangChain tools
+ * - Shows real agent reasoning loop
  * - Single source of truth (Matimo YAML definitions)
+ * - How to integrate Matimo with any LangChain setup
+ * - Demonstrates tool selection and execution
  *
  * Run: npm run agent:langchain
  */
@@ -17,108 +20,25 @@
 import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { createAgent, tool } from 'langchain';
-import { z } from 'zod';
-import { MatimoInstance } from 'matimo';
+import { ChatOpenAI } from '@langchain/openai';
+import { BaseMessage, HumanMessage, ToolMessage } from '@langchain/core/messages';
+import { MatimoInstance, convertToolsToLangChain, ToolDefinition } from 'matimo';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Convert a Matimo tool to a LangChain tool using the tool() function
- */
-function convertMatimoToolToLangChain(
-  matimo: MatimoInstance,
-  toolName: string
-) {
-  const matimoTool = matimo.getTool(toolName);
-  if (!matimoTool) {
-    throw new Error(`Tool not found: ${toolName}`);
-  }
-
-  // Build Zod schema from Matimo parameters
-  const schemaShape: any = {};
-
-  if (matimoTool.parameters) {
-    Object.entries(matimoTool.parameters).forEach(([paramName, param]) => {
-      let fieldSchema: any;
-
-      // Map Matimo types to Zod types
-      const paramType = param.type as string;
-      switch (paramType) {
-        case 'string':
-          fieldSchema = z.string();
-          break;
-        case 'number':
-          fieldSchema = z.number();
-          break;
-        case 'integer':
-          fieldSchema = z.number().int();
-          break;
-        case 'boolean':
-          fieldSchema = z.boolean();
-          break;
-        case 'array':
-          fieldSchema = z.array(z.unknown());
-          break;
-        default:
-          fieldSchema = z.unknown();
-      }
-
-      // Add description if available
-      if (param.description) {
-        fieldSchema = fieldSchema.describe(param.description);
-      }
-
-      // Make required/optional based on schema
-      if (!param.required) {
-        fieldSchema = fieldSchema.optional();
-      }
-
-      schemaShape[paramName] = fieldSchema;
-    });
-  }
-
-  const zodSchema = z.object(schemaShape);
-
-  // Create LangChain tool using the tool() function
-  return tool(
-    async (input: Record<string, unknown>) => {
-      try {
-        console.info(`\n  🔌 [MATIMO] Executing tool via Matimo SDK: ${toolName}`);
-        console.info(`  📥 [MATIMO] Input parameters: ${JSON.stringify(input)}`);
-        
-        const result = await matimo.execute(toolName, input);
-        
-        console.info(`  ✅ [MATIMO] Execution successful`);
-        return JSON.stringify(result, null, 2);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.info(`  ❌ [MATIMO] Execution failed: ${errorMsg}`);
-        return JSON.stringify({ error: errorMsg, success: false }, null, 2);
-      }
-    },
-    {
-      name: matimoTool.name,
-      description: matimoTool.description,
-      schema: zodSchema,
-    }
-  );
-}
-
-/**
- * Run LangChain-style agent with Matimo tools
+ * Run LangChain ReAct Agent with Matimo Tools
  */
 async function runLangChainAgent() {
   console.info('\n╔════════════════════════════════════════════════════════╗');
-  console.info('║   Matimo + LangChain Agent (Official API)               ║');
-  console.info('║   Using createAgent() with tool() function              ║');
+  console.info('║   Matimo + LangChain Agent (ReAct Pattern)              ║');
+  console.info('║   Demonstrates real agent reasoning loop                ║');
   console.info('╚════════════════════════════════════════════════════════╝\n');
 
   try {
     // Initialize Matimo
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     const matimoTools = matimo.listTools();
     console.info(`📦 Loaded ${matimoTools.length} tools:\n`);
@@ -127,61 +47,95 @@ async function runLangChainAgent() {
       console.info(`    ${t.description}\n`);
     });
 
-    // Convert Matimo tools to LangChain tools
-    console.info('🔧 Converting Matimo tools to LangChain tools...\n');
-    const langchainTools = matimoTools.map((tool) =>
-      convertMatimoToolToLangChain(matimo, tool.name)
-    );
+    // ✅ Convert Matimo tools to LangChain tools
+    console.info('🔧 Converting Matimo tools to LangChain format...\n');
+    const langchainTools = await convertToolsToLangChain(matimoTools as ToolDefinition[], matimo);
 
-    // Create agent using official LangChain API
-    console.info('🤖 Creating LangChain agent with createAgent()...\n');
-    const agent = await createAgent({
+    console.info(`✅ Successfully converted ${langchainTools.length} tools!\n`);
+
+    // 🤖 Create GPT-4o-mini LLM with tool binding
+    console.info('🧠 Creating GPT-4o-mini LLM with tool binding...\n');
+    const llm = new ChatOpenAI({
       model: 'gpt-4o-mini',
-      tools: langchainTools,
+      temperature: 0,
     });
 
-    // Test prompts
-    const prompts = [
-      '🧮 What is 42 plus 8?',
-      '🔊 Echo the message: "LangChain integration works perfectly!"',
-      '🌐 Fetch the GitHub user profile for octocat',
-    ];
+    const llmWithTools = llm.bindTools(langchainTools as any);
 
-    console.info('🧪 Testing LangChain Agent with Tool Calling\n');
+    // 🎯 Agent Loop - ReAct Pattern
+    console.info('🧪 Starting Agent Loop (ReAct Pattern)\n');
     console.info('═'.repeat(60));
 
-    for (const userPrompt of prompts) {
-      console.info(`\n❓ User: "${userPrompt}"\n`);
+    const userQuery = 'What is 42 plus 58?';
+    console.info(`\n❓ User Query: "${userQuery}"\n`);
 
-      try {
-        // Invoke the agent with the user message
-        const result = await agent.invoke({
-          messages: [
-            {
-              role: 'user',
-              content: userPrompt,
-            },
-          ],
-        });
+    const messages: BaseMessage[] = [new HumanMessage(userQuery)];
 
-        // Display the agent's final response
-        const lastMessage = result.messages[result.messages.length - 1];
-        if (lastMessage) {
-          if (typeof lastMessage.content === 'string') {
-            console.info(`✅ Agent Response:\n${lastMessage.content}`);
-          } else {
-            console.info(`✅ Agent Response:`, lastMessage.content);
+    let iterationCount = 0;
+    const maxIterations = 10;
+    let continueLoop = true;
+
+    while (continueLoop && iterationCount < maxIterations) {
+      iterationCount++;
+      console.info(`\n[Iteration ${iterationCount}]`);
+      console.info('─'.repeat(60));
+
+      // Step 1: Call LLM with tools
+      console.info('🤔 LLM Thinking...');
+      const response = await llmWithTools.invoke(messages);
+      console.info(`LLM Response Content: ${response.content || '(no text content)'}`);
+
+      // Step 2: Check if LLM wants to use tools
+      if (response.tool_calls && response.tool_calls.length > 0) {
+        // Add assistant message to conversation
+        messages.push(response);
+
+        // Step 3: Execute each tool call
+        for (const toolCall of response.tool_calls) {
+          console.info(`\n🔧 Executing Tool: ${toolCall.name}`);
+          console.info(`   Input: ${JSON.stringify(toolCall.args)}`);
+
+          try {
+            // Execute via Matimo
+            const result = await matimo.execute(toolCall.name, toolCall.args);
+            console.info(`   ✅ Result: ${JSON.stringify(result)}`);
+
+            // Add tool result to conversation
+            messages.push(
+              new ToolMessage({
+                tool_call_id: toolCall.id,
+                content: JSON.stringify(result),
+                name: toolCall.name,
+              })
+            );
+          } catch (toolError) {
+            const msg = toolError instanceof Error ? toolError.message : String(toolError);
+            console.info(`   ❌ Error: ${msg}`);
+
+            // Add error to conversation
+            messages.push(
+              new ToolMessage({
+                tool_call_id: toolCall.id,
+                content: `Error: ${msg}`,
+                name: toolCall.name,
+              })
+            );
           }
         }
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.error(`❌ Error: ${errorMsg}`);
+      } else {
+        // Step 4: No more tools - agent reached conclusion
+        console.info('\n✅ Agent Reached Conclusion');
+        console.info(`\n📝 Final Response:\n${response.content || '(no response)'}`);
+        continueLoop = false;
       }
-
-      console.info('\n' + '─'.repeat(60));
     }
 
-    console.info('\n✅ LangChain agent test complete!\n');
+    if (iterationCount >= maxIterations) {
+      console.info('\n⚠️  Max iterations reached');
+    }
+
+    console.info('\n' + '═'.repeat(60));
+    console.info(`\n✨ Agent Loop Complete (${iterationCount} iterations)\n`);
   } catch (error) {
     console.error('❌ Agent failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);

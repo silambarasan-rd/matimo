@@ -42,9 +42,9 @@ const { MatimoInstance } = require('matimo');
 const matimo = await MatimoInstance.init('./node_modules/matimo/tools');
 
 // Execute built-in Slack tool
-const result = await matimo.execute('slack_send_message', { 
-  channel: '#general', 
-  message: 'Hello from Matimo!' 
+const result = await matimo.execute('slack_send_message', {
+  channel: '#general',
+  message: 'Hello from Matimo!'
 });
 
 // Or add custom tools alongside built-in ones
@@ -121,22 +121,27 @@ Creator of Matimo
 ## Built-in Tools
 
 **Communication**
+
 - **Slack**: Send messages, upload files, manage channels, reactions, threads (16 operations)
 - **Gmail**: Send emails, create drafts, list messages, get message details (4 operations)
 
 **Development**
+
 - **GitHub**: Repository operations, issues, PRs, commits (coming soon)
 - **HTTP Client**: Generic REST API calls with auth support
 
 **Data & Infrastructure**
+
 - **AWS**: EC2, S3, Lambda operations (coming soon)
 - **Stripe**: Payment processing, subscriptions (coming soon)
 
 **Utilities**
+
 - **Calculator**: Arithmetic operations
 - **Echo Tool**: Simple command testing
 
 All tools include:
+
 - ✅ Full TypeScript/JavaScript support
 - ✅ OAuth2 authentication (where applicable)
 - ✅ Parameter validation with Zod

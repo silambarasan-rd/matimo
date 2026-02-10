@@ -1,6 +1,6 @@
 # SDK Usage Patterns
 
-Learn the three main ways to use Matimo SDK in v0.1.0-alpha.3.
+Learn the three main ways to use Matimo SDK.
 
 ## Pattern 1: Factory Pattern (Recommended for Simple Use Cases)
 
@@ -243,18 +243,29 @@ app.post('/api/send-email', async (req, res) => {
 
 ### LangChain Agent
 
-```typescript
-// See LANGCHAIN.md for full integration
-const m = await matimo.init('./tools');
+For AI agents that automatically decide which tool to use, see:
 
-const langchainTools = m.listTools().map(tool => ({
-  name: tool.name,
-  description: tool.description,
-  run: async (input) => {
-    const result = await m.execute(tool.name, JSON.parse(input));
-    return JSON.stringify(result);
-  }
-}));
+**[\u2192 LangChain Integration Guide](../framework-integrations/LANGCHAIN.md)**
+
+Quick example with `convertToolsToLangChain`:
+
+```typescript
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
+import { ChatOpenAI } from '@langchain/openai';
+import { createAgent } from 'langchain/agents';
+
+const m = await MatimoInstance.init('./tools');
+
+const langchainTools = await convertToolsToLangChain(
+  m.listTools(),
+  m,
+  { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN }
+);
+
+const agent = await createAgent({
+  model: new ChatOpenAI(),
+  tools: langchainTools,
+});
 ```
 
 ### CLI Tool

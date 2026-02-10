@@ -1,6 +1,6 @@
 # Matimo Examples
 
-Complete, production-ready examples showcasing three core patterns:
+Complete, production-ready examples showcasing **three core patterns**:
 
 > **"Define tools ONCE in YAML, use them EVERYWHERE"**
 
@@ -14,140 +14,349 @@ cd examples/tools
 # Install dependencies
 pnpm install
 
-# Run any example
-pnpm slack:factory    # Factory pattern with Slack
-pnpm agent:decorator  # Decorator pattern with AI
-pnpm agent:langchain  # Full LangChain integration
+# Run examples
+pnpm slack:factory      # Factory pattern
+pnpm slack:decorator    # Decorator pattern
+pnpm slack:langchain    # LangChain integration
+pnpm gmail:factory      # Gmail factory
+pnpm gmail:decorator    # Gmail decorator
+pnpm gmail:langchain    # Gmail LangChain
+pnpm agent:factory      # Generic agent (factory)
+pnpm agent:decorator    # Generic agent (decorator)
+pnpm agent:langchain    # AI agent with LangChain
 ```
 
 ---
 
 ## Three Integration Patterns
 
-### 1️⃣ **Factory Pattern** - Direct SDK Usage
+### 1️⃣ **Factory Pattern** - Direct SDK Usage (Simplest)
 
-**Best for:** Simple scripts, backend services, CLI tools
+**Best for:** Simple scripts, backend services, CLI tools, microservices
 
-The simplest approach - instantiate and execute tools directly.
+The factory pattern is the easiest way to use Matimo — initialize once, execute tools by name.
+
+#### Basic Example
 
 ```typescript
 import { MatimoInstance } from 'matimo';
 
 // Initialize
-const matimo = await MatimoInstance.init('../tools');
+const matimo = await MatimoInstance.init('./tools');
 
-// List available tools
-const tools = matimo.listTools();
-console.log(`Loaded ${tools.length} tools`);
+// List tools
+console.log('Available tools:', matimo.listTools().map(t => t.name));
 
-// Execute a tool directly
-const result = await matimo.execute('slack_send_channel_message', {
-  channel_id: 'C123',
-  message: 'Hello from Matimo!',
+// Execute tool
+const result = await matimo.execute('slack-send-message', {
+  channel: '#general',
+  text: 'Hello from Matimo!'
 });
 
-console.log('Message sent:', result);
+console.log('Result:', result);
 ```
 
-**Examples:**
-- `pnpm slack:factory` - Send messages, manage channels
-- `pnpm gmail:factory` - List emails, send messages
-- `pnpm agent:factory` - AI agent without LLM calls
+#### File: [examples/tools/agents/factory-pattern-agent.ts](agents/factory-pattern-agent.ts)
 
-**Use cases:**
-- Backend microservices
-- CLI automation tools
-- Scheduled jobs (cron)
-- Webhook handlers
-- API middleware
-- Batch processing
+Shows:
+- Loading tools with `MatimoInstance.init()`
+- Listing available tools
+- Executing tools with parameters
+- Error handling
+- Real Slack tool execution
+
+#### Real-World Use Cases
+
+- **Express.js route handler** — POST endpoint that calls a tool
+- **AWS Lambda function** — Serverless tool executor
+- **Cron job** — Scheduled tool execution
+- **Webhook receiver** — Trigger tools on external events
+- **CLI automation** — Command-line tool wrapper
 
 ---
 
-### 2️⃣ **Decorator Pattern** - Class-Based Usage
+### 2️⃣ **Decorator Pattern** - Class-Based (Clean Code)
 
-**Best for:** Class-based applications, clean code
+**Best for:** Class-based applications, clean architecture, multi-tool orchestration
 
 Use `@tool` decorators to automatically execute tools as class methods.
+
+#### Basic Example
 
 ```typescript
 import { MatimoInstance, setGlobalMatimoInstance, tool } from 'matimo';
 
-// Initialize once
-const matimo = await MatimoInstance.init('../tools');
+// Initialize Matimo
+const matimo = await MatimoInstance.init('./tools');
 setGlobalMatimoInstance(matimo);
 
 // Use decorators in your class
 class SlackBot {
-  @tool('slack_send_channel_message')
-  async sendMessage(channel_id: string, message: string) {
-    // Automatically executes via matimo
+  @tool('slack-send-message')
+  async sendMessage(channel: string, text: string) {
+    // Decorator auto-executes — method body optional
   }
 
-  @tool('slack_list_channels')
+  @tool('slack-list-channels')
   async listChannels() {
-    // Clean, declarative syntax
+    // Automatically executed via decorator
   }
 }
 
 // Use naturally
 const bot = new SlackBot();
-await bot.sendMessage('C123', 'Hello!');
-await bot.listChannels();
+await bot.sendMessage('#general', 'Hello!');
+const channels = await bot.listChannels();
+console.log('Channels:', channels);
 ```
 
-**Examples:**
-- `pnpm slack:decorator` - Slack operations as methods
-- `pnpm gmail:decorator` - Gmail operations as methods
-- `pnpm agent:decorator` - AI agent with decorators
+#### File: [examples/tools/agents/decorator-pattern-agent.ts](agents/decorator-pattern-agent.ts)
 
-**Use cases:**
-- Class-based agents
-- Object-oriented design
-- Clean code patterns
-- Framework integration
-- Dependency injection
+Shows:
+- Global Matimo instance setup
+- `@tool` decorator usage
+- Class-based orchestration
+- Chaining multiple decorated methods
+- Clean, readable code
+
+#### Real-World Use Cases
+
+- **Class-based agents** — AI agents with method decorators
+- **Object-oriented design** — Clean architecture patterns
+- **Dependency injection** — Framework integration (NestJS, etc.)
+- **Microservices** — Service classes with tool integrations
+- **Test doubles** — Mock decorators for testing
 
 ---
 
-### 3️⃣ **LangChain Integration** - AI Agents
+### 3️⃣ **LangChain Integration** - AI Agents (Most Powerful)
 
-**Best for:** AI-powered automation, natural language interfaces
+**Best for:** AI-powered automation, natural language interfaces, intelligent tool selection
 
-Let LLMs decide which tools to use based on user requests.
+Use Matimo tools with LangChain to let LLMs decide which tools to use.
+
+#### Basic Example
 
 ```typescript
-import { MatimoInstance } from 'matimo';
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
 import { ChatOpenAI } from '@langchain/openai';
-import { createOpenAIToolsAgent, AgentExecutor } from 'langchain/agents';
+import { createAgent } from 'langchain/agents';
 
-// Load tools
-const matimo = await MatimoInstance.init('../tools');
-const tools = matimo.listTools().map(tool => 
-  // Convert to LangChain format
+// 1. Load Matimo tools
+const matimo = await MatimoInstance.init('./tools');
+
+// 2. Convert to LangChain format
+const langchainTools = await convertToolsToLangChain(
+  matimo.listTools().filter(t => t.name.startsWith('slack-')),
+  matimo,
+  { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN! }
 );
 
-// Create AI agent
-const llm = new ChatOpenAI({ modelName: 'gpt-4' });
-const agent = await createOpenAIToolsAgent({ llm, tools });
-const executor = new AgentExecutor({ agent, tools });
-
-// Let AI decide which tools to use
-const result = await executor.invoke({
-  input: 'List all Slack channels and send a message to #general'
+// 3. Create LangChain agent
+const agent = await createAgent({
+  model: new ChatOpenAI({ modelName: 'gpt-4o-mini' }),
+  tools: langchainTools,
 });
+
+// 4. Run it — LLM decides which tool to use
+const result = await agent.invoke({
+  input: 'List all Slack channels and send a message to #general saying hello'
+});
+
+console.log('Agent response:', result.output);
 ```
 
-**Examples:**
-- `pnpm slack:langchain` - AI agent with Slack tools
-- `pnpm gmail:langchain` - AI agent with Gmail tools
-- `pnpm agent:langchain` - General-purpose AI agent
+#### File: [examples/tools/agents/langchain-agent.ts](agents/langchain-agent.ts)
 
-**Use cases:**
-- AI chatbots
-- Autonomous agents
-- Natural language interfaces
+Shows:
+- `convertToolsToLangChain()` API
+- LangChain agent setup
+- Tool filtering and auth injection
 - Multi-step reasoning
+- Full workflow execution
+
+#### Real-World Use Cases
+
+- **AI chatbots** — Chat interfaces with tool access
+- **Autonomous agents** — Self-directed tool execution
+- **Natural language interfaces** — "Do X using tools"
+- **Multi-step workflows** — Complex tool chains
+- **Research agents** — Info gathering and processing
+
+---
+
+## Feature Comparison
+
+| Feature | Factory | Decorator | LangChain |
+|---------|---------|-----------|-----------|
+| **Simplicity** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| **Best For** | Scripts, APIs | Classes | AI agents |
+| **Syntax** | `execute()` | `@tool()` | `agent.invoke()` |
+| **Type Safety** | Good | Excellent | Excellent |
+| **Framework** | Any | Any | LangChain required |
+| **Async/Await** | Required | Required | Built-in |
+| **Error Handling** | Manual | Manual | LLM-driven |
+
+---
+
+## Tool Categories
+
+All examples use these tools (real implementations):
+
+### Slack Tools
+- `slack-send-message` — Send channel messages
+- `slack-list-channels` — List all channels
+- `slack-get-user` — Get user info
+
+### Gmail Tools
+- `gmail-send-email` — Send emails
+- `gmail-list-messages` — List messages
+- `gmail-get-message` — Get message details
+- `gmail-create-draft` — Create drafts
+- `gmail-delete-message` — Delete messages
+
+### Utilities
+- `calculator` — Math operations
+- `echo` — Echo tool (for testing)
+
+---
+
+## Running Examples Step-by-Step
+
+### Setup
+
+```bash
+# 1. Clone Matimo repo
+git clone https://github.com/tallclub/matimo.git
+cd matimo
+
+# 2. Install root dependencies
+pnpm install
+
+# 3. Go to examples
+cd examples/tools
+
+# 4. Install example dependencies
+pnpm install
+
+# 5. Set up environment (copy .env.example if exists)
+cp .env.example .env
+# Add your Slack/Gmail tokens to .env
+```
+
+### Factory Pattern
+
+```bash
+# Send Slack message (factory pattern)
+pnpm slack:factory
+
+# Output:
+# Message sent to #general:
+# { success: true, data: { ok: true, ts: '1234567890.123456' } }
+```
+
+### Decorator Pattern
+
+```bash
+# Send Slack message (decorator pattern)
+pnpm slack:decorator
+
+# Output:
+# Slack Bot initialized
+# Sending message to #general...
+# Message sent: { success: true, ... }
+```
+
+### LangChain Integration
+
+```bash
+# AI agent that uses Slack and Gmail tools
+pnpm agent:langchain
+
+# Output (LLM decides tool usage):
+# User: "List Slack channels and send a message to #general"
+# Agent: I'll help you with that...
+# [Calls slack-list-channels tool]
+# [Calls slack-send-message tool]
+# Agent: Done! Sent message to #general
+```
+
+---
+
+## Environment Setup
+
+Create `.env` file with your API tokens:
+
+```bash
+# Slack
+SLACK_BOT_TOKEN=xoxb-your-token-here
+
+# Gmail
+GMAIL_ACCESS_TOKEN=ya29.your-token-here
+
+# OpenAI (for LangChain examples)
+OPENAI_API_KEY=sk-your-key-here
+```
+
+Get tokens:
+- **Slack:** [Create app](https://api.slack.com/apps), get bot token
+- **Gmail:** Use OAuth2 flow (see [Gmail setup guide](../../docs/architecture/OAUTH.md))
+- **OpenAI:** Get from [platform.openai.com](https://platform.openai.com)
+
+---
+
+## Project Structure
+
+```
+examples/tools/
+├── agents/
+│   ├── factory-pattern-agent.ts     # Factory pattern example
+│   ├── decorator-pattern-agent.ts   # Decorator pattern example
+│   └── langchain-agent.ts           # LangChain agent example
+├── slack/
+│   └── (Slack-specific examples)
+├── gmail/
+│   └── (Gmail-specific examples)
+├── .env.example
+├── package.json
+└── tsconfig.json
+```
+
+Each file can be run with `pnpm ts-node {file.ts}` or via package.json scripts.
+
+---
+
+## Next Steps
+
+### Learn More
+
+- **[SDK Patterns Guide](../../docs/user-guide/SDK_PATTERNS.md)** — Deep dive into all patterns
+- **[LangChain Integration](../../docs/framework-integrations/LANGCHAIN.md)** — Complete LangChain guide
+- **[Tool Discovery](../../docs/user-guide/TOOL_DISCOVERY.md)** — Search and list tools
+- **[Testing Guide](../../docs/tool-development/TESTING.md)** — Write tests for tools
+
+### Add Your Own Tools
+
+- **[Tool Specification](../../docs/tool-development/TOOL_SPECIFICATION.md)** — YAML spec reference
+- **[Contributing](../../CONTRIBUTING.md)** — Step-by-step tool addition guide
+- **[Your First Tool](../../docs/getting-started/YOUR_FIRST_TOOL.md)** — Quick tutorial
+
+### Use in Production
+
+- **[Installation Guide](../../docs/getting-started/installation.md)** — NPM package setup
+- **[API Reference](../../docs/api-reference/SDK.md)** — Complete SDK documentation
+- **[Error Handling](../../docs/api-reference/ERRORS.md)** — Error codes and handling
+
+---
+
+## Questions?
+
+- 📖 Check [documentation](../../docs)
+- 💬 Start a [discussion](https://github.com/tallclub/matimo/discussions)
+- 🐛 Found a bug? [Open an issue](https://github.com/tallclub/matimo/issues)
+- ⭐ Like it? Star the [repo](https://github.com/tallclub/matimo)
+
+Happy coding! 🚀
 - Intelligent automation
 
 ---
