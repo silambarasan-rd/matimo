@@ -397,7 +397,7 @@ try {
       case ErrorCode.TOOL_NOT_FOUND:
         console.error(`Tool "${error.details.toolName}" not found`);
         break;
-      case ErrorCode.INVALID_PARAMETERS:
+      case ErrorCode.INVALID_PARAMETER:
         console.error(`Invalid parameters:`, error.details);
         break;
       case ErrorCode.EXECUTION_FAILED:
