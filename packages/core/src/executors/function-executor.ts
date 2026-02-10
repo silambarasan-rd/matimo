@@ -98,19 +98,28 @@ export class FunctionExecutor {
         if (code.includes('.ts') || code.includes('.js') || code.startsWith('./')) {
           // Load from external file using dynamic import()
           // This works with TypeScript via ESM import
-          const toolName = tool.name; // e.g., "database-query"
 
-          // Compute tool directory: tools/{provider}/{tool-name}/
-          let toolDir: string;
-          if (toolName.includes('-')) {
-            const parts = toolName.split('-');
-            const provider = parts[0]; // First part is provider (e.g., "database", "slack")
-            toolDir = path.join(this.toolsPath, provider, toolName);
+          // Resolve relative to the tool definition file location
+          let absolutePath: string;
+          if (tool._definitionPath) {
+            // Use the definition file directory as the base for relative paths
+            const definitionDir = path.dirname(tool._definitionPath);
+            absolutePath = path.resolve(definitionDir, code);
           } else {
-            toolDir = path.join(this.toolsPath, toolName);
+            // Fallback: use the old logic (for backward compatibility)
+            // Compute tool directory: tools/{provider}/{tool-name}/
+            const toolName = tool.name;
+            let toolDir: string;
+            if (toolName.includes('-')) {
+              const parts = toolName.split('-');
+              const provider = parts[0];
+              toolDir = path.join(this.toolsPath, provider, toolName);
+            } else {
+              toolDir = path.join(this.toolsPath, toolName);
+            }
+            absolutePath = path.resolve(toolDir, code);
           }
 
-          const absolutePath = path.resolve(toolDir, code);
           const fileUrl = pathToFileURL(absolutePath).href;
 
           // Use dynamic import() for ESM/TypeScript compatibility with robust URL handling

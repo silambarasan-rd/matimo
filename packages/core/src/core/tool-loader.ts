@@ -47,7 +47,10 @@ export class ToolLoader {
 
     // Validate against schema
     try {
-      return validateToolDefinition(parsed);
+      const tool = validateToolDefinition(parsed);
+      // Store the definition file path for relative path resolution in executors
+      tool._definitionPath = path.resolve(filePath);
+      return tool;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new MatimoError(

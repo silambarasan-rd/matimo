@@ -121,6 +121,11 @@ export interface ToolDefinition {
   deprecated?: boolean;
   deprecation_message?: string;
   tags?: string[];
+  /**
+   * Internal: Path to the tool definition file (set by ToolLoader)
+   * Used to resolve relative paths for function executors
+   */
+  _definitionPath?: string;
 }
 
 /**
