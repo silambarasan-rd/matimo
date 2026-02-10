@@ -131,6 +131,30 @@ export class FunctionExecutor {
             .catch(handleError);
         } else {
           // Execute embedded code (legacy) - create function from string
+          // SECURITY WARNING: Embedded code execution runs arbitrary JS with fs/path/axios access.
+          // This is a potential RCE vector if tool YAML files come from untrusted sources.
+          // Embedded code is DISABLED by default. Must explicitly opt-in via MATIMO_ALLOW_EMBEDDED_CODE=true
+
+          const embeddedCodeDisabled = process.env.MATIMO_ALLOW_EMBEDDED_CODE !== 'true';
+          if (embeddedCodeDisabled) {
+            throw new MatimoError(
+              'Embedded code execution is disabled by default for security. Use external .ts/.js files instead.',
+              ErrorCode.EXECUTION_FAILED,
+              {
+                toolName: tool.name,
+                recommendation:
+                  'Create a separate .ts file in the tool directory instead of using embedded code',
+                enableFeatureFlag:
+                  'Set MATIMO_ALLOW_EMBEDDED_CODE=true to enable (not recommended)',
+              }
+            );
+          }
+
+          // Log warning when embedded code is executed
+          console.info(
+            `⚠️  Warning: Executing embedded code from tool '${tool.name}'. This carries security risks if tool YAML is from untrusted sources.`
+          );
+
           // In ESM modules, require is not available by default
           // We pass a safe require function that embedded code can use
           const functionBody = `return (${code})`;

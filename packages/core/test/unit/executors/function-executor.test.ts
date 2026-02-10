@@ -5,11 +5,22 @@ describe('FunctionExecutor', () => {
   let executor: FunctionExecutor;
 
   beforeEach(() => {
+    // Keep embedded code execution DISABLED by default (secure by default)
+    // Tests that need it will explicitly enable the flag
+    delete process.env.MATIMO_ALLOW_EMBEDDED_CODE;
     executor = new FunctionExecutor();
+  });
+
+  afterEach(() => {
+    // Clean up environment variable after tests
+    delete process.env.MATIMO_ALLOW_EMBEDDED_CODE;
   });
 
   describe('execute', () => {
     it('should execute a simple async function', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'test-func',
         version: '1.0.0',
@@ -26,6 +37,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should execute a function that returns a string', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'string-func',
         version: '1.0.0',
@@ -42,6 +56,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should execute a function with parameters', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'param-func',
         version: '1.0.0',
@@ -72,7 +89,52 @@ describe('FunctionExecutor', () => {
       await expect(executor.execute(tool, {})).rejects.toThrow();
     });
 
+    it('should reject embedded code when MATIMO_ALLOW_EMBEDDED_CODE is not set', async () => {
+      // Embedded code is disabled by default (flag not set)
+      // embeddedCodeDisabled = (undefined !== 'true') = true → throws error
+
+      const tool: ToolDefinition = {
+        name: 'embedded-func',
+        version: '1.0.0',
+        description: 'Embedded function',
+        parameters: {},
+        execution: {
+          type: 'function',
+          code: 'async () => ({ result: "success" })',
+        },
+      };
+
+      // Should reject with security error
+      const result = await executor.execute(tool, {});
+      expect(result).toHaveProperty('success', false);
+      expect(result).toHaveProperty('error');
+      expect((result as Record<string, unknown>).error).toMatch(/disabled by default/);
+    });
+
+    it('should allow embedded code when MATIMO_ALLOW_EMBEDDED_CODE=true', async () => {
+      // Enable embedded code for this test
+      // embeddedCodeDisabled = ('true' !== 'true') = false → allows execution
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
+      const tool: ToolDefinition = {
+        name: 'embedded-allowed-func',
+        version: '1.0.0',
+        description: 'Embedded function (allowed)',
+        parameters: {},
+        execution: {
+          type: 'function',
+          code: 'async () => ({ result: "success with flag" })',
+        },
+      };
+
+      const result = await executor.execute(tool, {});
+      expect(result).toEqual({ result: 'success with flag' });
+    });
+
     it('should handle non-function code gracefully', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'not-func',
         version: '1.0.0',
@@ -90,6 +152,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle function errors gracefully', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'error-func',
         version: '1.0.0',
@@ -107,6 +172,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle promise returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'promise-func',
         version: '1.0.0',
@@ -123,6 +191,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle array returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'array-func',
         version: '1.0.0',
@@ -140,6 +211,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle null returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'null-func',
         version: '1.0.0',
@@ -156,6 +230,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle boolean returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'bool-func',
         version: '1.0.0',
@@ -187,6 +264,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle timeout for long-running functions', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'timeout-func',
         version: '1.0.0',
@@ -204,6 +284,9 @@ describe('FunctionExecutor', () => {
     }, 10000);
 
     it('should handle complex object returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'complex-func',
         version: '1.0.0',
@@ -233,6 +316,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle functions with multiple parameters', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'multi-param',
         version: '1.0.0',
@@ -249,6 +335,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle default timeout when not specified', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'default-timeout-func',
         version: '1.0.0',
@@ -282,6 +371,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle number returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'number-func',
         version: '1.0.0',
@@ -298,6 +390,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle string returns', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'string-return-func',
         version: '1.0.0',
@@ -314,6 +409,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle nested function calls', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'nested-func',
         version: '1.0.0',
@@ -333,6 +431,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle object spread operators', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'spread-func',
         version: '1.0.0',
@@ -373,6 +474,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle function that throws synchronously', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'throw-sync',
         version: '1.0.0',
@@ -391,6 +495,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle non-Promise return from async function', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'non-promise-func',
         version: '1.0.0',
@@ -408,6 +515,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle timeout during function execution', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'timeout-func',
         version: '1.0.0',
@@ -427,6 +537,9 @@ describe('FunctionExecutor', () => {
     }, 1000); // Jest timeout 1 second
 
     it('should handle Promise rejection', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'reject-func',
         version: '1.0.0',
@@ -486,6 +599,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should pass fs/path/axios to embedded functions', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const tool: ToolDefinition = {
         name: 'with-modules',
         version: '1.0.0',
@@ -512,6 +628,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle non-Promise return from embedded code', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const executor = new FunctionExecutor();
       const tool: ToolDefinition = {
         name: 'sync-function',
@@ -532,6 +651,9 @@ describe('FunctionExecutor', () => {
     });
 
     it('should handle embedded code that throws synchronously', async () => {
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const executor = new FunctionExecutor();
       const tool: ToolDefinition = {
         name: 'sync-error',
@@ -576,6 +698,9 @@ describe('FunctionExecutor', () => {
 
     it('should handle non-Promise return from externally imported file', async () => {
       // This tests lines 118-127: non-Promise return from external import
+      // Enable embedded code only for this test
+      process.env.MATIMO_ALLOW_EMBEDDED_CODE = 'true';
+
       const executor = new FunctionExecutor();
       const tool: ToolDefinition = {
         name: 'sync-test',
