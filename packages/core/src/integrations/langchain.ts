@@ -110,6 +110,20 @@ function parameterToZod(param: Parameter): z.ZodType<unknown> {
 }
 
 /**
+ * Auto-detect if a parameter name looks like a secret
+ * based on common patterns (TOKEN, KEY, SECRET, PASSWORD)
+ */
+function isSecretParameter(paramName: string): boolean {
+  const upperName = paramName.toUpperCase();
+  return (
+    upperName.includes('TOKEN') ||
+    upperName.includes('KEY') ||
+    upperName.includes('SECRET') ||
+    upperName.includes('PASSWORD')
+  );
+}
+
+/**
  * Build Zod schema for tool input, excluding secret parameters
  */
 function buildInputSchema(
@@ -193,8 +207,20 @@ export async function convertToolsToLangChain(
   secrets: Record<string, string> = {},
   secretParamNames?: Set<string>
 ): Promise<LangChainTool[]> {
-  // Auto-detect secret params from the secrets map
+  // Start with explicitly declared secret param names or auto-detect from secrets keys
   const detectedSecrets = secretParamNames || new Set(Object.keys(secrets));
+
+  // Auto-detect additional secret parameters by scanning all tool parameters
+  for (const tool of tools) {
+    if (tool.parameters) {
+      for (const paramName of Object.keys(tool.parameters)) {
+        // Auto-detect if parameter looks like a secret
+        if (isSecretParameter(paramName)) {
+          detectedSecrets.add(paramName);
+        }
+      }
+    }
+  }
 
   return Promise.all(tools.map((tool) => convertTool(matimo, tool, detectedSecrets, secrets)));
 }

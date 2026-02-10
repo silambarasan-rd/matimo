@@ -921,4 +921,266 @@ describe('convertToolsToLangChain', () => {
       expect(matimo.execute).toHaveBeenCalledWith('optional-param-tool', {});
     });
   });
+
+  describe('Auto-detection of secret parameters - 100% lines', () => {
+    it('should auto-detect TOKEN pattern in parameter name', async () => {
+      const tool: ToolDefinition = {
+        name: 'token-tool',
+        version: '1.0.0',
+        description: 'Tool with TOKEN parameter',
+        parameters: {
+          slack_bot_token: {
+            type: 'string',
+            required: true,
+            description: 'Slack bot token',
+          },
+          channel: {
+            type: 'string',
+            required: true,
+            description: 'Channel name',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, { slack_bot_token: 'secret123' });
+
+      // slack_bot_token should not be in schema (auto-detected as secret)
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('slack_bot_token');
+      expect(schema.shape).toHaveProperty('channel');
+
+      // Execute with channel only (token is injected)
+      await langTools[0].invoke({ channel: '#general' });
+      expect(matimo.execute).toHaveBeenCalledWith('token-tool', {
+        channel: '#general',
+        slack_bot_token: 'secret123',
+      });
+    });
+
+    it('should auto-detect KEY pattern in parameter name', async () => {
+      const tool: ToolDefinition = {
+        name: 'key-tool',
+        version: '1.0.0',
+        description: 'Tool with KEY parameter',
+        parameters: {
+          api_key: {
+            type: 'string',
+            required: true,
+            description: 'API key',
+          },
+          endpoint: {
+            type: 'string',
+            required: true,
+            description: 'API endpoint',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, { api_key: 'key789' });
+
+      // api_key should not be in schema (auto-detected as secret)
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('api_key');
+      expect(schema.shape).toHaveProperty('endpoint');
+
+      // Execute with endpoint only (key is injected)
+      await langTools[0].invoke({ endpoint: 'https://api.example.com' });
+      expect(matimo.execute).toHaveBeenCalledWith('key-tool', {
+        endpoint: 'https://api.example.com',
+        api_key: 'key789',
+      });
+    });
+
+    it('should auto-detect SECRET pattern in parameter name', async () => {
+      const tool: ToolDefinition = {
+        name: 'secret-tool',
+        version: '1.0.0',
+        description: 'Tool with SECRET parameter',
+        parameters: {
+          api_secret: {
+            type: 'string',
+            required: true,
+            description: 'API secret',
+          },
+          query: {
+            type: 'string',
+            required: true,
+            description: 'Search query',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, { api_secret: 'mysecret' });
+
+      // api_secret should not be in schema (auto-detected as secret)
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('api_secret');
+      expect(schema.shape).toHaveProperty('query');
+    });
+
+    it('should auto-detect PASSWORD pattern in parameter name', async () => {
+      const tool: ToolDefinition = {
+        name: 'password-tool',
+        version: '1.0.0',
+        description: 'Tool with PASSWORD parameter',
+        parameters: {
+          db_password: {
+            type: 'string',
+            required: true,
+            description: 'Database password',
+          },
+          username: {
+            type: 'string',
+            required: true,
+            description: 'Database username',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, { db_password: 'pass123' });
+
+      // db_password should not be in schema (auto-detected as secret)
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('db_password');
+      expect(schema.shape).toHaveProperty('username');
+    });
+
+    it('should handle case-insensitive auto-detection', async () => {
+      const tool: ToolDefinition = {
+        name: 'case-tool',
+        version: '1.0.0',
+        description: 'Tool with mixed case secret parameters',
+        parameters: {
+          ApiKey: {
+            type: 'string',
+            required: true,
+            description: 'API key',
+          },
+          PASSWORD: {
+            type: 'string',
+            required: true,
+            description: 'Password',
+          },
+          normalParam: {
+            type: 'string',
+            required: true,
+            description: 'Normal parameter',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, {
+        ApiKey: 'key123',
+        PASSWORD: 'pass123',
+      });
+
+      // Both should be auto-detected as secrets despite case differences
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('ApiKey');
+      expect(schema.shape).not.toHaveProperty('PASSWORD');
+      expect(schema.shape).toHaveProperty('normalParam');
+
+      // Execute with normalParam only (secrets are injected)
+      await langTools[0].invoke({ normalParam: 'value' });
+      expect(matimo.execute).toHaveBeenCalledWith('case-tool', {
+        normalParam: 'value',
+        ApiKey: 'key123',
+        PASSWORD: 'pass123',
+      });
+    });
+
+    it('should combine auto-detection with explicitly declared secret params', async () => {
+      const tool: ToolDefinition = {
+        name: 'combined-tool',
+        version: '1.0.0',
+        description: 'Tool with mixed secret declaration',
+        parameters: {
+          api_key: {
+            type: 'string',
+            required: true,
+            description: 'API key',
+          },
+          custom_secret: {
+            type: 'string',
+            required: true,
+            description: 'Custom secret',
+          },
+          normal_param: {
+            type: 'string',
+            required: true,
+            description: 'Normal parameter',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+
+      // api_key is auto-detected, custom_secret is explicitly declared
+      const langTools = await convertToolsToLangChain(
+        [tool],
+        matimo,
+        { api_key: 'key123', custom_secret: 'secret789' },
+        new Set(['custom_secret']) // Explicit declaration
+      );
+
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('api_key'); // Auto-detected
+      expect(schema.shape).not.toHaveProperty('custom_secret'); // Explicitly declared
+      expect(schema.shape).toHaveProperty('normal_param');
+
+      await langTools[0].invoke({ normal_param: 'value' });
+      expect(matimo.execute).toHaveBeenCalledWith('combined-tool', {
+        normal_param: 'value',
+        api_key: 'key123',
+        custom_secret: 'secret789',
+      });
+    });
+
+    it('should not fail when auto-detected secret has no value in secrets map', async () => {
+      const tool: ToolDefinition = {
+        name: 'missing-secret-tool',
+        version: '1.0.0',
+        description: 'Tool with missing secret value',
+        parameters: {
+          api_key: {
+            type: 'string',
+            required: true,
+            description: 'API key',
+          },
+          data: {
+            type: 'string',
+            required: true,
+            description: 'Data to process',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, {}); // No secrets provided
+
+      // api_key is auto-detected as secret but not in schema
+      const schema = langTools[0].schema as any;
+      expect(schema.shape).not.toHaveProperty('api_key');
+      expect(schema.shape).toHaveProperty('data');
+
+      // Execute with data only
+      await langTools[0].invoke({ data: 'test' });
+      expect(matimo.execute).toHaveBeenCalledWith('missing-secret-tool', {
+        data: 'test',
+        // api_key is not injected since it's not in the secrets map
+      });
+    });
+  });
 });
