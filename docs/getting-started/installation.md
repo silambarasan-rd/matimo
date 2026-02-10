@@ -122,6 +122,25 @@ If issues persist, check [Troubleshooting Guide](../troubleshooting/FAQ.md)
 
 Works out of the box with TypeScript support.
 
+## Environment Variables
+
+### Security Settings
+
+**Embedded Code Execution** (Disabled by Default)
+
+Embedded code in tool YAML is **disabled by default** for security. To enable it:
+
+```bash
+# Explicitly opt-in to embedded code execution
+# embeddedCodeDisabled = (MATIMO_ALLOW_EMBEDDED_CODE !== 'true')
+# If NOT set to 'true' → code is disabled
+export MATIMO_ALLOW_EMBEDDED_CODE=true
+```
+
+⚠️ **Only enable if you fully trust all tool YAML sources. Never enable in production without careful review.**
+
+See [Security Guide](../user-guide/SECURITY.md) for more details.
+
 ## Quick Verification Checklist
 
 - [ ] Node.js v18+ installed

@@ -357,14 +357,66 @@ execution:
 
 ### Function Execution
 
-For JavaScript/TypeScript functions (coming soon):
+Matimo supports two patterns for function execution:
+
+#### 1. Recommended: External TypeScript/JavaScript Files (Trusted)
 
 ```yaml
 execution:
   type: function
-  function: ./handler.ts
+  code: ./handler.ts  # Path to external .ts or .js file
   timeout: 10000
 ```
+
+The referenced file should export a default async function:
+
+```typescript
+// handler.ts
+export default async function handler(params: Record<string, unknown>) {
+  const { query } = params;
+  // Your logic here
+  return { result: 'success' };
+}
+```
+
+**Security**: ✅ Recommended. Code is version-controlled, reviewable, and cannot be injected via YAML.
+
+#### 2. Legacy: Embedded Code (Disabled by Default)
+
+```yaml
+execution:
+  type: function
+  code: |
+    async (params) => {
+      return { result: params.value };
+    }
+  timeout: 10000
+```
+
+**SECURITY WARNING**: Embedded code execution is **disabled by default** because it:
+- Runs arbitrary JavaScript with access to `fs`, `path`, `axios` modules
+- Creates an RCE (Remote Code Execution) vector if YAML comes from untrusted sources
+- Cannot be audited without parsing the YAML
+
+**How it works**:
+```typescript
+// Logic in function-executor.ts
+const embeddedCodeDisabled = process.env.MATIMO_ALLOW_EMBEDDED_CODE !== 'true';
+
+// If MATIMO_ALLOW_EMBEDDED_CODE is NOT set to 'true' → disabled (default)
+// If MATIMO_ALLOW_EMBEDDED_CODE = 'true' → enabled (opt-in)
+if (embeddedCodeDisabled) {
+  throw new MatimoError('Embedded code execution is disabled by default...');
+}
+```
+
+**To enable (NOT recommended)**:
+
+```bash
+export MATIMO_ALLOW_EMBEDDED_CODE=true
+```
+
+⚠️ Only enable if you **fully trust** all tool YAML sources. Never enable in production without careful review.
 
 ## Authentication
 
