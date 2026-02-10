@@ -1,14 +1,15 @@
 {
   "name": "@matimo/cli",
-  "version": "0.2.0-alpha.4",
+  "version": "0.1.0-alpha.4",
   "description": "CLI tools for managing Matimo tool installations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "matimo": "dist/cli.js"
+    "matimo": "bin/matimo.cjs"
   },
   "files": [
+    "bin",
     "dist",
     "README.md"
   ],

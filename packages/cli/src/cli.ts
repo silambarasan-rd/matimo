@@ -1,12 +1,19 @@
-#!/usr/bin/env node
-
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { installCommand } from './commands/install.js';
 import { listCommand } from './commands/list.js';
 import { searchCommand } from './commands/search.js';
 
-/**
- * Show help message
- */
+function getPackageVersion(): string {
+  try {
+    const pkgPath = join(process.cwd(), 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    return pkg.version;
+  } catch {
+    return 'unknown';
+  }
+}
+
 export function showHelp(): void {
   console.info(`
 🔨 Matimo CLI - Tool Package Manager
@@ -44,15 +51,6 @@ Issues: https://github.com/tallclub/matimo/issues
 `);
 }
 
-function showVersion() {
-  try {
-    const pkg = require('../package.json');
-    console.info(`matimo-cli v${pkg.version}`);
-  } catch {
-    console.info('matimo-cli version unknown');
-  }
-}
-
 /**
  * Main CLI handler - parses commands and routes to appropriate handlers
  */
@@ -85,7 +83,7 @@ export async function main(cliArgs?: string[]): Promise<void> {
       case 'version':
       case '-v':
       case '--version':
-        showVersion();
+        console.info(`matimo-cli v${getPackageVersion()}`);
         break;
       default:
         console.error(`❌ Unknown command: ${command}`);
@@ -96,12 +94,4 @@ export async function main(cliArgs?: string[]): Promise<void> {
     console.error('❌ Error:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
-}
-
-// Run immediately when executed as CLI script (but not during testing)
-if (require.main === module) {
-  main().catch((error) => {
-    console.error('❌ Fatal error:', error);
-    process.exit(1);
-  });
 }
