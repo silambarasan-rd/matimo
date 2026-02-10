@@ -6,6 +6,7 @@
   "types": "packages/core/dist/index.d.ts",
   "type": "module",
   "packageManager": "pnpm@8.15.0",
+  "private": false,
   "exports": {
     ".": {
       "types": "./packages/core/dist/index.d.ts",
@@ -18,8 +19,8 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "build": "tsc --build",
-    "watch": "tsc --watch",
+    "build": "pnpm --filter='./packages/**' build",
+    "watch": "pnpm --filter='./packages/**' watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -62,6 +63,8 @@
   },
   "files": [
     "packages/core/dist",
+    "packages/cli/dist",
+    "packages/cli/bin",
     "README.md",
     "LICENSE"
   ],
@@ -69,12 +72,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.3",
-    "axios": "^1.13.4",
-    "dotenv": "^17.2.3",
-    "js-yaml": "^4.1.1",
-    "yaml": "^2.8.2",
-    "zod": "^4.3.6"
+    "@matimo/core": "workspace:*",
+    "@matimo/cli": "workspace:*"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",

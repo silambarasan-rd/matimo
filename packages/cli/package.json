@@ -14,7 +14,7 @@
     "README.md"
   ],
   "dependencies": {
-    "matimo": "workspace:*"
+    "@matimo/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.1.0",

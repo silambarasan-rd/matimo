@@ -1,7 +1,7 @@
 {
-  "name": "matimo",
+  "name": "@matimo/core",
   "version": "0.1.0-alpha.4",
-  "description": "Universal tool provider SDK: Framework-agnostic YAML-driven tool ecosystem for AI agents. Execute a library of pre-built tools or define your own in YAML.",
+  "description": "Core SDK for Matimo: Framework-agnostic YAML-driven tool ecosystem for AI agents.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",

@@ -12,9 +12,7 @@ module.exports = [
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 2020,
-        sourceType: 'module',
-        project: './tsconfig.json',
-        tsconfigRootDir: process.cwd()
+        sourceType: 'module'
       }
     },
     plugins: {
