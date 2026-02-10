@@ -33,22 +33,23 @@ output_schema:
 
 ## Key Sections
 
-| Section | Purpose |
-|---------|---------|
-| `name` | Unique tool identifier (kebab-case) |
-| `description` | One-line description |
-| `version` | Semantic version (e.g., 1.0.0) |
-| `parameters` | Tool input parameters |
-| `execution` | How the tool runs (command or HTTP) |
-| `output_schema` | What the tool returns |
-| `authentication` | OAuth2/API key config (optional) |
-| `error_handling` | Retry policy (optional) |
+| Section          | Purpose                             |
+| ---------------- | ----------------------------------- |
+| `name`           | Unique tool identifier (kebab-case) |
+| `description`    | One-line description                |
+| `version`        | Semantic version (e.g., 1.0.0)      |
+| `parameters`     | Tool input parameters               |
+| `execution`      | How the tool runs (command or HTTP) |
+| `output_schema`  | What the tool returns               |
+| `authentication` | OAuth2/API key config (optional)    |
+| `error_handling` | Retry policy (optional)             |
 
 ## Full Specification
 
 The complete YAML schema documentation is in [TOOL_SPECIFICATION.md](./TOOL_SPECIFICATION.md).
 
 Topics covered:
+
 - Metadata (name, description, version)
 - Parameter types and constraints
 - Execution modes (command, HTTP)
@@ -62,4 +63,3 @@ Topics covered:
 - **Full Specification**: [TOOL_SPECIFICATION.md](./TOOL_SPECIFICATION.md)
 - **Test Your Tool**: [Testing Guide](./TESTING.md)
 - **Decorator Pattern**: [Decorator Guide](./DECORATOR_GUIDE.md)
-

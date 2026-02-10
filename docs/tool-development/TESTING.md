@@ -17,6 +17,7 @@ pnpm validate-tools
 ```
 
 This validates:
+
 - YAML syntax is correct
 - All required fields present
 - Parameter types are valid
@@ -31,50 +32,45 @@ This validates:
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { ToolLoader } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 describe('Tool Definition', () => {
-  it('should load calculator tool', async () => {
-    const loader = new ToolLoader('./tools');
-    const tool = await loader.loadToolFromFile(
-      './tools/calculator/definition.yaml'
-    );
-    
-    expect(tool.name).toBe('calculator');
-    expect(tool.description).toBe('Perform basic math operations');
-    expect(tool.version).toBe('1.0.0');
+  let matimo: Awaited<ReturnType<typeof MatimoInstance.init>>;
+
+  beforeAll(async () => {
+    matimo = await MatimoInstance.init('./tools');
   });
 
-  it('should have required parameters', async () => {
-    const loader = new ToolLoader('./tools');
-    const tool = await loader.loadToolFromFile(
-      './tools/calculator/definition.yaml'
-    );
-    
-    expect(tool.parameters).toHaveProperty('operation');
-    expect(tool.parameters).toHaveProperty('a');
-    expect(tool.parameters).toHaveProperty('b');
+  it('should load calculator tool', () => {
+    const tool = matimo.getTool('calculator');
+
+    expect(tool).toBeDefined();
+    expect(tool!.name).toBe('calculator');
+    expect(tool!.description).toBe('Perform basic math operations');
+    expect(tool!.version).toBe('1.0.0');
   });
 
-  it('should validate parameter types', async () => {
-    const loader = new ToolLoader('./tools');
-    const tool = await loader.loadToolFromFile(
-      './tools/calculator/definition.yaml'
-    );
-    
-    expect(tool.parameters!.operation.type).toBe('string');
-    expect(tool.parameters!.a.type).toBe('number');
-    expect(tool.parameters!.b.type).toBe('number');
+  it('should have required parameters', () => {
+    const tool = matimo.getTool('calculator');
+
+    expect(tool!.parameters).toHaveProperty('operation');
+    expect(tool!.parameters).toHaveProperty('a');
+    expect(tool!.parameters).toHaveProperty('b');
   });
 
-  it('should have execution config', async () => {
-    const loader = new ToolLoader('./tools');
-    const tool = await loader.loadToolFromFile(
-      './tools/calculator/definition.yaml'
-    );
-    
-    expect(tool.execution).toBeDefined();
-    expect(tool.execution.type).toMatch(/command|http/);
+  it('should validate parameter types', () => {
+    const tool = matimo.getTool('calculator');
+
+    expect(tool!.parameters!.operation.type).toBe('string');
+    expect(tool!.parameters!.a.type).toBe('number');
+    expect(tool!.parameters!.b.type).toBe('number');
+  });
+
+  it('should have execution config', () => {
+    const tool = matimo.getTool('calculator');
+
+    expect(tool!.execution).toBeDefined();
+    expect(tool!.execution.type).toMatch(/command|http/);
   });
 });
 ```
@@ -87,22 +83,22 @@ describe('Tool Definition', () => {
 
 ```typescript
 import { describe, it, expect, beforeAll } from 'vitest';
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 describe('Calculator Tool Execution', () => {
   let m: Awaited<ReturnType<typeof matimo.init>>;
 
   beforeAll(async () => {
-    m = await matimo.init('./tools');
+    m = await MatimoInstance.init('./tools');
   });
 
   it('should execute add operation', async () => {
     const result = await m.execute('calculator', {
       operation: 'add',
       a: 5,
-      b: 3
+      b: 3,
     });
-    
+
     expect(result.result).toBe(8);
   });
 
@@ -110,9 +106,9 @@ describe('Calculator Tool Execution', () => {
     const result = await m.execute('calculator', {
       operation: 'subtract',
       a: 10,
-      b: 4
+      b: 4,
     });
-    
+
     expect(result.result).toBe(6);
   });
 
@@ -120,9 +116,9 @@ describe('Calculator Tool Execution', () => {
     const result = await m.execute('calculator', {
       operation: 'multiply',
       a: 5,
-      b: 3
+      b: 3,
     });
-    
+
     expect(result.result).toBe(15);
   });
 
@@ -130,9 +126,9 @@ describe('Calculator Tool Execution', () => {
     const result = await m.execute('calculator', {
       operation: 'divide',
       a: 10,
-      b: 2
+      b: 2,
     });
-    
+
     expect(result.result).toBe(5);
   });
 });
@@ -146,21 +142,21 @@ describe('Calculator Tool Execution', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 describe('Calculator Parameter Validation', () => {
   let m: Awaited<ReturnType<typeof matimo.init>>;
 
   beforeAll(async () => {
-    m = await matimo.init('./tools');
+    m = await MatimoInstance.init('./tools');
   });
 
   it('should reject invalid operation', async () => {
     expect(async () => {
       await m.execute('calculator', {
-        operation: 'invalid',  // Not in enum
+        operation: 'invalid', // Not in enum
         a: 5,
-        b: 3
+        b: 3,
       });
     }).rejects.toThrow('INVALID_PARAMETERS');
   });
@@ -168,7 +164,7 @@ describe('Calculator Parameter Validation', () => {
   it('should require all parameters', async () => {
     expect(async () => {
       await m.execute('calculator', {
-        operation: 'add'
+        operation: 'add',
         // Missing: a, b
       });
     }).rejects.toThrow('INVALID_PARAMETERS');
@@ -178,8 +174,8 @@ describe('Calculator Parameter Validation', () => {
     expect(async () => {
       await m.execute('calculator', {
         operation: 'add',
-        a: 'five',  // Should be number
-        b: 3
+        a: 'five', // Should be number
+        b: 3,
       });
     }).rejects.toThrow('INVALID_PARAMETERS');
   });
@@ -194,7 +190,7 @@ describe('Calculator Parameter Validation', () => {
 
 ```typescript
 import { describe, it, expect, beforeAll } from 'vitest';
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 describe('Gmail Tool Execution', () => {
   let m: Awaited<ReturnType<typeof matimo.init>>;
@@ -205,8 +201,8 @@ describe('Gmail Tool Execution', () => {
       console.warn('⚠️  Skipping Gmail tests: GMAIL_ACCESS_TOKEN not set');
       return;
     }
-    
-    m = await matimo.init('./tools');
+
+    m = await MatimoInstance.init('./tools');
   });
 
   it('should send email', async () => {
@@ -218,9 +214,9 @@ describe('Gmail Tool Execution', () => {
     const result = await m.execute('gmail-send-email', {
       to: 'test@example.com',
       subject: 'Test Email',
-      body: 'This is a test email'
+      body: 'This is a test email',
     });
-    
+
     expect(result.messageId).toBeDefined();
   });
 
@@ -228,9 +224,9 @@ describe('Gmail Tool Execution', () => {
     if (!m) return;
 
     const result = await m.execute('gmail-list-messages', {
-      maxResults: 10
+      maxResults: 10,
     });
-    
+
     expect(result.messages).toBeDefined();
     expect(Array.isArray(result.messages)).toBe(true);
   });
@@ -240,13 +236,13 @@ describe('Gmail Tool Execution', () => {
     const saved = process.env.GMAIL_ACCESS_TOKEN;
     delete process.env.GMAIL_ACCESS_TOKEN;
 
-    const m2 = await matimo.init('./tools');
-    
+    const m2 = await MatimoInstance.init('./tools');
+
     expect(async () => {
       await m2.execute('gmail-send-email', {
         to: 'test@example.com',
         subject: 'Test',
-        body: 'Test'
+        body: 'Test',
       });
     }).rejects.toThrow('AUTH_FAILED');
 
@@ -266,13 +262,13 @@ describe('Gmail Tool Execution', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 describe('Error Handling', () => {
   let m: Awaited<ReturnType<typeof matimo.init>>;
 
   beforeAll(async () => {
-    m = await matimo.init('./tools');
+    m = await MatimoInstance.init('./tools');
   });
 
   it('should throw TOOL_NOT_FOUND', async () => {
@@ -284,7 +280,7 @@ describe('Error Handling', () => {
   it('should throw INVALID_PARAMETERS', async () => {
     expect(async () => {
       await m.execute('calculator', {
-        operation: 'add'
+        operation: 'add',
         // Missing: a, b
       });
     }).rejects.toThrow('INVALID_PARAMETERS');
@@ -295,7 +291,7 @@ describe('Error Handling', () => {
       await m.execute('calculator', {
         operation: 'invalid',
         a: 5,
-        b: 3
+        b: 3,
       });
       expect.fail('Should throw error');
     } catch (error) {
@@ -374,15 +370,15 @@ import { describe, it, expect, vi } from 'vitest';
 describe('Gmail Tool (Mocked)', () => {
   it('should call Gmail API', async () => {
     const mockExecute = vi.fn().mockResolvedValue({
-      messageId: 'msg_123'
+      messageId: 'msg_123',
     });
-    
+
     const result = await mockExecute({
       to: 'test@example.com',
       subject: 'Test',
-      body: 'Test'
+      body: 'Test',
     });
-    
+
     expect(result.messageId).toBe('msg_123');
   });
 });
@@ -396,7 +392,7 @@ it('should handle execution errors', async () => {
     await m.execute('calculator', {
       operation: 'divide',
       a: 10,
-      b: 0  // Division by zero
+      b: 0, // Division by zero
     });
   }).rejects.toThrow();
 });
@@ -409,4 +405,3 @@ it('should handle execution errors', async () => {
 - **Tool Development**: [YAML Tool Specification](./YAML_TOOLS.md)
 - **Error Codes**: [Error Reference](../api-reference/ERRORS.md)
 - **Examples**: [Code Examples](../../examples/)
-

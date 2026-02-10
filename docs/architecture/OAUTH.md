@@ -90,14 +90,14 @@ This keeps Matimo lightweight and lets users manage OAuth however they prefer.
 
 ### Core Components
 
-| Component | Purpose | Location |
-|-----------|---------|----------|
-| **MatimoInstance** | Main SDK class; orchestrates execution | `src/matimo-instance.ts` |
-| **injectAuthParameters()** | Pattern-based token injection | `src/matimo-instance.ts` |
-| **OAuth2ProviderLoader** | Loads provider config from YAML | `src/auth/oauth2-provider-loader.ts` |
-| **OAuth2ProviderConfig** | In-memory provider configuration | `src/auth/oauth2-provider-config.ts` |
-| **ToolDefinition** | Type for tool schemas | `src/core/types.ts` |
-| **HttpExecutor** | Executes HTTP requests | `src/executors/http-executor.ts` |
+| Component                  | Purpose                                | Location                             |
+| -------------------------- | -------------------------------------- | ------------------------------------ |
+| **MatimoInstance**         | Main SDK class; orchestrates execution | `src/matimo-instance.ts`             |
+| **injectAuthParameters()** | Pattern-based token injection          | `src/matimo-instance.ts`             |
+| **OAuth2ProviderLoader**   | Loads provider config from YAML        | `src/auth/oauth2-provider-loader.ts` |
+| **OAuth2ProviderConfig**   | In-memory provider configuration       | `src/auth/oauth2-provider-config.ts` |
+| **ToolDefinition**         | Type for tool schemas                  | `src/core/types.ts`                  |
+| **HttpExecutor**           | Executes HTTP requests                 | `src/executors/http-executor.ts`     |
 
 ## OAuth2 Flow
 
@@ -143,12 +143,14 @@ User Application                          Google OAuth Server
 ### Matimo's Role in the Flow
 
 **What Matimo DOES:**
+
 - ✅ Inject tokens into tool execution (step 7)
 - ✅ Validate token is present before execution
 - ✅ Handle token in HTTP headers correctly
 - ✅ Support token override at runtime
 
 **What Matimo DOES NOT Do:**
+
 - ❌ Perform OAuth authorization (steps 1-2)
 - ❌ Exchange code for token (step 4)
 - ❌ Store tokens (step 6)
@@ -209,7 +211,7 @@ oauth2:
   auth_url: https://accounts.google.com/o/oauth2/auth
   token_url: https://oauth2.googleapis.com/token
   revoke_url: https://oauth2.googleapis.com/revoke
-  
+
   # Scopes for different permission levels
   scopes:
     send:
@@ -219,36 +221,36 @@ oauth2:
       - https://www.googleapis.com/auth/gmail.modify
     full_access:
       - https://www.googleapis.com/auth/gmail
-  
+
   # Default redirect URI for local dev
   redirect_uri: http://localhost:3000/callback
-  
+
   # If your app needs specific settings
-  approval_prompt: force  # Force consent screen
-  access_type: offline    # Get refresh token
+  approval_prompt: force # Force consent screen
+  access_type: offline # Get refresh token
 
 # Override mechanism (defined in tool YAML)
 parameter_mapping:
   # Maps parameter names to environment variable patterns
   - parameter: GMAIL_ACCESS_TOKEN
-    env_pattern: "GMAIL_ACCESS_TOKEN"
+    env_pattern: 'GMAIL_ACCESS_TOKEN'
     required: true
-    description: "Gmail OAuth access token"
+    description: 'Gmail OAuth access token'
 ```
 
 ### Supported Provider Fields
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `provider.name` | string | Yes | Provider identifier (gmail, github, slack) |
-| `provider.description` | string | No | Human-readable description |
-| `oauth2.auth_url` | string | Yes | Authorization endpoint |
-| `oauth2.token_url` | string | Yes | Token exchange endpoint |
-| `oauth2.revoke_url` | string | No | Token revocation endpoint |
-| `oauth2.scopes` | object | Yes | Available OAuth scopes (grouped by feature) |
-| `oauth2.redirect_uri` | string | Yes | Redirect URI after user authorizes |
-| `oauth2.approval_prompt` | string | No | "force" to always show consent screen |
-| `oauth2.access_type` | string | No | "offline" to get refresh token |
+| Field                    | Type   | Required | Description                                 |
+| ------------------------ | ------ | -------- | ------------------------------------------- |
+| `provider.name`          | string | Yes      | Provider identifier (gmail, github, slack)  |
+| `provider.description`   | string | No       | Human-readable description                  |
+| `oauth2.auth_url`        | string | Yes      | Authorization endpoint                      |
+| `oauth2.token_url`       | string | Yes      | Token exchange endpoint                     |
+| `oauth2.revoke_url`      | string | No       | Token revocation endpoint                   |
+| `oauth2.scopes`          | object | Yes      | Available OAuth scopes (grouped by feature) |
+| `oauth2.redirect_uri`    | string | Yes      | Redirect URI after user authorizes          |
+| `oauth2.approval_prompt` | string | No       | "force" to always show consent screen       |
+| `oauth2.access_type`     | string | No       | "offline" to get refresh token              |
 
 ## Token Injection System
 
@@ -263,11 +265,11 @@ Scan the tool's execution config for `{PARAM_NAME}` patterns:
 ```yaml
 execution:
   type: http
-  url: "https://gmail.googleapis.com/..."
+  url: 'https://gmail.googleapis.com/...'
   headers:
-    Authorization: "Bearer {GMAIL_ACCESS_TOKEN}"  # ← Found!
+    Authorization: 'Bearer {GMAIL_ACCESS_TOKEN}' # ← Found!
   body:
-    message: "{COMPOSED_MESSAGE}"                 # ← Found!
+    message: '{COMPOSED_MESSAGE}' # ← Found!
 ```
 
 Result: Array of found parameters: `["GMAIL_ACCESS_TOKEN", "COMPOSED_MESSAGE"]`
@@ -275,6 +277,7 @@ Result: Array of found parameters: `["GMAIL_ACCESS_TOKEN", "COMPOSED_MESSAGE"]`
 #### Step 2: Identify Auth Parameters
 
 Filter by pattern matching (parameters are auth-related if they contain):
+
 - `TOKEN`
 - `KEY`
 - `SECRET`
@@ -283,6 +286,7 @@ Filter by pattern matching (parameters are auth-related if they contain):
 - `APIKEY`
 
 Example:
+
 - ✅ `GMAIL_ACCESS_TOKEN` → Contains "TOKEN" → Auth parameter
 - ✅ `API_KEY` → Contains "KEY" → Auth parameter
 - ❌ `COMPOSED_MESSAGE` → No match → User parameter (not injected)
@@ -295,11 +299,11 @@ For each auth parameter, look up environment variables:
 // Parameter: GMAIL_ACCESS_TOKEN
 
 // Try 1:  prefix (recommended)
-process.env.GMAIL_ACCESS_TOKEN
+process.env.GMAIL_ACCESS_TOKEN;
 // Falls back to:
 
 // Try 2: Direct name
-process.env.GMAIL_ACCESS_TOKEN
+process.env.GMAIL_ACCESS_TOKEN;
 ```
 
 If found, inject into execution parameters.
@@ -320,14 +324,14 @@ private injectAuthParameters(
 
   // Step 2 & 3: For each placeholder, attempt to inject from environment
   const injected = { ...params };
-  
+
   for (const placeholder of placeholders) {
     // Check if this looks like an auth parameter
     if (this.isAuthParameter(placeholder)) {
       // Try  prefix first, then fallback to direct name
       const envKey = `${placeholder}`;
       let value = process.env[envKey] || process.env[placeholder];
-      
+
       if (value) {
         injected[placeholder] = value;
       }
@@ -360,10 +364,10 @@ private extractParameterPlaceholders(
 
 private isAuthParameter(name: string): boolean {
   const authPatterns = [
-    'TOKEN', 'KEY', 'SECRET', 'PASSWORD', 
+    'TOKEN', 'KEY', 'SECRET', 'PASSWORD',
     'CREDENTIAL', 'APIKEY', 'AUTH'
   ];
-  return authPatterns.some(pattern => 
+  return authPatterns.some(pattern =>
     name.toUpperCase().includes(pattern)
   );
 }
@@ -374,6 +378,7 @@ private isAuthParameter(name: string): boolean {
 #### Example 1: Gmail Send Email
 
 **Tool YAML:**
+
 ```yaml
 name: send-email
 execution:
@@ -381,14 +386,15 @@ execution:
   method: post
   url: https://gmail.googleapis.com/gmail/v1/users/me/messages/send
   headers:
-    Authorization: "Bearer {GMAIL_ACCESS_TOKEN}"
+    Authorization: 'Bearer {GMAIL_ACCESS_TOKEN}'
   body:
-    raw: "{ENCODED_MESSAGE}"
+    raw: '{ENCODED_MESSAGE}'
 ```
 
 **User Code:**
+
 ```typescript
-process.env.GMAIL_ACCESS_TOKEN = "ya29.a0AXooCg...";
+process.env.GMAIL_ACCESS_TOKEN = 'ya29.a0AXooCg...';
 
 await matimo.execute('gmail-send-email', {
   to: 'user@example.com',
@@ -399,6 +405,7 @@ await matimo.execute('gmail-send-email', {
 ```
 
 **What Happens:**
+
 1. User provides: `to`, `subject`, `body`
 2. Matimo extracts placeholders: `GMAIL_ACCESS_TOKEN`, `ENCODED_MESSAGE`
 3. Matimo identifies `GMAIL_ACCESS_TOKEN` as auth parameter (contains "TOKEN")
@@ -409,19 +416,21 @@ await matimo.execute('gmail-send-email', {
 #### Example 2: GitHub Repository API
 
 **Tool YAML:**
+
 ```yaml
 name: get-repo-info
 execution:
   type: http
   url: https://api.github.com/repos/{owner}/{repo}
   headers:
-    Authorization: "Bearer {GITHUB_API_KEY}"
-    Accept: "application/vnd.github.v3+json"
+    Authorization: 'Bearer {GITHUB_API_KEY}'
+    Accept: 'application/vnd.github.v3+json'
 ```
 
 **User Code:**
+
 ```typescript
-process.env.GITHUB_API_KEY = "ghp_abc123...";
+process.env.GITHUB_API_KEY = 'ghp_abc123...';
 
 await matimo.execute('get-repo-info', {
   owner: 'torvalds',
@@ -434,15 +443,15 @@ await matimo.execute('get-repo-info', {
 
 ### Files & Locations
 
-| File | Purpose |
-|------|---------|
-| `src/matimo-instance.ts` | Main SDK class, contains `injectAuthParameters()` |
-| `src/auth/oauth2-provider-config.ts` | OAuth2 provider configuration loader |
-| `src/auth/oauth2-provider-loader.ts` | YAML provider file parser |
-| `src/core/types.ts` | `ToolDefinition` interface |
-| `src/executors/http-executor.ts` | HTTP request execution |
-| `tools/{provider}/definition.yaml` | Provider OAuth configuration |
-| `tools/{provider}/{tool}.yaml` | Individual tool definitions |
+| File                                 | Purpose                                           |
+| ------------------------------------ | ------------------------------------------------- |
+| `src/matimo-instance.ts`             | Main SDK class, contains `injectAuthParameters()` |
+| `src/auth/oauth2-provider-config.ts` | OAuth2 provider configuration loader              |
+| `src/auth/oauth2-provider-loader.ts` | YAML provider file parser                         |
+| `src/core/types.ts`                  | `ToolDefinition` interface                        |
+| `src/executors/http-executor.ts`     | HTTP request execution                            |
+| `tools/{provider}/definition.yaml`   | Provider OAuth configuration                      |
+| `tools/{provider}/{tool}.yaml`       | Individual tool definitions                       |
 
 ### OAuth2ProviderLoader
 
@@ -485,12 +494,14 @@ const all = config.getAllProviders();
 #### 1. Token Storage
 
 **DON'T:**
+
 ```bash
 # ❌ Bad: Token in code
 const token = "ya29.a0AXooCg...";
 ```
 
 **DO:**
+
 ```bash
 # ✅ Good: Token in environment variable
 export GMAIL_ACCESS_TOKEN="ya29.a0AXooCg..."
@@ -505,6 +516,7 @@ GMAIL_ACCESS_TOKEN=ya29.a0AXooCg...
 ```
 
 **✅ BEST: Secure Vault**
+
 ```bash
 # Use 1Password, LastPass, AWS Secrets Manager, etc.
 # Retrieve at runtime:
@@ -554,7 +566,7 @@ Always revoke tokens when done:
 // After tool execution completes
 await oauth2.revokeToken(accessToken, {
   provider: 'gmail',
-  revoke_url: 'https://oauth2.googleapis.com/revoke'
+  revoke_url: 'https://oauth2.googleapis.com/revoke',
 });
 ```
 
@@ -565,8 +577,8 @@ Never log tokens:
 ```typescript
 // ❌ Bad: Token in logs
 logger.info('Sending email', {
-  token: params.GMAIL_ACCESS_TOKEN,  // DANGER!
-  to: 'user@example.com'
+  token: params.GMAIL_ACCESS_TOKEN, // DANGER!
+  to: 'user@example.com',
 });
 
 // ✅ Good: Sanitize sensitive data
@@ -612,8 +624,8 @@ headers: {
 ```yaml
 # tools/gmail/definition.yaml
 oauth2:
-  client_id: ${GMAIL_CLIENT_ID}        # From env
-  client_secret: ${GMAIL_CLIENT_SECRET}  # From env (rotate regularly)
+  client_id: ${GMAIL_CLIENT_ID} # From env
+  client_secret: ${GMAIL_CLIENT_SECRET} # From env (rotate regularly)
   # Schedule periodic secret rotation in your OAuth app settings
 ```
 
@@ -638,7 +650,7 @@ oauth2:
   auth_url: https://github.com/login/oauth/authorize
   token_url: https://github.com/login/oauth/access_token
   revoke_url: https://api.github.com/applications/{client_id}/token
-  
+
   scopes:
     read:
       - repo:status
@@ -648,9 +660,9 @@ oauth2:
     admin:
       - admin:repo_hook
       - admin:user
-  
+
   redirect_uri: http://localhost:3000/callback
-  access_type: offline  # Get refresh token
+  access_type: offline # Get refresh token
 ```
 
 #### Step 2: Create Tool Definitions
@@ -676,10 +688,10 @@ parameters:
 execution:
   type: http
   method: get
-  url: "https://api.github.com/repos/{owner}/{repo}"
+  url: 'https://api.github.com/repos/{owner}/{repo}'
   headers:
-    Authorization: "Bearer {GITHUB_API_KEY}"
-    Accept: "application/vnd.github.v3+json"
+    Authorization: 'Bearer {GITHUB_API_KEY}'
+    Accept: 'application/vnd.github.v3+json'
 
 authentication:
   type: oauth2
@@ -711,7 +723,7 @@ const tools = await loader.loadToolsFromDirectory('./tools');
 // GitHub tools are now available
 await matimo.execute('get-repo', {
   owner: 'torvalds',
-  repo: 'linux'
+  repo: 'linux',
   // GITHUB_API_KEY auto-injected from GITHUB_API_KEY
 });
 ```
@@ -720,7 +732,7 @@ await matimo.execute('get-repo', {
 
 ```typescript
 // Override provider endpoint at runtime
-const tool = tools.find(t => t.name === 'get-repo');
+const tool = tools.find((t) => t.name === 'get-repo');
 
 // Option 1: Env variable
 process.env.GITHUB_API_KEY = 'custom-token';
@@ -729,7 +741,7 @@ process.env.GITHUB_API_KEY = 'custom-token';
 const result = await matimo.execute('get-repo', {
   owner: 'torvalds',
   repo: 'linux',
-  GITHUB_API_KEY: 'custom-token'  // Overrides env
+  GITHUB_API_KEY: 'custom-token', // Overrides env
 });
 ```
 
@@ -744,17 +756,18 @@ Users have **multiple flexible options** to pass tokens to Matimo - not just env
 Pass the token directly in the execute call. This is the most flexible and secure approach:
 
 ```typescript
-const token = await getTokenFromVault('gmail');  // Get from vault, database, etc.
+const token = await getTokenFromVault('gmail'); // Get from vault, database, etc.
 
 await matimo.execute('send-email', {
   to: 'user@example.com',
   subject: 'Hello',
   body: 'Test',
-  GMAIL_ACCESS_TOKEN: token  // ✅ Explicit - takes precedence!
+  GMAIL_ACCESS_TOKEN: token, // ✅ Explicit - takes precedence!
 });
 ```
 
 **Advantages:**
+
 - ✅ Most secure (tokens not stored in env)
 - ✅ Per-request flexibility
 - ✅ Multi-tenant support
@@ -777,12 +790,13 @@ process.env.GMAIL_ACCESS_TOKEN = token;
 await matimo.execute('send-email', {
   to: 'user@example.com',
   subject: 'Hello',
-  body: 'Test'
+  body: 'Test',
   // Token auto-injected from process.env
 });
 ```
 
 **Advantages:**
+
 - ✅ Clean code (auto-injection)
 - ✅ Simple to implement
 - ✅ Works across app
@@ -802,14 +816,14 @@ await matimo.execute('send-email', {
   to: 'user@example.com',
   subject: 'Hello',
   body: 'Test',
-  GMAIL_ACCESS_TOKEN: differentToken  // Override for this request
+  GMAIL_ACCESS_TOKEN: differentToken, // Override for this request
 });
 
 // Other requests - use env var (auto-injected)
 await matimo.execute('send-email', {
   to: 'other@example.com',
   subject: 'Hello',
-  body: 'Test'
+  body: 'Test',
   // Uses GMAIL_ACCESS_TOKEN from env
 });
 ```
@@ -844,15 +858,15 @@ const secretsManager = new AWS.SecretsManager();
 async function executeWithVaultToken(toolName, params) {
   // Fetch token from AWS Secrets Manager at runtime
   const secret = await secretsManager.getSecretValue({
-    SecretId: 'matimo-gmail-token'
+    SecretId: 'matimo-gmail-token',
   });
-  
+
   const token = JSON.parse(secret.SecretString).token;
-  
+
   // Pass explicitly - never stored in code or env
   return await matimo.execute(toolName, {
     ...params,
-    GMAIL_ACCESS_TOKEN: token
+    GMAIL_ACCESS_TOKEN: token,
   });
 }
 
@@ -860,7 +874,7 @@ async function executeWithVaultToken(toolName, params) {
 await executeWithVaultToken('send-email', {
   to: 'user@example.com',
   subject: 'Hello',
-  body: 'Test'
+  body: 'Test',
 });
 ```
 
@@ -870,17 +884,17 @@ await executeWithVaultToken('send-email', {
 // Different token per user/tenant
 async function sendEmailForUser(userId, mailParams) {
   const user = await db.users.findById(userId);
-  const userToken = user.gmail_access_token;  // From database
-  
+  const userToken = user.gmail_access_token; // From database
+
   return await matimo.execute('send-email', {
     ...mailParams,
-    GMAIL_ACCESS_TOKEN: userToken  // User-specific token
+    GMAIL_ACCESS_TOKEN: userToken, // User-specific token
   });
 }
 
 // Each user has their own token
-await sendEmailForUser('user-1', {to, subject, body});
-await sendEmailForUser('user-2', {to, subject, body});
+await sendEmailForUser('user-1', { to, subject, body });
+await sendEmailForUser('user-2', { to, subject, body });
 ```
 
 #### Example: Token Refresh Handler
@@ -888,7 +902,7 @@ await sendEmailForUser('user-2', {to, subject, body});
 ```typescript
 class TokenManager {
   private currentToken: string;
-  
+
   async ensureValidToken() {
     // Check if token expired
     if (this.isTokenExpired(this.currentToken)) {
@@ -898,20 +912,20 @@ class TokenManager {
     }
     return this.currentToken;
   }
-  
+
   async execute(toolName, params) {
     const token = await this.ensureValidToken();
-    
+
     return await matimo.execute(toolName, {
       ...params,
-      GMAIL_ACCESS_TOKEN: token  // Always fresh
+      GMAIL_ACCESS_TOKEN: token, // Always fresh
     });
   }
 }
 
 // Usage
 const tokenManager = new TokenManager();
-await tokenManager.execute('send-email', {to, subject, body});
+await tokenManager.execute('send-email', { to, subject, body });
 ```
 
 #### Example: OAuth Callback Handler (Phase 2 Preparation)
@@ -920,45 +934,42 @@ await tokenManager.execute('send-email', {to, subject, body});
 async function handleOAuthCallback(code, userId) {
   // Exchange code for token
   const tokens = await oauth2.exchangeCode(code);
-  
+
   // Store tokens (choose one approach)
-  
+
   // Option A: Database
   await db.users.update(userId, {
     gmail_access_token: tokens.access_token,
     gmail_refresh_token: tokens.refresh_token,
-    token_expires_at: Date.now() + tokens.expires_in * 1000
+    token_expires_at: Date.now() + tokens.expires_in * 1000,
   });
-  
+
   // Option B: Secure Vault (AWS Secrets Manager, 1Password, etc.)
-  await vault.setSecret(
-    `user-${userId}-gmail-token`,
-    tokens.access_token
-  );
-  
+  await vault.setSecret(`user-${userId}-gmail-token`, tokens.access_token);
+
   // Later, when executing tools:
   const token = await db.users.findById(userId).gmail_access_token;
   // OR
   const token = await vault.getSecret(`user-${userId}-gmail-token`);
-  
+
   // Pass to Matimo
   await matimo.execute('send-email', {
     to: 'user@example.com',
     subject: 'Hello',
     body: 'Test',
-    GMAIL_ACCESS_TOKEN: token  // Explicit token
+    GMAIL_ACCESS_TOKEN: token, // Explicit token
   });
 }
 ```
 
 ### Comparison: Which Approach to Use?
 
-| Approach | Pros | Cons | Best For |
-|----------|------|------|----------|
-| **Explicit Parameter** | 🔒 Secure, flexible, per-request, no env vars | More verbose | Production, multi-tenant, microservices |
-| **Runtime Environment** | ✨ Clean code, auto-injection, simple | Token in memory, app-wide | Development, single-tenant, startups |
-| **Vault/Secrets Manager** | 🛡️ Enterprise-secure, auditable, centralized | Extra infrastructure, complexity | Enterprise apps, compliance-required |
-| **OAuth Flow** | 🔑 User-authenticated, standards-based | Phase 2 (not yet) | Future production apps |
+| Approach                  | Pros                                          | Cons                             | Best For                                |
+| ------------------------- | --------------------------------------------- | -------------------------------- | --------------------------------------- |
+| **Explicit Parameter**    | 🔒 Secure, flexible, per-request, no env vars | More verbose                     | Production, multi-tenant, microservices |
+| **Runtime Environment**   | ✨ Clean code, auto-injection, simple         | Token in memory, app-wide        | Development, single-tenant, startups    |
+| **Vault/Secrets Manager** | 🛡️ Enterprise-secure, auditable, centralized  | Extra infrastructure, complexity | Enterprise apps, compliance-required    |
+| **OAuth Flow**            | 🔑 User-authenticated, standards-based        | Phase 2 (not yet)                | Future production apps                  |
 
 ## Examples
 
@@ -967,15 +978,13 @@ async function handleOAuthCallback(code, userId) {
 ```typescript
 // examples/tools/gmail/gmail-factory.ts
 
-import { MatimoInstance, ToolLoader } from '../../../src';
+import { MatimoInstance } from matimo;
 
-// Set up Matimo
-const loader = new ToolLoader('./tools');
-const tools = await loader.loadToolsFromDirectory();
-const matimo = new MatimoInstance(tools);
+// Initialize Matimo with tools
+const matimo = await MatimoInstance.init('./tools');
 
 // Gmail access token from environment
-process.env.GMAIL_ACCESS_TOKEN = 'ya29.a0AXooCg...';
+process.env.MATIMO_GMAIL_ACCESS_TOKEN = 'ya29.a0AXooCg...';
 
 // Execute without passing token explicitly
 const result = await matimo.execute('send-email', {
@@ -1020,31 +1029,30 @@ import { createAgent } from 'langchain/agents';
 const matimo = await MatimoInstance.init('./tools');
 
 // Get Gmail-specific tools
-const gmailTools = matimo.listTools()
-  .filter(t => t.name.startsWith('gmail-'));
+const gmailTools = matimo.listTools().filter((t) => t.name.startsWith('gmail-'));
 
 // Convert to LangChain format with OAuth token
-const langchainTools = await convertToolsToLangChain(
-  gmailTools,
-  matimo,
-  { GMAIL_ACCESS_TOKEN: process.env.GMAIL_ACCESS_TOKEN! }
-);
+const langchainTools = await convertToolsToLangChain(gmailTools, matimo, {
+  GMAIL_ACCESS_TOKEN: process.env.GMAIL_ACCESS_TOKEN!,
+});
 
 // Agent decides which tool to use based on user request
 const agent = await createAgent({
   model: new ChatOpenAI({ modelName: 'gpt-4' }),
-  tools: langchainTools
+  tools: langchainTools,
 });
 
 // User says what they want in natural language
 const result = await agent.invoke({
-  messages: [{
-    role: 'user',
-    content: 'Send an email to alice@example.com saying hello'
-  }]
+  messages: [
+    {
+      role: 'user',
+      content: 'Send an email to alice@example.com saying hello',
+    },
+  ],
 });
 
-// Agent chooses 'send-email' tool, passes parameters, 
+// Agent chooses 'send-email' tool, passes parameters,
 // Matimo injects GMAIL_ACCESS_TOKEN, email is sent!
 ```
 
@@ -1189,7 +1197,7 @@ Parameter Name: GMAIL_ACCESS_TOKEN
 │                                                          │
 │ ✓ If found → Use it                                      │
 │ │                                                        │
-│ └─> GMAIL_ACCESS_TOKEN = "ya29.a0AXooCg..."              │ 
+│ └─> GMAIL_ACCESS_TOKEN = "ya29.a0AXooCg..."              │
 │                                                          │
 └──────────────────────────────────────────────────────────┘
                         │
@@ -1231,19 +1239,20 @@ Parameter Name: GMAIL_ACCESS_TOKEN
 
 ### Common Patterns
 
-| Pattern | Use Case | Token Passing |
-|---------|----------|---------------|
-| **Factory** | Scripts, direct SDK | Auto-inject from env |
-| **Decorator** | Framework integration | Auto-inject from env |
-| **AI Agent** | LLM-driven tools | Auto-inject from env |
-| **Environment File** | Local development | Load from `.env` |
-| **Secure Vault** | Production | Retrieve at runtime |
+| Pattern              | Use Case              | Token Passing        |
+| -------------------- | --------------------- | -------------------- |
+| **Factory**          | Scripts, direct SDK   | Auto-inject from env |
+| **Decorator**        | Framework integration | Auto-inject from env |
+| **AI Agent**         | LLM-driven tools      | Auto-inject from env |
+| **Environment File** | Local development     | Load from `.env`     |
+| **Secure Vault**     | Production            | Retrieve at runtime  |
 
 ### Environment Variable Names
 
 **Format:** `{PROVIDER}_{TYPE}`
 
 Examples:
+
 - `GMAIL_ACCESS_TOKEN`
 - `GITHUB_API_KEY`
 - `SLACK_BOT_TOKEN`
@@ -1265,16 +1274,16 @@ Examples:
 
 ### Common Issues
 
-| Symptom | Cause | Solution |
-|---------|-------|----------|
-| "Missing required parameter: GMAIL_ACCESS_TOKEN" | Token env var not set | `export GMAIL_ACCESS_TOKEN=token` |
-| "401 Unauthorized" | Invalid or expired token | Refresh token or re-authenticate |
-| "403 Forbidden" | Insufficient scopes | Check token has required permissions |
-| "400 Bad Request" | Malformed request | Verify parameter encoding and URL |
-| "Invalid grant" | Token not recognized | Token revoked or never issued |
-| "Token expired" | Access token lifetime exceeded | Refresh token (Phase 2 feature) |
-| Tool not found | Tool YAML doesn't exist | Verify `tools/{provider}/{tool}.yaml` |
-| Parameter mismatch | User param doesn't match schema | Check tool's parameter definitions |
+| Symptom                                          | Cause                           | Solution                              |
+| ------------------------------------------------ | ------------------------------- | ------------------------------------- |
+| "Missing required parameter: GMAIL_ACCESS_TOKEN" | Token env var not set           | `export GMAIL_ACCESS_TOKEN=token`     |
+| "401 Unauthorized"                               | Invalid or expired token        | Refresh token or re-authenticate      |
+| "403 Forbidden"                                  | Insufficient scopes             | Check token has required permissions  |
+| "400 Bad Request"                                | Malformed request               | Verify parameter encoding and URL     |
+| "Invalid grant"                                  | Token not recognized            | Token revoked or never issued         |
+| "Token expired"                                  | Access token lifetime exceeded  | Refresh token (Phase 2 feature)       |
+| Tool not found                                   | Tool YAML doesn't exist         | Verify `tools/{provider}/{tool}.yaml` |
+| Parameter mismatch                               | User param doesn't match schema | Check tool's parameter definitions    |
 
 ### Debug Steps
 
@@ -1283,7 +1292,7 @@ Examples:
 console.log(process.env.GMAIL_ACCESS_TOKEN);
 
 // 2. Check parameter name contains TOKEN/KEY/SECRET
-const tool = tools.find(t => t.name === 'send-email');
+const tool = tools.find((t) => t.name === 'send-email');
 console.log(tool.execution);
 
 // 3. Verify token format and expiration
@@ -1294,7 +1303,7 @@ await matimo.execute('send-email', {
   to: 'user@example.com',
   subject: 'Test',
   body: 'Test',
-  GMAIL_ACCESS_TOKEN: 'explicit-token'  // Bypass env lookup
+  GMAIL_ACCESS_TOKEN: 'explicit-token', // Bypass env lookup
 });
 
 // 5. Check token has required scopes
@@ -1331,6 +1340,7 @@ async function ensureValidToken() {
 To add support for a new provider (GitHub, Slack, etc.):
 
 1. **Create Provider Config** - `tools/{provider}/definition.yaml`
+
    ```yaml
    provider:
      name: github
@@ -1343,6 +1353,7 @@ To add support for a new provider (GitHub, Slack, etc.):
    ```
 
 2. **Create Tool Definitions** - `tools/{provider}/{tool}.yaml`
+
    ```yaml
    authentication:
      type: oauth2
@@ -1350,7 +1361,7 @@ To add support for a new provider (GitHub, Slack, etc.):
      required_scopes: [repo]
    execution:
      headers:
-       Authorization: "Bearer {GITHUB_API_KEY}"
+       Authorization: 'Bearer {GITHUB_API_KEY}'
    ```
 
 3. **Set Environment Variable** - `export GITHUB_API_KEY=token`

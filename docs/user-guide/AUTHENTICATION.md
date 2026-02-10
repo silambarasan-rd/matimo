@@ -7,6 +7,7 @@ Setup OAuth2 for tools that require user authentication.
 Some tools require authentication (e.g., Gmail, GitHub, Slack). Matimo handles OAuth2 token injection automatically.
 
 **How it works:**
+
 1. Obtain OAuth2 token from provider (Google, GitHub, Slack)
 2. Set token in environment variable
 3. Matimo automatically injects token into tool execution
@@ -19,6 +20,7 @@ Some tools require authentication (e.g., Gmail, GitHub, Slack). Matimo handles O
 ### 1. Get OAuth2 Token
 
 From Google Cloud Console:
+
 ```bash
 # Set your Gmail access token
 export GMAIL_ACCESS_TOKEN="ya29.a0AfH6SMBx..."
@@ -29,15 +31,15 @@ For other providers, see [Full OAuth2 Guide](../architecture/OAUTH.md).
 ### 2. Execute OAuth2 Tool
 
 ```typescript
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
-const m = await matimo.init('./tools');
+const m = await MatimoInstance.init('./tools');
 
 // Token automatically injected from GMAIL_ACCESS_TOKEN env var
 const result = await m.execute('gmail-send-email', {
   to: 'user@example.com',
   subject: 'Hello from Matimo',
-  body: 'This email was sent via Matimo!'
+  body: 'This email was sent via Matimo!',
 });
 
 console.log('✅ Email sent:', result.messageId);
@@ -49,11 +51,11 @@ No additional code needed — Matimo handles token injection.
 
 ## Supported Providers
 
-| Provider | Token Env Var | Scope |
-|----------|---------------|-------|
-| **Google (Gmail)** | `GMAIL_ACCESS_TOKEN` | `https://www.googleapis.com/auth/gmail.send` |
-| **GitHub** | `GITHUB_ACCESS_TOKEN` | `repo, gist` |
-| **Slack** | `SLACK_ACCESS_TOKEN` | `chat:write, users:read` |
+| Provider           | Token Env Var         | Scope                                        |
+| ------------------ | --------------------- | -------------------------------------------- |
+| **Google (Gmail)** | `GMAIL_ACCESS_TOKEN`  | `https://www.googleapis.com/auth/gmail.send` |
+| **GitHub**         | `GITHUB_ACCESS_TOKEN` | `repo, gist`                                 |
+| **Slack**          | `SLACK_ACCESS_TOKEN`  | `chat:write, users:read`                     |
 
 ---
 
@@ -139,7 +141,7 @@ try {
   const result = await m.execute('gmail-send-email', {
     to: 'test@example.com',
     subject: 'Test',
-    body: 'Test email'
+    body: 'Test email',
   });
   console.log('✅ Authentication successful');
 } catch (error) {
@@ -156,11 +158,13 @@ try {
 ### Token Not Found
 
 **Error:**
+
 ```
 Tool execution failed: Missing GMAIL_ACCESS_TOKEN environment variable
 ```
 
 **Solution:**
+
 ```bash
 # Verify token is set
 echo $GMAIL_ACCESS_TOKEN
@@ -172,11 +176,13 @@ export GMAIL_ACCESS_TOKEN="your_token_here"
 ### Token Expired
 
 **Error:**
+
 ```
 401 Unauthorized: Invalid Credentials
 ```
 
 **Solution:**
+
 1. Refresh your OAuth2 token from provider
 2. Update environment variable
 3. Retry execution
@@ -184,11 +190,13 @@ export GMAIL_ACCESS_TOKEN="your_token_here"
 ### Invalid Scopes
 
 **Error:**
+
 ```
 Access denied: Insufficient scopes
 ```
 
 **Solution:**
+
 1. Check required scopes in tool documentation
 2. Generate new token with required scopes
 3. Update environment variable
@@ -209,6 +217,7 @@ export GITHUB_TOKEN="ghp_xxxxx"  # DO NOT COMMIT
 ```
 
 Store tokens securely:
+
 - Environment variables (recommended)
 - `.env` file (add to `.gitignore`)
 - System keychain (macOS Keychain, Windows Credential Manager)
@@ -219,13 +228,13 @@ Store tokens securely:
 ## Advanced: Multiple Providers
 
 ```typescript
-const m = await matimo.init('./tools');
+const m = await MatimoInstance.init('./tools');
 
 // Execute Gmail tool
 const email = await m.execute('gmail-send-email', {
   to: 'user@example.com',
   subject: 'From Matimo',
-  body: 'Test'
+  body: 'Test',
 });
 
 // Execute GitHub tool
@@ -233,13 +242,13 @@ const issue = await m.execute('github-create-issue', {
   owner: 'tallclub',
   repo: 'matimo',
   title: 'Feature request',
-  body: 'Please add more tools'
+  body: 'Please add more tools',
 });
 
 // Execute Slack tool
 const msg = await m.execute('slack-send-message', {
   channel: '#general',
-  text: 'Hello from Matimo!'
+  text: 'Hello from Matimo!',
 });
 ```
 
@@ -252,4 +261,3 @@ Each tool automatically uses the correct token based on its provider.
 - **Full OAuth2 Details**: [OAuth2 Implementation Guide](../architecture/OAUTH.md)
 - **Tool Discovery**: [Find Tools](./TOOL_DISCOVERY.md)
 - **Error Handling**: [Error Codes Reference](../api-reference/ERRORS.md)
-

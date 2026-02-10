@@ -11,12 +11,19 @@
 ### Option 1: From npm (Recommended for Users)
 
 ```bash
+# Install the complete SDK (includes core + all tools)
 npm install matimo
 # or with pnpm (recommended)
 pnpm add matimo
+
+# OR install individual packages:
+pnpm add @matimo/core    # Core SDK only
+pnpm add @matimo/slack   # Slack tools
+pnpm add @matimo/gmail   # Gmail tools
+pnpm add @matimo/cli     # CLI tool management
 ```
 
-**Note**: v0.1.0-alpha.3 is available on npm. Stable v1.0.0 release coming in Q4 2026.
+**Note**: v0.1.0-alpha.4 is available on npm. Stable v1.0.0 release coming in Q4 2026.
 
 ### Option 2: From Source (Recommended for Contributors)
 
@@ -38,12 +45,14 @@ pnpm test
 ## Verify Installation
 
 ```typescript
-// test-install.ts
-import { matimo } from 'matimo';
+// test-install.ts - Both imports work:
+import { MatimoInstance } from 'matimo'; // From root package
+// OR
+import { MatimoInstance } from '@matimo/core'; // From core package directly
 
-const instance = await matimo.init('./tools');
+const matimo = await MatimoInstance.init('./tools');
 console.log(`✅ Matimo installed successfully`);
-console.log(`📦 Loaded ${instance.listTools().length} tools`);
+console.log(`📦 Loaded ${matimo.listTools().length} tools`);
 ```
 
 Run it:
@@ -89,13 +98,13 @@ If issues persist, check [Troubleshooting Guide](../troubleshooting/FAQ.md)
 
 ## System Requirements
 
-| Component | Requirement |
-|-----------|------------|
-| Node.js | ≥ 18.0.0 |
-| pnpm | ≥ 8.15.0 |
-| TypeScript | ≥ 5.0 (included) |
+| Component  | Requirement                |
+| ---------- | -------------------------- |
+| Node.js    | ≥ 18.0.0                   |
+| pnpm       | ≥ 8.15.0                   |
+| TypeScript | ≥ 5.0 (included)           |
 | Disk Space | ~500MB (with node_modules) |
-| Memory | ≥ 512MB for build |
+| Memory     | ≥ 512MB for build          |
 
 ## IDE Setup
 

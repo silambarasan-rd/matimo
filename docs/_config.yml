@@ -5,9 +5,9 @@ show_downloads: true
 google_analytics: false
 
 # Matimo Documentation
-url: "https://tallclub.github.io"
-baseurl: "/matimo"
-repository: "tallclub/matimo"
+url: 'https://tallclub.github.io'
+baseurl: '/matimo'
+repository: 'tallclub/matimo'
 
 # Build settings
 markdown: kramdown
@@ -15,13 +15,13 @@ highlighter: rouge
 
 # Navigation
 nav:
-  - text: "Home"
-    url: "/"
-  - text: "Getting Started"
-    url: "/getting-started/"
-  - text: "Documentation"
-    url: "/"
-  - text: "GitHub"
-    url: "https://github.com/tallclub/matimo"
-  - text: "npm"
-    url: "https://www.npmjs.com/package/matimo"
+  - text: 'Home'
+    url: '/'
+  - text: 'Getting Started'
+    url: '/getting-started/'
+  - text: 'Documentation'
+    url: '/'
+  - text: 'GitHub'
+    url: 'https://github.com/tallclub/matimo'
+  - text: 'npm'
+    url: 'https://www.npmjs.com/package/matimo'

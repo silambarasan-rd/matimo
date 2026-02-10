@@ -15,697 +15,218 @@
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge" alt="Node.js"></a>
 </p>
 
-**Matimo** is a universal, configuration-driven AI tools ecosystem accessible through **multiple integration paths**. Define tools **once in YAML** and access them via SDK, MCP server, CLI, or HTTP — across any AI framework or agent system.
+**Matimo** is a universal, configuration-driven AI tools ecosystem. Define tools **once in YAML** and use them everywhere — SDK, MCP server, CLI, REST API, or any AI framework (LangChain, CrewAI, Claude, etc.).
 
-If you want tools that feel **fast, maintainable, and framework-agnostic**, this is it.
+**Define once → Plug into any agent ecosystem.**
 
-[Documentation](./docs) · [Getting Started](./docs/getting-started/QUICK_START.md) · [API Reference](./docs/api-reference/SDK.md) · [Tool Spec](./docs/tool-development/TOOL_SPECIFICATION.md) · [GitHub](https://github.com/tallclub/matimo) · [Why Matimo?](#why-matimo)
+[📖 Documentation](./docs) · [🚀 Quick Start](./docs/getting-started/QUICK_START.md) · [📚 API Reference](./docs/api-reference/SDK.md) · [🛠️ Add Tools](./docs/tool-development/ADDING_TOOLS.md) · [🤖 Examples](./examples)
 
-## Quick Start (TL;DR)
+---
 
-Runtime: **Node ≥18**, **pnpm 8.15+**
+## Quick Start
 
 ```bash
-# Clone and install
-git clone https://github.com/tallclub/matimo.git
-cd matimo
-pnpm install
-pnpm build
+npm install matimo
 
-# Run tests
-pnpm test
-
-# Start using
-const { MatimoInstance } = require('matimo');
-
-// Use built-in tools from npm package
-const matimo = await MatimoInstance.init('./node_modules/matimo/tools');
-
-// Execute built-in Slack tool
-const result = await matimo.execute('slack_send_message', {
-  channel: '#general',
-  message: 'Hello from Matimo!'
-});
-
-// Or add custom tools alongside built-in ones
-const customMatimo = await MatimoInstance.init('./tools');
+# OR auto-discover tools from node_modules/@matimo/*
+npm install matimo @matimo/slack @matimo/gmail
 ```
 
-Prefer factory pattern (simple) or decorator pattern (class-based code). See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) for details.
+```typescript
+import { MatimoInstance } from 'matimo';
+
+// Factory pattern: Simple and direct
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+const result = await matimo.execute('slack-send-message', {
+  channel: '#general',
+  text: 'Hello from Matimo!',
+});
+```
+
+See [Three Integration Patterns](#three-integration-patterns) and [examples/](./examples) for more.
 
 ---
 
 ## Why Matimo?
 
-### The Problem It Solves
+**The Problem:** Every AI framework (LangChain, CrewAI, custom agents, etc.) defines tools differently. You duplicate tool logic across frameworks.
 
-Building agent workflows is exciting but painful: every framework (LangChain, CrewAI, AutoGen, LlamaIndex, custom TS agents, Claude via MCP, etc.) has its own way of defining, calling, and executing tools.
+**The Solution:** Define tools **once** in clean YAML, use them **everywhere** — with built-in:
 
-You end up duplicating tool logic, schemas, and integrations repeatedly.
+- TypeScript SDK (factory & decorator patterns)
+- LangChain integration (with examples)
+- Matimo CLI (tool discovery & management)
+- Auto-discovery from npm packages
+- OAuth2 support + parameter validation
 
-**Matimo fixes this.** Define tools **once** in clean YAML files (with Zod validation for safety) and use them everywhere:
-
-- **Pure TypeScript SDK** (factory or decorator patterns)
-- **LangChain** (examples included)
-- **MCP Server** (Claude-native) — coming soon
-- **REST API** — coming soon
-- **CLI** — coming soon
-- **Python SDK** — coming soon
-- **Tool Marketplace** (2000+ tools goal) — coming soon
-
-**Define once → Plug into any agent ecosystem.**
-
-### Why Open Source?
-
-I built Matimo because I needed it while working on my own agent product — and I couldn't find a truly framework-agnostic, fully open-source alternative (most are paid or tightly coupled to one framework).
-
-I'm a solo developer (nomadic coder at heart) vibe coding, **all help is appreciated** to make Matimo a go-to standard for agent tools.
-
-### How You Can Help Right Now
-
-- ⭐ **Star the repo** to show support and increase visibility
-- 🐛 **Open issues** for bugs, missing features, or pain points
-- 💡 **Suggest tools** to add (YAML examples welcome!)
-- 🔀 **Submit PRs** — we follow TDD + Conventional Commits (see CONTRIBUTING.md)
-- 📢 **Spread the word** on X/Twitter, Reddit (r/LocalLLM, r/AI_Agents, etc.), Discord communities
-
-Let's build a simple, powerful shovel for the agentic world together.
-
-With ❤️
-[Sajesh](https://www.linkedin.com/in/sajeshnair/)  
-Creator of Matimo
+See [Contributing](./CONTRIBUTING.md) or [Why Matimo?](./docs/index.md#why-matimo) for the full story.
 
 ---
 
-## Built so far
+## Three Integration Patterns
 
-**SDK with 2 Patterns**
+### 1️⃣ Factory Pattern (Simplest)
 
-- Factory pattern (simple, recommended)
-- Decorator pattern (class-based agents)
+```typescript
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+const result = await matimo.execute('calculator', { operation: 'add', a: 5, b: 3 });
+```
 
-**Tool Execution & Discovery**
+### 2️⃣ Decorator Pattern (Class-Based)
 
-- YAML/JSON tool definitions with validation
-- Command executor (shell commands + parameter templating)
-- HTTP executor (REST APIs with auth)
-- Tool registry with search, filter, discover
+```typescript
+@tool('slack-send-message')
+async sendMessage(channel: string, text: string) { /* Auto-executed */ }
+```
 
-**Quality & Type Safety**
+### 3️⃣ LangChain Integration
 
-- 100% test passing
-- Full TypeScript strict mode (zero `any` types)
-- Zod schema validation
-- ESLint clean
+```typescript
+const tools = matimo.listTools().map(tool => ({
+  type: 'function',
+  function: { name: tool.name, description: tool.description, ... }
+}));
+```
 
-## Built-in Tools
+See [SDK Usage Patterns](./docs/user-guide/SDK_PATTERNS.md) and [LangChain Integration](./docs/framework-integrations/LANGCHAIN.md) for details.
 
-**Communication**
-
-- **Slack**: Send messages, upload files, manage channels, reactions, threads (16 operations)
-- **Gmail**: Send emails, create drafts, list messages, get message details (4 operations)
-
-**Development**
-
-- **GitHub**: Repository operations, issues, PRs, commits (coming soon)
-- **HTTP Client**: Generic REST API calls with auth support
-
-**Data & Infrastructure**
-
-- **AWS**: EC2, S3, Lambda operations (coming soon)
-- **Stripe**: Payment processing, subscriptions (coming soon)
-
-**Utilities**
-
-- **Calculator**: Arithmetic operations
-- **Echo Tool**: Simple command testing
-
-All tools include:
-
-- ✅ Full TypeScript/JavaScript support
-- ✅ OAuth2 authentication (where applicable)
-- ✅ Parameter validation with Zod
-- ✅ Response schema validation
-- ✅ Error handling with retry logic
-- ✅ Comprehensive documentation
-
-## Planned Features
-
-**More Tools** - Jira, Notion, Linear, HubSpot, Twilio, etc
-
-**Tool Marketplace** — Community-contributed tools registry
-
-**MCP Server** — Claude & MCP client integration
-
-**REST API** — HTTP endpoints for tool execution
-
-**CLI** — Command-line tool management & testing
-
-**OAuth2** — GitHub, Google, Slack authentication
-
-**Python SDK** — Multi-language support
-
-**Health Monitoring** — Detect API schema changes
-
-**Rate Limiting** — Token bucket algorithm per tool
+---
 
 ## Installation
 
-### Option 1: From npm Registry (Recommended for Applications)
-
-Install Matimo as a dependency in your project:
+### From npm (Recommended)
 
 ```bash
 npm install matimo
-# or
-pnpm add matimo
-# or
-yarn add matimo
+
+# Install tool providers
+npm install @matimo/slack @matimo/gmail
 ```
 
-Then import and use:
+Then use with auto-discovery:
 
 ```typescript
-import { MatimoInstance } from 'matimo';
-
-const matimo = await MatimoInstance.init('./tools');
-const result = await matimo.execute('tool-name', {
-  /* params */
-});
+const matimo = await MatimoInstance.init({ autoDiscover: true });
 ```
 
-### Option 2: Clone & Build Locally (For Development)
-
-Contribute to Matimo or use the latest pre-release version:
+### Matimo CLI (Tool Management)
 
 ```bash
-git clone https://github.com/tallclub/matimo.git
-cd matimo
-pnpm install && pnpm build
+npm install -g @matimo/cli
 
-# Link for local development
-pnpm link --global
-# or use in local projects:
-npm link ../path/to/matimo
+matimo list      # Show installed packages
+matimo search email  # Find tools
+matimo install slack # Install tools
 ```
 
-## SDK Usage Patterns
+See [CLI Docs](./packages/cli/README.md) for full reference.
 
-### Level 1: Pure SDK Patterns (No Framework Required)
-
-Use Matimo directly without any AI framework. Perfect for CLI tools, backends, scheduled jobs, and simple integrations.
-
-#### 1. Factory Pattern (Recommended for Simple Use Cases)
-
-Simplest, ergonomic, single-initialization API:
-
-```typescript
-import { matimo } from 'matimo';
-
-// Initialize once
-const matimoInstance = await matimo.init('./tools');
-
-// Execute tools by name
-const result = await matimoInstance.execute('calculator', {
-  operation: 'add',
-  a: 5,
-  b: 3,
-});
-
-// Discover tools
-const allTools = matimoInstance.listTools();
-const tool = matimoInstance.getTool('calculator');
-const mathTools = matimoInstance.getToolsByTag('math');
-const results = matimoInstance.searchTools('calculator');
-```
-
-**Use when:** You need simple tool execution without LLM orchestration.
-
-#### 2. Decorator Pattern (Recommended for Class-Based Code)
-
-For class-based applications with automatic tool binding:
-
-```typescript
-import { tool } from 'matimo';
-import { matimo } from 'matimo';
-
-// Initialize Matimo (once)
-const matimoInstance = await matimo.init('./tools');
-
-// NOTE: `setGlobalMatimoInstance()` is convenient for quick demos.
-// For production code prefer explicit injection (constructor/factory) or an explicit binder.
-
-// Constructor / DI example (recommended for production)
-class MyAgent {
-  constructor(public matimo: MatimoInstance) {}
-
-  @tool('calculator')
-  async calculate(operation: string, a: number, b: number) {
-    // @tool decorator intercepts this call
-    // Argument order matches tool parameters: operation, a, b
-    // Method body can be empty - decorator does the work
-  }
-
-  @tool('github-get-repo')
-  async getRepo(owner: string, repo: string) {
-    // @tool decorator intercepts this call
-    // Argument order matches tool parameters: owner, repo
-    // Method body can be empty - decorator does the work
-  }
-}
-
-const agent = new MyAgent(matimoInstance);
-// When you call agent.calculate('add', 5, 3):
-// 1. @tool decorator intercepts the call
-// 2. Decorator maps arguments to parameters: { operation: 'add', a: 5, b: 3 }
-// 3. Decorator calls matimo.execute('calculator', {...})
-// 4. Result is returned to you
-const result = await agent.calculate('add', 5, 3);
-```
-
-**Use when:** You prefer method-based calling style or class-based architecture.
-
-**How @tool decorator works:**
-
-- ✅ **Intercepts method calls** - Decorator intercepts and executes via Matimo
-- ✅ **Auto-maps arguments** - Method args become tool parameters (in order)
-- ✅ **Auto-executes tool** - Calls `matimo.execute(toolName, params)` automatically
-- ✅ **Returns tool result** - The result from Matimo is returned to you
-- ✅ **Fully scalable** - Add 100 tools = just add 100 `@tool()` decorated methods, no routing code
-- ✅ **Works with DI** - Uses instance property or global instance
-- ✅ **Method body optional** - Can be empty since decorator replaces it
-
-### Level 2: Framework Integration Patterns (With AI Framework)
-
-Integrate Matimo tools with LangChain(TS), CrewAI (coming soon) , or other AI frameworks for intelligent tool orchestration. The LLM automatically decides which tool to use.
-
-#### LangChain Integration (Recommended for AI Agents)
-
-Three complete, production-ready examples in [examples/tools](./examples/tools):
-
-1. **LangChain Official API** (⭐ Most Recommended)
-   - Uses `createAgent()` + `tool()` from LangChain core
-   - Automatic schema generation and tool orchestration
-   - [See example](./examples/tools/agents/langchain-agent.ts)
-
-2. **Decorator Pattern with LangChain**
-   - Uses `@tool()` decorators with OpenAI function calling
-   - Integrates Matimo tools into class-based LangChain agents
-   - [See example](./examples/tools/agents/decorator-pattern-agent.ts)
-
-3. **Factory Pattern with LangChain**
-   - Direct `matimo.execute()` calls in LangChain agent
-   - Simple functional approach
-   - [See example](./examples/tools/agents/factory-pattern-agent.ts)
-
-All examples load tools from YAML once and reuse them across patterns — **single source of truth**.
-
-**Quick Start:** See [examples/tools/README.md](./examples/tools/README.md) for setup instructions and running the agents.
-
-**Use when:** You need intelligent tool selection based on natural language prompts.
-
-## Integration Paths
-
-### SDK (Available Now)
-
-**Level 1: Pure SDK** (No framework required)
-
-- **Factory Pattern** — Simplest API for any use case
-- **Decorator Pattern** — Best for class-based code
-
-See [SDK Usage Patterns - Level 1](#level-1-pure-sdk-patterns-no-framework-required) above for examples.
-
-**Level 2: Framework Integration** (With AI framework)
-
-- **LangChain Integration** — Production-ready AI agents with OpenAI GPT
-- **CrewAI Integration** — Coming in Phase 2
-- **Anthropic SDK Integration** — Coming in Phase 2
-
-See [SDK Usage Patterns - Level 2](#level-2-framework-integration-patterns-with-ai-framework) above and [examples/tools/README.md](./examples/tools/README.md) for complete working examples.
-
-### Advanced (Coming Soon)
-
-**MCP Server (Claude Integration)**
-
-```typescript
-// MCP Server - Coming in Phase 2
-// import { MCPServer } from 'matimo/mcp';
-
-const server = new MCPServer({
-  toolsPath: './tools',
-  autoLoad: true,
-});
-
-await server.start();
-// Claude can now discover and call all loaded tools
-```
-
-**REST API (HTTP Endpoints)**
+### From Source (Contributors)
 
 ```bash
-# Coming soon
-matimo api --port 3000
-
-curl -X POST http://localhost:3000/tools/calculator/execute \
-  -d '{"operation":"add","a":5,"b":3}'
+git clone https://github.com/tallclub/matimo
+cd matimo && pnpm install && pnpm build
+pnpm test
+cd examples/tools && pnpm install && pnpm agent:factory
 ```
 
-**CLI (Command Line)**
+---
+
+## Features
+
+**Now:**
+
+- ✅ Factory & Decorator patterns (SDK)
+- ✅ LangChain integration
+- ✅ YAML tool definitions with Zod validation
+- ✅ Slack & Gmail tools (20+ operations)
+- ✅ Auto-discovery from npm packages
+- ✅ Matimo CLI (install, list, search)
+- ✅ OAuth2 support
+- ✅ 100% test coverage, TypeScript strict mode
+
+**Coming Soon:**
+
+- 🔜 MCP Server (Claude integration)
+- 🔜 REST API
+- 🔜 More tool providers (GitHub, Stripe, Twilio, etc.)
+- 🔜 Tool Marketplace
+- 🔜 Python SDK
+
+---
+
+## Adding Tools to Matimo
+
+Create tool providers as independent npm packages:
 
 ```bash
-matimo list                                    # List all tools
-matimo execute calculator --operation add --a 5 --b 3
-matimo validate tools/calculator.yaml          # Validate tool YAML
-matimo test calculator                         # Test tool
-```
+mkdir packages/github
+cd packages/github && cat > package.json << 'EOF'
+{ "name": "@matimo/github", "type": "module", ... }
+EOF
 
-## Tool Definition (YAML)
-
-Tools are defined once in YAML, executed everywhere. Each tool specifies its execution type, parameters, schema, and auth:
-
-```yaml
-name: calculator
-version: 1.0.0
-description: Perform basic mathematical operations
-
+mkdir tools/github-create-issue
+cat > tools/github-create-issue/definition.yaml << 'EOF'
+name: github-create-issue
 parameters:
-  operation:
-    type: string
-    enum: [add, subtract, multiply, divide]
-    required: true
-    description: Mathematical operation
-  a:
-    type: number
-    required: true
-    description: First operand
-  b:
-    type: number
-    required: true
-    description: Second operand
-
+  owner: { type: string, required: true }
+  repo: { type: string, required: true }
+  title: { type: string, required: true }
 execution:
-  type: command
-  command: ts-node
-  args: ['tools/calculator/calculator.ts', '{operation}', '{a}', '{b}']
-  timeout: 30000
-
-output_schema:
-  type: object
-  properties:
-    result:
-      type: number
-      description: Calculation result
-
-error_handling:
-  retry: 3
-  backoff_type: exponential
-  initial_delay_ms: 1000
+  type: http
+  method: POST
+  url: https://api.github.com/repos/{owner}/{repo}/issues
+  headers:
+    Authorization: "Bearer {GITHUB_TOKEN}"
+EOF
 ```
 
-### Execution Types
-
-**Implemented:**
-
-- **`command`** — Shell commands with parameter templating
-- **`http`** — REST APIs with auth and response validation
-
-**Coming:**
-
-- **`script`** — Safe JavaScript/Python execution (sandboxed)
-- **`docker`** — Containerized execution
-- **`custom`** — External executables
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│ AI Agents & Frameworks                      │
-│ (Claude, LangChain, CrewAI, Custom)         │
-└──────────┬────────────────┬─────────────────┘
-           │                │
-     ┌─────▼─────┐   ┌─────▼─────┐
-     │  SDK      │   │  MCP      │
-     │           │   │           │
-     └─────┬─────┘   └──────┬────┘
-           │                │
-           └────────┬───────┘
-                    │
-         ┌──────────▼──────────┐
-         │  Matimo Core        │
-         │  - Loader           │
-         │  - Validator        │
-         │  - Executors        │
-         └──────────┬──────────┘
-                    │
-       ┌────────────┼────────────┐
-       │            │            │
-       ▼            ▼            ▼
-   ┌────────┐  ┌──────────┐  ┌────────┐
-   │Command │  │   HTTP   │  │ Schema │
-   │Exec    │  │  Exec    │  │Validate│
-   └────────┘  └──────────┘  └────────┘
-       │            │            │
-       └────────────┼────────────┘
-                    │
-        ┌───────────▼───────────┐
-        │ Tool Definitions      │
-        │ (YAML/JSON files)     │
-        │ calculator            │
-        │ http-client           │
-        │ echo-tool             │
-        │ 1000+ coming soon     │
-        └───────────────────────┘
-```
-
-## Project Structure
-
-```
-matimo/
-├── src/
-│   ├── core/                    # Core types, schemas
-│   ├── executors/               # Command & HTTP execution
-│   ├── decorators/              # @tool decorator pattern
-│   ├── mcp/                     # MCP server
-│   ├── cli/                     # CLI interface
-│   ├── errors/                  # Error handling
-│   └── logging/                 # Structured logging
-├── tools/
-│   ├── calculator/              # Calculator tool
-│   ├── echo-tool/               # Echo tool
-│   └── http-client/             # HTTP client tool
-├── test/                        # tests
-│   ├── unit/
-│   └── integration/
-├── docs/
-│   ├── quick-start.md
-│   ├── api.md
-│   ├── tool-spec.md
-│   └── ...
-└── package.json
-```
-
-## Development
-
-### Prerequisites
-
-- **Node.js** 18+
-- **pnpm** 8.15+
-- **TypeScript** 5.9+
-
-### Setup
+Then publish to npm as `@matimo/github`. Users install and auto-discover:
 
 ```bash
-git clone https://github.com/tallclub/matimo.git
-cd matimo
-pnpm install
-pnpm build
+npm install @matimo/github
+# New tools automatically available!
+const matimo = await MatimoInstance.init({ autoDiscover: true });
 ```
 
-### Commands
+See [Adding Tools to Matimo](./docs/tool-development/ADDING_TOOLS.md) for the complete 6-step guide.
 
-```bash
-pnpm build          # Compile TypeScript
-pnpm test           # Run all tests
-pnpm test:watch    # Watch mode
-pnpm test:coverage # Coverage report
-pnpm lint          # ESLint
-pnpm format        # Prettier formatting
-```
-
-### Testing
-
-Matimo uses Jest with TypeScript. Tests follow TDD principles:
-
-```bash
-pnpm test                       # All tests
-pnpm test types.test.ts         # Specific file
-pnpm test:watch                 # Watch mode
-pnpm test:coverage              # Coverage (target: 80%+)
-```
-
-**Coverage Target:** 80%+ (currently 112 tests, 11+ suites)
-
-## Community
-
-We welcome contributions!
-
-### Getting Started
-
-1. **Fork** the repository
-2. **Create branch** (`git checkout -b feature/amazing-feature`)
-3. **Write tests first** (TDD approach)
-4. **Make changes**
-5. **Run tests** (`pnpm test && pnpm lint`)
-6. **Commit** with conventional commits
-7. **Push** and open PR
-
-### Commit Format
-
-We enforce [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat(scope): short description
-fix(executor): validate parameters
-docs(readme): update guide
-test(decorator): add tests
-```
-
-### What Can You Contribute?
-
-- Core SDK improvements
-- Bug fixes
-- Documentation
-- Test coverage
-- Tool definitions
-- New executor types
-- Performance optimizations
-- Security
-- Ideas
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
+---
 
 ## Documentation
 
-- **[Quick Start](./docs/getting-started/QUICK_START.md)** — Get up and running in 5 minutes
-- **[API Reference](./docs/api-reference/SDK.md)** — Complete SDK API
-- **[Tool Specification](./docs/tool-development/TOOL_SPECIFICATION.md)** — How to write YAML tools
-- **[Decorator Guide](./docs/tool-development/DECORATOR_GUIDE.md)** — Using @tool decorators
-- **[Commit Guidelines](./docs/community/COMMIT_GUIDELINES.md)** — Conventional commits
-- **[Development Standards](./docs/user-guide/DEVELOPMENT_STANDARDS.md)** — Code quality rules
-- **[Architecture Overview](./docs/architecture/OVERVIEW.md)** — System design and patterns
-- **[Framework Integrations](./docs/framework-integrations/LANGCHAIN.md)** — LangChain, CrewAI patterns
+- [Getting Started](./docs/getting-started/)
+- [API Reference](./docs/api-reference/SDK.md)
+- [Tool Development](./docs/tool-development/ADDING_TOOLS.md)
+- [Architecture Overview](./docs/architecture/OVERVIEW.md)
+- [Contributing](./CONTRIBUTING.md)
 
-## Roadmap
-
-### Foundation (Complete)
-
-**Completed:**
-
-- Tool loading (YAML/JSON)
-- Command & HTTP executors
-- Factory & Decorator patterns
-- Tool registry & discovery
-- 112+ tests (100% passing)
-- Full TypeScript strict mode
-
-### Reliability (Coming)
-
-**Upcoming:**
-
-- MCP server (Claude integration)
-- CLI tool management
-- REST API server
-- OAuth2 authentication
-- Rate limiting
-- Health monitoring
-
-### Ecosystem (Coming)
-
-**Future:**
-
-- Python SDK
-- MCP
-- Skills/Workflows (multi-tool orchestration)
-- 2000+ pre-configured tools
-
-## Performance Benchemark Expected
-
-- **Tool Execution:** <100ms overhead per call
-- **Schema Validation:** <10ms per request
-- **Memory:** ~50MB base + 1-2MB per loaded tool
-- **Concurrency:** 100+ simultaneous tools
-
-## Security
-
-### Implemented
-
-**Currently:**
-
-- No hardcoded credentials (environment variables only)
-- Input validation (Zod schemas)
-- Safe error messages (no secret leaks)
-- Full TypeScript strict mode
-
-### Coming
-
-**Next:**
-
-- Response validation against schemas
-- Health monitoring (detect API changes)
-- OAuth2 token management
-- Rate limiting
-
-**Future:**
-
-- Sandboxed execution (Docker/Firejail)
-- Encryption at rest
-- Audit logging
-- Zero-trust architecture
-
-See [SECURITY.md](./SECURITY.md) for detailed guidelines.
+---
 
 ## License
 
 MIT © 2026 Matimo Contributors
 
-## Support
+---
 
-- 📖 [Docs](./docs)
-- 💬 [Discussions](https://github.com/tallclub/matimo/discussions)
-- 🐛 [Issues](https://github.com/tallclub/matimo/issues)
+## Support the Project
 
-## Contributors
-
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
-
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/tallclub"><img src="https://avatars.githubusercontent.com/u/112923179?v=4?s=100" width="50px;" alt="tallclub" style="border-radius: 50%;"/>
-    </tr>
-  </tbody>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=tallclub/matimo&type=date&legend=top-left)](https://www.star-history.com/#tallclub/matimo&type=date&legend=top-left)
+- ⭐ Star the repo
+- 🐛 Open issues for bugs or features
+- 🔀 Submit PRs (see [Contributing](./CONTRIBUTING.md))
+- 📢 Share on Twitter, Reddit, Discord
 
 ---
 
-**Ready to integrate AI tools across your framework?**
+## Contributors
 
-[Get Started Now →](./docs/getting-started/QUICK_START.md)
+<a href="https://github.com/tallclub/matimo/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=tallclub/matimo" />
+</a>
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=tallclub/matimo&type=Date)](https://star-history.com/#tallclub/matimo&Date)

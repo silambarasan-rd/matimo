@@ -282,7 +282,7 @@ This keeps your code clean and secure - no tokens in source code!
 
 ## 🔗 Related Resources
 
-- **[Matimo Documentation](../../README.md)** - Complete SDK reference
+- **[Matimo Documentation](https://tallclub.github.io/matimo/api-reference/SDK.html)** - Complete SDK reference
 - **[Gmail API Docs](https://developers.google.com/gmail/api)** - Official Gmail API
 - **[OAuth Playground](https://developers.google.com/oauthplayground)** - Get tokens
 - **[Google Cloud Console](https://console.cloud.google.com)** - Manage credentials
@@ -338,7 +338,7 @@ pnpm run gmail:langchain --email:youremail@gmail.com
 2. Verify your OAuth token is valid (less than 1 hour old)
 3. Ensure all Gmail scopes are selected
 4. Check that `GMAIL_ACCESS_TOKEN` is set correctly
-5. Review the [main README](../README.md) for general setup
+5. Review the [main README](https://github.com/tallclub/matimo) for general setup
 
 ---
 
