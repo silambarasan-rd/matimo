@@ -132,19 +132,30 @@ function parameterToZod(param: Parameter): z.ZodType<unknown> {
  * Auto-detect if a parameter name looks like a secret
  * based on common patterns (TOKEN, KEY, SECRET, PASSWORD)
  *
- * Uses word-boundary matching to avoid false positives:
- * - ✅ Matches: "api_token", "API_KEY", "secret", "password_hash"
+ * Uses word-boundary matching and camelCase detection to avoid false positives:
+ * - ✅ Matches: "api_token", "API_KEY", "getToken", "secret", "password_hash"
  * - ❌ Rejects: "monkey", "turkey_id", "donkey" (substrings only)
  */
 function isSecretParameter(paramName: string): boolean {
   const upperName = paramName.toUpperCase();
-  // Word boundary patterns: match as separate words, not substrings
-  // Examples: "TOKEN" in "api_token", "API_KEY", "getToken"
-  return (
-    /\b(TOKEN|KEY|SECRET|PASSWORD)\b/.test(upperName) ||
-    /_(TOKEN|KEY|SECRET|PASSWORD)(_|$)/.test(upperName) ||
-    /^(TOKEN|KEY|SECRET|PASSWORD)_/.test(upperName)
-  );
+
+  // Pattern 1: Word boundaries (works for snake_case: api_token, API_KEY)
+  if (/\b(TOKEN|KEY|SECRET|PASSWORD)\b/.test(upperName)) {
+    return true;
+  }
+
+  // Pattern 2: Underscore prefix/suffix (works for snake_case: _token_, prefix_token_)
+  if (/(^|_)(TOKEN|KEY|SECRET|PASSWORD)(_|$)/.test(upperName)) {
+    return true;
+  }
+
+  // Pattern 3: CamelCase detection (works for camelCase: getToken, apiKey)
+  // Check if secret word appears after a lowercase letter (camelCase boundary)
+  if (/[a-z](TOKEN|KEY|SECRET|PASSWORD)/.test(paramName)) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
