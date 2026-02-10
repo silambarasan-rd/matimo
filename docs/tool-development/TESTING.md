@@ -31,7 +31,7 @@ This validates:
 ### Test Tool Definition
 
 ```typescript
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Tool Definition', () => {
@@ -141,7 +141,7 @@ describe('Calculator Tool Execution', () => {
 ### Test Parameter Constraints
 
 ```typescript
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Calculator Parameter Validation', () => {
@@ -261,7 +261,7 @@ describe('Gmail Tool Execution', () => {
 ### Test Error Conditions
 
 ```typescript
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { MatimoInstance } from 'matimo';
 
 describe('Error Handling', () => {
