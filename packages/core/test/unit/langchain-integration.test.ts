@@ -1185,6 +1185,123 @@ describe('convertToolsToLangChain', () => {
         // api_key is not injected since it's not in the secrets map
       });
     });
+
+    it('should NOT treat false-positive substrings as secrets', async () => {
+      // Test word-boundary matching: "monkey", "turkey_id", "donkey" should NOT be treated as secrets
+      const tool: ToolDefinition = {
+        name: 'false-positive-tool',
+        version: '1.0.0',
+        description: 'Tool with parameters that contain secret patterns as substrings',
+        parameters: {
+          monkey: {
+            type: 'string',
+            required: true,
+            description: 'A monkey emoji',
+          },
+          turkey_id: {
+            type: 'string',
+            required: true,
+            description: 'Turkey identifier',
+          },
+          donkey_mode: {
+            type: 'string',
+            required: true,
+            description: 'Mode like a donkey',
+          },
+          real_api_key: {
+            type: 'string',
+            required: true,
+            description: 'Real API key',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, { real_api_key: 'key123' });
+
+      // Only real_api_key should be treated as a secret, NOT the false positives
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+      expect(schema.shape).toHaveProperty('monkey'); // Should be in schema (NOT a secret)
+      expect(schema.shape).toHaveProperty('turkey_id'); // Should be in schema (NOT a secret)
+      expect(schema.shape).toHaveProperty('donkey_mode'); // Should be in schema (NOT a secret)
+      expect(schema.shape).not.toHaveProperty('real_api_key'); // Should NOT be in schema (is a secret)
+
+      // Execute with non-secret params
+      await langTools[0].invoke({
+        monkey: 'emoji',
+        turkey_id: '42',
+        donkey_mode: 'wild',
+      });
+      expect(matimo.execute).toHaveBeenCalledWith('false-positive-tool', {
+        monkey: 'emoji',
+        turkey_id: '42',
+        donkey_mode: 'wild',
+        real_api_key: 'key123', // Injected from secrets
+      });
+    });
+
+    it('should correctly detect valid secret patterns (word boundaries)', async () => {
+      const tool: ToolDefinition = {
+        name: 'valid-secrets-tool',
+        version: '1.0.0',
+        description: 'Tool with properly formatted secret parameters',
+        parameters: {
+          api_token: {
+            type: 'string',
+            required: true,
+            description: 'API token',
+          },
+          access_key: {
+            type: 'string',
+            required: true,
+            description: 'Access key',
+          },
+          getSecret: {
+            type: 'string',
+            required: true,
+            description: 'Get secret',
+          },
+          PASSWORD: {
+            type: 'string',
+            required: true,
+            description: 'Password',
+          },
+          data: {
+            type: 'string',
+            required: true,
+            description: 'Regular data parameter',
+          },
+        },
+        execution: { type: 'command', command: 'echo', args: [] },
+      };
+
+      matimo.execute = jest.fn().mockResolvedValue({ success: true });
+      const langTools = await convertToolsToLangChain([tool], matimo, {
+        api_token: 'token123',
+        access_key: 'key456',
+        getSecret: 'secret789',
+        PASSWORD: 'pass111',
+      });
+
+      // All secret parameters should be excluded from schema
+      const schema = langTools[0].schema as z.ZodObject<Record<string, z.ZodTypeAny>>;
+      expect(schema.shape).not.toHaveProperty('api_token');
+      expect(schema.shape).not.toHaveProperty('access_key');
+      expect(schema.shape).not.toHaveProperty('getSecret');
+      expect(schema.shape).not.toHaveProperty('PASSWORD');
+      expect(schema.shape).toHaveProperty('data');
+
+      // Execute with only non-secret data
+      await langTools[0].invoke({ data: 'value' });
+      expect(matimo.execute).toHaveBeenCalledWith('valid-secrets-tool', {
+        data: 'value',
+        api_token: 'token123',
+        access_key: 'key456',
+        getSecret: 'secret789',
+        PASSWORD: 'pass111',
+      });
+    });
   });
 
   describe('Enum constraints - 100% lines', () => {

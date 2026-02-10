@@ -131,14 +131,19 @@ function parameterToZod(param: Parameter): z.ZodType<unknown> {
 /**
  * Auto-detect if a parameter name looks like a secret
  * based on common patterns (TOKEN, KEY, SECRET, PASSWORD)
+ *
+ * Uses word-boundary matching to avoid false positives:
+ * - ✅ Matches: "api_token", "API_KEY", "secret", "password_hash"
+ * - ❌ Rejects: "monkey", "turkey_id", "donkey" (substrings only)
  */
 function isSecretParameter(paramName: string): boolean {
   const upperName = paramName.toUpperCase();
+  // Word boundary patterns: match as separate words, not substrings
+  // Examples: "TOKEN" in "api_token", "API_KEY", "getToken"
   return (
-    upperName.includes('TOKEN') ||
-    upperName.includes('KEY') ||
-    upperName.includes('SECRET') ||
-    upperName.includes('PASSWORD')
+    /\b(TOKEN|KEY|SECRET|PASSWORD)\b/.test(upperName) ||
+    /_(TOKEN|KEY|SECRET|PASSWORD)(_|$)/.test(upperName) ||
+    /^(TOKEN|KEY|SECRET|PASSWORD)_/.test(upperName)
   );
 }
 
