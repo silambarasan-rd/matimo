@@ -45,12 +45,15 @@ import { MatimoInstance } from 'matimo';
 const matimo = await MatimoInstance.init('./tools');
 
 // List tools
-console.log('Available tools:', matimo.listTools().map(t => t.name));
+console.log(
+  'Available tools:',
+  matimo.listTools().map((t) => t.name)
+);
 
 // Execute tool
 const result = await matimo.execute('slack-send-message', {
   channel: '#general',
-  text: 'Hello from Matimo!'
+  text: 'Hello from Matimo!',
 });
 
 console.log('Result:', result);
@@ -59,6 +62,7 @@ console.log('Result:', result);
 #### File: [examples/tools/agents/factory-pattern-agent.ts](agents/factory-pattern-agent.ts)
 
 Shows:
+
 - Loading tools with `MatimoInstance.init()`
 - Listing available tools
 - Executing tools with parameters
@@ -113,6 +117,7 @@ console.log('Channels:', channels);
 #### File: [examples/tools/agents/decorator-pattern-agent.ts](agents/decorator-pattern-agent.ts)
 
 Shows:
+
 - Global Matimo instance setup
 - `@tool` decorator usage
 - Class-based orchestration
@@ -147,7 +152,7 @@ const matimo = await MatimoInstance.init('./tools');
 
 // 2. Convert to LangChain format
 const langchainTools = await convertToolsToLangChain(
-  matimo.listTools().filter(t => t.name.startsWith('slack-')),
+  matimo.listTools().filter((t) => t.name.startsWith('slack-')),
   matimo,
   { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN! }
 );
@@ -160,7 +165,7 @@ const agent = await createAgent({
 
 // 4. Run it — LLM decides which tool to use
 const result = await agent.invoke({
-  input: 'List all Slack channels and send a message to #general saying hello'
+  input: 'List all Slack channels and send a message to #general saying hello',
 });
 
 console.log('Agent response:', result.output);
@@ -169,6 +174,7 @@ console.log('Agent response:', result.output);
 #### File: [examples/tools/agents/langchain-agent.ts](agents/langchain-agent.ts)
 
 Shows:
+
 - `convertToolsToLangChain()` API
 - LangChain agent setup
 - Tool filtering and auth injection
@@ -187,15 +193,15 @@ Shows:
 
 ## Feature Comparison
 
-| Feature | Factory | Decorator | LangChain |
-|---------|---------|-----------|-----------|
-| **Simplicity** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
-| **Best For** | Scripts, APIs | Classes | AI agents |
-| **Syntax** | `execute()` | `@tool()` | `agent.invoke()` |
-| **Type Safety** | Good | Excellent | Excellent |
-| **Framework** | Any | Any | LangChain required |
-| **Async/Await** | Required | Required | Built-in |
-| **Error Handling** | Manual | Manual | LLM-driven |
+| Feature            | Factory       | Decorator | LangChain          |
+| ------------------ | ------------- | --------- | ------------------ |
+| **Simplicity**     | ⭐⭐⭐⭐⭐    | ⭐⭐⭐⭐  | ⭐⭐⭐             |
+| **Best For**       | Scripts, APIs | Classes   | AI agents          |
+| **Syntax**         | `execute()`   | `@tool()` | `agent.invoke()`   |
+| **Type Safety**    | Good          | Excellent | Excellent          |
+| **Framework**      | Any           | Any       | LangChain required |
+| **Async/Await**    | Required      | Required  | Built-in           |
+| **Error Handling** | Manual        | Manual    | LLM-driven         |
 
 ---
 
@@ -204,6 +210,7 @@ Shows:
 All examples use these tools (real implementations):
 
 ### Slack Tools
+
 - `slack-send-message` — Send channel messages
 - `slack-list-channels` — List all channels
 - `slack_get_channel_history` — Retrieve message history from a channel
@@ -212,12 +219,14 @@ All examples use these tools (real implementations):
 - `slack_send_dm` — Send direct messages
 
 ### Gmail Tools
+
 - `gmail-send-email` — Send emails
 - `gmail-list-messages` — List messages
 - `gmail-get-message` — Get message details
 - `gmail-create-draft` — Create drafts
 
 ### Utilities
+
 - `calculator` — Math operations
 - `echo-tool` — Echo tool (for testing)
 
