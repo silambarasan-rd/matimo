@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 /**
  * Install command - Install a specific tool package
@@ -17,9 +17,8 @@ export async function installCommand(toolNames: string[]): Promise<void> {
   try {
     console.info(`📦 Installing ${packages.join(', ')}...`);
 
-    // Run npm install for the packages
-    const command = `npm install ${packages.join(' ')}`;
-    execSync(command, { stdio: 'inherit' });
+    // Run npm install for the packages without invoking a shell
+    execFileSync('npm', ['install', ...packages], { stdio: 'inherit' });
 
     console.info('\n✅ Installation complete!');
     console.info('\nNext steps:');

@@ -1,8 +1,8 @@
 import { installCommand } from '../../../src/commands/install';
 
-// Mock execSync
+// Mock execFileSync
 jest.mock('child_process');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 describe('Install Command', () => {
   let consoleErrorSpy: jest.SpyInstance;
@@ -48,17 +48,21 @@ describe('Install Command', () => {
   });
 
   it('should execute npm install with tool names', async () => {
-    execSync.mockImplementation(() => {});
+    execFileSync.mockImplementation(() => {});
 
     await installCommand(['slack', 'gmail']);
 
-    expect(execSync).toHaveBeenCalledWith('npm install @matimo/slack @matimo/gmail', {
-      stdio: 'inherit',
-    });
+    expect(execFileSync).toHaveBeenCalledWith(
+      'npm',
+      ['install', '@matimo/slack', '@matimo/gmail'],
+      {
+        stdio: 'inherit',
+      }
+    );
   });
 
   it('should display installation message', async () => {
-    execSync.mockImplementation(() => {});
+    execFileSync.mockImplementation(() => {});
 
     await installCommand(['slack']);
 
@@ -66,7 +70,7 @@ describe('Install Command', () => {
   });
 
   it('should display completion message after successful install', async () => {
-    execSync.mockImplementation(() => {});
+    execFileSync.mockImplementation(() => {});
 
     await installCommand(['slack']);
 
@@ -74,7 +78,7 @@ describe('Install Command', () => {
   });
 
   it('should display next steps after installation', async () => {
-    execSync.mockImplementation(() => {});
+    execFileSync.mockImplementation(() => {});
 
     await installCommand(['slack']);
 
@@ -83,7 +87,7 @@ describe('Install Command', () => {
 
   it('should handle installation errors gracefully', async () => {
     const error = new Error('npm install failed');
-    execSync.mockImplementation(() => {
+    execFileSync.mockImplementation(() => {
       throw error;
     });
 
@@ -103,12 +107,13 @@ describe('Install Command', () => {
   });
 
   it('should handle multiple tools installation', async () => {
-    execSync.mockImplementation(() => {});
+    execFileSync.mockImplementation(() => {});
 
     await installCommand(['slack', 'gmail', 'stripe']);
 
-    expect(execSync).toHaveBeenCalledWith(
-      'npm install @matimo/slack @matimo/gmail @matimo/stripe',
+    expect(execFileSync).toHaveBeenCalledWith(
+      'npm',
+      ['install', '@matimo/slack', '@matimo/gmail', '@matimo/stripe'],
       { stdio: 'inherit' }
     );
   });
