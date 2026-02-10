@@ -430,7 +430,7 @@ try {
 | Code                  | ErrorCode Enum                  | Cause                    | Resolution                             |
 | --------------------- | ------------------------------- | ------------------------ | -------------------------------------- |
 | `TOOL_NOT_FOUND`      | `ErrorCode.TOOL_NOT_FOUND`      | Tool doesn't exist       | Check tool name, use `listTools()`     |
-| `INVALID_PARAMETERS`  | `ErrorCode.INVALID_PARAMETER`   | Missing/wrong params     | Check tool definition                  |
+| `INVALID_PARAMETER`   | `ErrorCode.INVALID_PARAMETER`   | Missing/wrong params     | Check tool definition                  |
 | `EXECUTION_FAILED`    | `ErrorCode.EXECUTION_FAILED`    | Tool execution error     | Check tool error details               |
 | `INVALID_SCHEMA`      | `ErrorCode.INVALID_SCHEMA`      | Bad tool definition      | Fix tool YAML, run `validate-tools`    |
 | `VALIDATION_FAILED`   | `ErrorCode.VALIDATION_FAILED`   | Param validation failed  | Check constraints (enum, regex, range) |
