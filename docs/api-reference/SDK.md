@@ -5,7 +5,7 @@ Complete reference for the Matimo TypeScript SDK. For a simpler introduction, se
 ## Table of Contents
 
 - [MatimoInstance](#matimoinstance)
-  - [init()](#inittoolspath)
+  - [init()](#initoptions)
   - [execute()](#executetoolname-params)
   - [listTools()](#listtools)
   - [getTool()](#gettoolname)
@@ -23,21 +23,24 @@ Complete reference for the Matimo TypeScript SDK. For a simpler introduction, se
 
 Main entry point for the Matimo SDK. Initialize once at startup, then execute tools as needed.
 
-### `init(toolsPath)`
+### `init(options?)`
 
-Initialize Matimo with tools from a directory or array of directories.
+Initialize Matimo with tools from specified paths or auto-discovery.
 
 **Signature:**
 
 ```typescript
-static async init(toolsPath: string | string[]): Promise<MatimoInstance>
+static async init(options?: InitOptions | string): Promise<MatimoInstance>
 ```
 
 **Parameters:**
 
-- `toolsPath` (string | string[], required) - Path(s) to tools directory/directories
-  - String: Single directory path (e.g., `'./tools'`)
-  - Array: Multiple paths including provider packages (e.g., `['./tools', './node_modules/@matimo/slack/tools']`)
+- `options` (InitOptions | string, optional) - Initialization configuration
+  - `InitOptions` object:
+    - `autoDiscover` (boolean, optional) - Automatically discover tools from `node_modules/@matimo/*` packages
+    - `toolPaths` (string[], optional) - Array of explicit tool directory paths
+    - `includeCore` (boolean, optional) - Include core built-in tools (default: true when using InitOptions)
+  - String: Backward-compatible single directory path (e.g., `'./tools'`)
 
 **Returns:** `Promise<MatimoInstance>` - Initialized instance ready to execute tools
 
