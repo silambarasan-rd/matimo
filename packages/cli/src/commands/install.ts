@@ -22,13 +22,25 @@ export async function installCommand(toolNames: string[]): Promise<void> {
 
     console.info('\n✅ Installation complete!');
     console.info('\nNext steps:');
-    console.info('1. Import and initialize Matimo with auto-discovery:');
+    console.info('1. Import and initialize Matimo with auto-discovery (Recommended):');
     console.info('   const matimo = await MatimoInstance.init({ autoDiscover: true });');
-    console.info('\n2. Or explicitly load the tools:');
-    console.info(`   const matimo = await MatimoInstance.init({
+    console.info('\n2. Or explicitly load the tools (ESM):');
+    console.info(`   import { createRequire } from 'module';
+   const require = createRequire(import.meta.url);
+   const matimo = await MatimoInstance.init({
      toolPaths: [
        require.resolve('@matimo/slack/tools'),
        require.resolve('@matimo/gmail/tools'),
+     ]
+   });`);
+    console.info('\n3. Or use file URLs (Alternative ESM approach):');
+    console.info(`   import { fileURLToPath } from 'url';
+   import path from 'path';
+   const __dirname = path.dirname(fileURLToPath(import.meta.url));
+   const matimo = await MatimoInstance.init({
+     toolPaths: [
+       path.join(__dirname, 'node_modules/@matimo/slack/tools'),
+       path.join(__dirname, 'node_modules/@matimo/gmail/tools'),
      ]
    });`);
     console.info('\n📖 For more info: https://github.com/tallclub/matimo#readme');

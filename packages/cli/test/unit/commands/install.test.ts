@@ -85,6 +85,24 @@ describe('Install Command', () => {
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Next steps'));
   });
 
+  it('should display ESM-friendly examples in help text', async () => {
+    execFileSync.mockImplementation(() => {});
+
+    await installCommand(['slack']);
+
+    // Check for auto-discovery example
+    const infoOutput = consoleInfoSpy.mock.calls.map((call) => call[0]).join('\n');
+    expect(infoOutput).toContain('autoDiscover: true');
+
+    // Check for createRequire example
+    expect(infoOutput).toContain('createRequire');
+    expect(infoOutput).toContain('import.meta.url');
+
+    // Check for file URL example
+    expect(infoOutput).toContain('fileURLToPath');
+    expect(infoOutput).toContain('node_modules/@matimo');
+  });
+
   it('should handle installation errors gracefully', async () => {
     const error = new Error('npm install failed');
     execFileSync.mockImplementation(() => {
