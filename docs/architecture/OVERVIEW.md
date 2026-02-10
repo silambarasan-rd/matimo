@@ -1,13 +1,45 @@
 # System Architecture Overview
 
-Understand how Matimo is designed and how components interact.
+Understand how Matimo's monorepo structure works and how components interact.
 
-## High-Level Architecture
+## Monorepo Organization
+
+Matimo uses a **pnpm workspaces** monorepo with independent, installable packages:
+
+```
+packages/core              # Core SDK (matimo on npm)
+├── Orchestration
+├── Executors
+├── Type definitions
+└── Built-in tools (calculator, echo)
+
+packages/slack             # Slack tools (@matimo/slack)
+├── 6+ Slack tool definitions
+└── Slack OAuth2 config
+
+packages/gmail             # Gmail tools (@matimo/gmail)
+├── 4+ Gmail tool definitions
+└── Gmail OAuth2 config
+
+packages/cli               # CLI (@matimo/cli)
+├── install, list, search commands
+└── Tool discovery & management
+
+examples/tools             # Working examples
+├── factory-pattern-agent.ts
+├── decorator-pattern-agent.ts
+├── langchain-agent.ts
+└── Provider-specific examples
+```
+
+**Key principle:** Each package is independently installable from npm, but shares a single source of truth for tool definitions.
+
+## High-Level Runtime Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    Application Layer                             │
-│         (Your code: Express, CLI, Scheduled Job, etc)            │
+│    (Your code: Express, CLI, Scheduled Job, LangChain, etc)      │
 └───────────────────────────┬──────────────────────────────────────┘
                             │
         ┌───────────────────┴────────────────────┐
@@ -33,44 +65,60 @@ Understand how Matimo is designed and how components interact.
                          └──────────┬───────────┘
                                     │
             ┌───────────────────────▼────────────────────┐
-            │      SDK Layer (Matimo Core)               │
-            │                                             │
+            │      SDK Layer (matimo package)            │
+            │      packages/core/src/                    │
+            │                                            │
             │  ┌──────────────────────────────────────┐  │
             │  │  MatimoInstance (Orchestrator)       │  │
-            │  │  • Tool registry  • Executor coord  │  │
+            │  │  • Tool registry  • Executor coord   │  │
             │  │  • Parameter validation              │  │
             │  │  • Error handling                    │  │
             │  └──────────────────────────────────────┘  │
             └───────┬──────────────────────┬─────────────┘
                     │                      │
         ┌───────────▼──────┐    ┌──────────▼────────┐
-        │ Command Executor │    │  HTTP Executor   │
+        │ Command Executor │    │  HTTP Executor    │
         │                  │    │                   │
-        │ • Shell commands │    │ • REST APIs      │
-        │ • Param template │    │ • Auth injection │
-        │ • Exit handling  │    │ • Response valid │
+        │ • Shell commands │    │ • REST APIs       │
+        │ • Param template │    │ • Auth injection  │
+        │ • Exit handling  │    │ • Response valid  │
         └───────┬──────────┘    └──────────┬────────┘
                 │                          │
                 └────────┬─────────────────┘
                          │
-            ┌────────────▼──────────────┐
-            │  Tool Definitions (YAML)  │
-            │                            │
-            │ • calculator               │
-            │ • gmail-send-email         │
-            │ • github-create-issue      │
-            │ • 1000+ tools coming       │
-            └────────────┬───────────────┘
-                         │
-            ┌────────────▼──────────────┐
-            │  External Services        │
-            │                            │
-            │ • Gmail API                │
-            │ • GitHub API               │
-            │ • Slack API                │
-            │ • Shell commands           │
-            │ • Custom HTTP APIs         │
-            └────────────────────────────┘
+     ┌───────────────────┴────────────────────┐
+     │                                        │
+     ▼                                        ▼
+┌─────────────────────────┐    ┌──────────────────────────┐
+│  Tool Definitions       │    │  Provider Definitions    │
+│  (YAML files)           │    │  (OAuth2 configs)        │
+│                         │    │                          │
+│ packages/core/tools/    │    │ packages/{provider}/     │
+│ ├─ calculator/          │    │ ├─ definition.yaml       │
+│ ├─ echo-tool/           │    │ └─ tools/{tool}/def.yaml │
+│ │                       │    │                          │
+│ packages/slack/tools/   │    │ Example:                 │
+│ ├─ send-message/        │    │ packages/slack/          │
+│ ├─ list-channels/       │    │ ├─ definition.yaml       │
+│ └─ ...                  │    │ └─ tools/{tool}/*.yaml   │
+│                         │    │                          │
+│ packages/gmail/tools/   │    └──────────────────────────┘
+│ ├─ send-email/          │
+│ └─ ...                  │
+│                         │
+└───────────┬─────────────┘
+            │
+     ┌──────▼────────┐
+     │  External     │
+     │  Services     │
+     │               │
+     │ • Gmail API   │
+     │ • Slack API   │
+     │ • GitHub API  │
+     │ • Shell cmd   │
+     │ • Custom APIs │
+     │               │
+     └───────────────┘
 
 * Recommended for AI agents with automatic tool selection
 ```
@@ -82,56 +130,71 @@ Understand how Matimo is designed and how components interact.
 ### 1. Application Layer
 
 Your code that uses Matimo. Examples:
+
 - Express.js API endpoint
 - LangChain agent
 - CLI tool
 - Scheduled job
 - Discord bot
 
-### 2. SDK Layer
+### 2. SDK Layer (packages/core)
 
 **Factory Pattern**:
+
 ```typescript
-const m = await matimo.init('./tools');
+import { MatimoInstance } from 'matimo';
+
+const m = await MatimoInstance.init('./tools');
 const result = await m.execute('calculator', params);
 ```
 
 **Decorator Pattern**:
+
 ```typescript
+import { tool } from 'matimo';
+
 class Agent {
   @tool('calculator')
   async calculate(...) { }
 }
 ```
 
-### 3. Core Orchestration
+### 3. Core Orchestration (packages/core/src)
 
 **MatimoInstance**: Central orchestrator that:
-- Manages tool registry
+
+- Initializes tool loading
+- Manages auto-discovery
 - Coordinates execution
 - Handles errors
 - Manages OAuth2 tokens
+- Validates parameters
 
-### 4. Tool Management
+### 4. Tool Management (packages/core/src/core)
 
-**ToolRegistry**: In-memory index of all tools
+**ToolLoader** (internal): Loads tools from YAML files
+
+- Reads from `packages/{provider}/tools/*/definition.yaml`
+- Validates against Zod schema
+- Returns `ToolDefinition[]`
+- Auto-discovers packages from `node_modules/@matimo/*/tools`
+
+**ToolRegistry** (internal): In-memory index of all tools
+
 ```
 tools: Map<name, ToolDefinition>
 |
-├── calculator
-├── gmail-send-email
-├── github-create-issue
+├── calculator (from packages/core/tools/)
+├── slack-send-message (from packages/slack/tools/)
+├── slack-list-channels (from packages/slack/tools/)
+├── gmail-send-email (from packages/gmail/tools/)
 └── ...
 ```
 
-**ToolLoader**: Loads tools from YAML files
-- Reads from `./tools/**/*.yaml`
-- Validates against Zod schema
-- Returns `ToolDefinition[]`
-
-### 5. Execution Layer
+### 5. Execution Layer (packages/core/src/executors)
 
 **CommandExecutor**: Runs shell commands
+
 ```
 Input: { command: "node script.js", args: [...] }
 Process: Spawn child process
@@ -139,37 +202,59 @@ Output: { stdout, stderr, exitCode }
 ```
 
 **HttpExecutor**: Makes HTTP requests
+
 ```
 Input: { method: "POST", url: "...", headers: {...} }
 Process: Send request + validate response
 Output: { status, data, headers }
 ```
 
-### 6. Tool Definitions
+**FunctionExecutor**: Executes JavaScript/TypeScript functions
 
-**YAML Format**:
+```
+Input: { function: async (params) => {...} }
+Process: Call function with parameters
+Output: { result }
+```
+
+### 6. Tool Definitions (YAML)
+
+**Core Tools** (packages/core/tools/):
+
 ```yaml
 name: calculator
 execution:
   type: command
-  command: node calculator.js
-parameters: { ... }
+  command: ts-node calculator.ts
 ```
 
-**Provider Definitions**:
+**Provider Tools** (packages/{provider}/tools/):
+
+```yaml
+name: slack-send-message
+execution:
+  type: http
+  method: POST
+  url: https://slack.com/api/chat.postMessage
+```
+
+**Provider Config** (packages/{provider}/definition.yaml):
+
 ```yaml
 type: provider
+name: slack
 provider:
   endpoints:
-    authorizationUrl: https://...
+    authorizationUrl: https://slack.com/oauth_authorize
 ```
 
 ### 7. External Services
 
 Tools interact with:
+
 - Google Gmail API
-- GitHub REST API
 - Slack Web API
+- GitHub REST API
 - Shell commands
 - Custom HTTP APIs
 
@@ -346,10 +431,10 @@ Direct `matimo.execute()` calls in agent logic:
 │  Agent with Custom Logic         │
 │                                  │
 │  if (prompt.includes('calc'))    │
-│    m.execute('calculator', ...) │
+│    m.execute('calculator', ...)  │
 │                                  │
 │  if (prompt.includes('email'))   │
-│    m.execute('gmail-send', ...) │
+│    m.execute('gmail-send', ...)  │
 └────────────┬─────────────────────┘
              │
              ▼
@@ -369,14 +454,14 @@ Direct `matimo.execute()` calls in agent logic:
 
 ### Comparison Matrix
 
-| Aspect | Official API | Decorator | Factory |
-|--------|--------------|-----------|---------|
-| **LLM-Driven** | ✅ Yes (automatic) | ✅ Yes | ❌ Manual |
-| **Schema Gen** | ✅ Automatic | ✅ Manual | ✅ Manual |
-| **Type Safety** | Excellent | Excellent | Good |
-| **Framework** | LangChain+ | LangChain+ | Any |
-| **Best For** | AI agents | Class-based agents | Simple logic |
-| **Learning Curve** | Low | Medium | Low |
+| Aspect             | Official API       | Decorator          | Factory      |
+| ------------------ | ------------------ | ------------------ | ------------ |
+| **LLM-Driven**     | ✅ Yes (automatic) | ✅ Yes             | ❌ Manual    |
+| **Schema Gen**     | ✅ Automatic       | ✅ Manual          | ✅ Manual    |
+| **Type Safety**    | Excellent          | Excellent          | Good         |
+| **Framework**      | LangChain+         | LangChain+         | Any          |
+| **Best For**       | AI agents          | Class-based agents | Simple logic |
+| **Learning Curve** | Low                | Medium             | Low          |
 
 For full details, see [Framework Integrations - LangChain](../framework-integrations/LANGCHAIN.md).
 
@@ -391,7 +476,7 @@ interface ToolDefinition {
   description: string;
   version: string;
   parameters?: Record<string, Parameter>;
-  execution: ExecutionConfig;  // command or http
+  execution: ExecutionConfig; // command or http
   authentication?: AuthConfig;
   output_schema?: OutputSchema;
 }
@@ -485,6 +570,7 @@ Application recovery
 ### 1. Configuration-Driven
 
 Tools defined in YAML, not code:
+
 - ✅ Easy to update without redeploying
 - ✅ Non-technical users can add tools
 - ✅ Version control friendly
@@ -492,6 +578,7 @@ Tools defined in YAML, not code:
 ### 2. Stateless
 
 Matimo doesn't store anything:
+
 - ✅ No database required
 - ✅ Easy to scale
 - ✅ Simple to test
@@ -499,6 +586,7 @@ Matimo doesn't store anything:
 ### 3. Multi-Provider
 
 Support any OAuth2 provider:
+
 - ✅ Google, GitHub, Slack out of box
 - ✅ Add new providers with YAML
 - ✅ No code changes needed
@@ -506,6 +594,7 @@ Support any OAuth2 provider:
 ### 4. Type-Safe
 
 Full TypeScript + Zod validation:
+
 - ✅ Catch errors at load time
 - ✅ IDE autocomplete support
 - ✅ Zero `any` types
@@ -513,6 +602,7 @@ Full TypeScript + Zod validation:
 ### 5. Framework-Agnostic
 
 Works with any framework:
+
 - ✅ Direct SDK usage
 - ✅ LangChain integration
 - ✅ Custom framework support
@@ -547,13 +637,13 @@ Works with any framework:
 
 ## Performance Characteristics
 
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Load tools | ~50ms | One-time, cached |
-| Validate schema | ~5ms | Per tool |
-| Execute command | Varies | Depends on command |
-| Execute HTTP | 100-500ms | Network dependent |
-| OAuth token inject | <1ms | Environment variable lookup |
+| Operation          | Time      | Notes                       |
+| ------------------ | --------- | --------------------------- |
+| Load tools         | ~50ms     | One-time, cached            |
+| Validate schema    | ~5ms      | Per tool                    |
+| Execute command    | Varies    | Depends on command          |
+| Execute HTTP       | 100-500ms | Network dependent           |
+| OAuth token inject | <1ms      | Environment variable lookup |
 
 ---
 

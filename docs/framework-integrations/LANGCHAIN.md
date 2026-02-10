@@ -3,6 +3,7 @@
 ## Overview
 
 Matimo provides a simple, unified API (`convertToolsToLangChain`) to convert tool definitions to LangChain-compatible format. This eliminates boilerplate and scales to many tools seamlessly.
+
 ## Installation
 
 ```bash
@@ -21,7 +22,7 @@ pnpm add matimo langchain @langchain/core
 - **LLM-friendly results** — Formatted for agent consumption
 - **code** — Lightweight & maintainable
 
-### Basic Integration 
+### Basic Integration
 
 ```typescript
 import { MatimoInstance, convertToolsToLangChain } from 'matimo';
@@ -33,7 +34,7 @@ const matimo = await MatimoInstance.init('./tools');
 
 // 2. Convert to LangChain (that's it!)
 const langchainTools = await convertToolsToLangChain(
-  matimo.listTools().filter(t => t.name.startsWith('slack-')),
+  matimo.listTools().filter((t) => t.name.startsWith('slack-')),
   matimo,
   { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN! }
 );
@@ -46,7 +47,7 @@ const agent = await createAgent({
 
 // Run it
 const result = await agent.invoke({
-  input: 'List all Slack channels'
+  input: 'List all Slack channels',
 });
 
 console.log('Agent response:', result.output);
@@ -62,40 +63,36 @@ import { createAgent } from 'langchain/agents';
 async function runSlackAgent() {
   // Initialize Matimo
   const matimo = await MatimoInstance.init('./tools');
-  
+
   // Get all Slack tools
-  const slackTools = matimo
-    .listTools()
-    .filter(t => t.name.startsWith('slack-'));
-  
+  const slackTools = matimo.listTools().filter((t) => t.name.startsWith('slack-'));
+
   console.log(`📦 Loaded ${slackTools.length} Slack tools`);
-  
+
   // Convert to LangChain format (one line!)
-  const langchainTools = await convertToolsToLangChain(
-    slackTools,
-    matimo,
-    { SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN! }
-  );
-  
+  const langchainTools = await convertToolsToLangChain(slackTools, matimo, {
+    SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN!,
+  });
+
   // Create OpenAI LLM
   const model = new ChatOpenAI({
     modelName: 'gpt-4o-mini',
     temperature: 0,
   });
-  
+
   // Create agent
   const agent = await createAgent({
     model,
     tools: langchainTools,
   });
-  
+
   // Test queries
   const queries = [
     'List all channels',
     'Get message history for #general',
     'Send a test message to #general',
   ];
-  
+
   for (const query of queries) {
     console.log(`\n📝 User: "${query}"`);
     const result = await agent.invoke({ input: query });
@@ -112,8 +109,8 @@ runSlackAgent().catch(console.error);
 export async function convertToolsToLangChain(
   tools: ToolDefinition[],
   matimo: MatimoInstance,
-  secrets?: Record<string, string>,
-): Promise<LangChainTool[]>
+  secrets?: Record<string, string>
+): Promise<LangChainTool[]>;
 ```
 
 ### Parameters
@@ -134,25 +131,47 @@ Array of LangChain-compatible tools ready for agents.
 ### Explicit Secret Injection
 
 ```typescript
-const tools = await convertToolsToLangChain(
-  matimo.listTools(),
-  matimo,
-  {
-    SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN!,
-    GMAIL_ACCESS_TOKEN: process.env.GMAIL_ACCESS_TOKEN!,
-    api_key: process.env.MY_API_KEY!,
-  }
-);
+const tools = await convertToolsToLangChain(matimo.listTools(), matimo, {
+  SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN!,
+  GMAIL_ACCESS_TOKEN: process.env.GMAIL_ACCESS_TOKEN!,
+  api_key: process.env.MY_API_KEY!,
+});
 ```
 
 ### Auto-Detected Secret Parameters
 
+**How it works:** The `convertToolsToLangChain` function automatically detects which parameters should be treated as secrets by scanning their names for common secret patterns. When a parameter is detected as a secret:
+
+1. It's **excluded from the LangChain schema** (users don't need to provide it)
+2. It's **injected automatically** when present in the secrets map
+3. It's **never logged or exposed** in error messages
+
 Parameters are automatically detected as secrets if they match these patterns:
+
 - Parameter name contains `TOKEN` (e.g., `bot_token`, `access_TOKEN`)
 - Parameter name contains `KEY` (e.g., `api_key`, `encryption_KEY`)
 - Parameter name contains `SECRET` (e.g., `api_secret`)
 - Parameter name contains `PASSWORD` (e.g., `db_password`)
-- Known patterns: `SLACK_BOT_TOKEN`, `GMAIL_ACCESS_TOKEN`, `GITHUB_TOKEN`, `STRIPE_API_KEY`, etc.
+- Case-insensitive matching (e.g., `ApiKey` matches the `KEY` pattern)
+
+**Example:**
+
+```typescript
+// Tool has parameters: slack_bot_token, channel
+// When passed to convertToolsToLangChain with { slack_bot_token: '...' }:
+// ✓ slack_bot_token is auto-detected as a secret and excluded from schema
+// ✓ Only channel appears in the LangChain schema
+// ✓ slack_bot_token is injected automatically on tool execution
+
+const tools = await convertToolsToLangChain(
+  [slackTool], // tool.parameters = { slack_bot_token, channel, ... }
+  matimo,
+  { slack_bot_token: process.env.SLACK_BOT_TOKEN! }
+);
+
+// User only provides: channel
+// slack_bot_token is injected automatically
+await tools[0].invoke({ channel: '#general' });
 ```
 
 ## Working Examples
@@ -220,7 +239,7 @@ process.env.GITHUB_TOKEN = 'your-github-token';
 const result = await matimoInstance.execute('gmail-send-email', {
   to: 'user@example.com',
   subject: 'Hello',
-  body: 'Message'
+  body: 'Message',
   // Token is automatically included from environment
 });
 ```
@@ -230,7 +249,7 @@ const result = await matimoInstance.execute('gmail-send-email', {
 ```typescript
 try {
   const result = await agentExecutor.invoke({
-    input: 'Send an email'
+    input: 'Send an email',
   });
 } catch (error) {
   if (error.code === 'TOOL_NOT_FOUND') {
@@ -248,6 +267,7 @@ try {
 ## Future Releases
 
 🔜 **v0.2.0** will include:
+
 - Official LangChain adapter package
 - Automatic tool schema conversion
 - LangChain Tool subclass implementation
@@ -268,7 +288,10 @@ Error: Tool not found: gmail-send-email
 
 ```typescript
 const tools = matimoInstance.listTools();
-console.log('Available tools:', tools.map(t => t.name));
+console.log(
+  'Available tools:',
+  tools.map((t) => t.name)
+);
 ```
 
 ### OAuth Token Missing

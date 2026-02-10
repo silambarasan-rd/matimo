@@ -28,24 +28,24 @@ tools/
 ### Provider Definition Format
 
 ```yaml
-name: google-provider           # Unique name for this provider definition
-type: provider                  # MUST be "provider" to indicate this is an OAuth2 config
-version: '1.0.0'               # Semantic version of the provider config
-description: Google OAuth2 provider  # Optional description
+name: google-provider # Unique name for this provider definition
+type: provider # MUST be "provider" to indicate this is an OAuth2 config
+version: '1.0.0' # Semantic version of the provider config
+description: Google OAuth2 provider # Optional description
 
 provider:
-  name: google                  # Provider identifier (used in code)
-  displayName: Google           # Human-readable name
-  
+  name: google # Provider identifier (used in code)
+  displayName: Google # Human-readable name
+
   endpoints:
     authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
     tokenUrl: https://oauth2.googleapis.com/token
-    revokeUrl: https://oauth2.googleapis.com/revoke  # Optional
-  
-  defaultScopes:                # Optional default scopes
+    revokeUrl: https://oauth2.googleapis.com/revoke # Optional
+
+  defaultScopes: # Optional default scopes
     - https://www.googleapis.com/auth/gmail.send
     - https://www.googleapis.com/auth/gmail.readonly
-  
+
   documentation: https://developers.google.com/identity/protocols/oauth2
 ```
 
@@ -54,6 +54,7 @@ provider:
 Matimo resolves OAuth2 endpoints using a **3-tier priority system**:
 
 ### 1. Runtime Configuration (Highest Priority)
+
 User provides endpoints directly in code:
 
 ```typescript
@@ -62,16 +63,18 @@ const oauth2 = new OAuth2Handler({
   clientId: '...',
   clientSecret: '...',
   redirectUri: '...',
-  endpoints: {  // ← These override everything else
+  endpoints: {
+    // ← These override everything else
     authorizationUrl: 'https://custom.company.com/auth',
     tokenUrl: 'https://custom.company.com/token',
-  }
+  },
 });
 ```
 
 **Use case:** Custom or internal OAuth2 servers
 
 ### 2. Environment Variables (Medium Priority)
+
 Deploy-time configuration via environment variables:
 
 ```bash
@@ -83,6 +86,7 @@ export OAUTH_GOOGLE_REVOKE_URL=https://custom.company.com/revoke
 **Use case:** Different endpoints per deployment (dev, staging, prod)
 
 ### 3. YAML Configuration (Default)
+
 Default endpoints defined in `tools/[provider]/definition.yaml`:
 
 ```yaml
@@ -135,16 +139,16 @@ description: Microsoft Azure AD OAuth2 provider
 provider:
   name: microsoft
   displayName: Microsoft
-  
+
   endpoints:
     authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     tokenUrl: https://login.microsoftonline.com/common/oauth2/v2.0/token
     revokeUrl: https://login.microsoftonline.com/common/oauth2/v2.0/token/revoke
-  
+
   defaultScopes:
     - https://graph.microsoft.com/Mail.Send
     - https://graph.microsoft.com/user.read
-  
+
   documentation: https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
 ```
 
@@ -156,7 +160,7 @@ The provider loader automatically discovers the provider:
 import { OAuth2Handler } from '@matimo/oauth2';
 
 const oauth2 = new OAuth2Handler({
-  provider: 'microsoft',  // Provider name from definition.yaml
+  provider: 'microsoft', // Provider name from definition.yaml
   clientId: process.env.MICROSOFT_CLIENT_ID,
   clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
   redirectUri: 'http://localhost:3000/callback',
@@ -193,17 +197,17 @@ version: '1.0.0'
 provider:
   name: google
   displayName: Google
-  
+
   endpoints:
     authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
     tokenUrl: https://oauth2.googleapis.com/token
     revokeUrl: https://oauth2.googleapis.com/revoke
-  
+
   defaultScopes:
     - https://www.googleapis.com/auth/gmail.send
     - https://www.googleapis.com/auth/gmail.readonly
     - https://www.googleapis.com/auth/gmail.compose
-  
+
   documentation: https://developers.google.com/identity/protocols/oauth2
 ```
 
@@ -219,16 +223,16 @@ version: '1.0.0'
 provider:
   name: github
   displayName: GitHub
-  
+
   endpoints:
     authorizationUrl: https://github.com/login/oauth/authorize
     tokenUrl: https://github.com/login/oauth/access_token
-  
+
   defaultScopes:
     - user:email
     - repo
     - gist
-  
+
   documentation: https://docs.github.com/en/developers/apps/building-oauth-apps
 ```
 
@@ -244,16 +248,16 @@ version: '1.0.0'
 provider:
   name: slack
   displayName: Slack
-  
+
   endpoints:
     authorizationUrl: https://slack.com/oauth/v2/authorize
     tokenUrl: https://slack.com/api/oauth.v2.access
-  
+
   defaultScopes:
     - chat:write
     - channels:read
     - users:read
-  
+
   documentation: https://api.slack.com/authentication/oauth-v2
 ```
 
@@ -290,7 +294,7 @@ await database.saveToken('user-123', token);
 const stored = await database.getToken('user-123');
 await matimo.execute('gmail-send-email', {
   to: 'recipient@example.com',
-  GMAIL_ACCESS_TOKEN: stored.accessToken,  // ← Pass token here
+  GMAIL_ACCESS_TOKEN: stored.accessToken, // ← Pass token here
 });
 ```
 
@@ -324,7 +328,7 @@ Use runtime configuration to connect to a custom OAuth2 server:
 
 ```typescript
 const oauth2 = new OAuth2Handler({
-  provider: 'internal-oauth',  // Any name
+  provider: 'internal-oauth', // Any name
   clientId: 'internal-client',
   clientSecret: 'internal-secret',
   redirectUri: 'http://localhost:3000/callback',
@@ -332,7 +336,7 @@ const oauth2 = new OAuth2Handler({
     authorizationUrl: 'https://oauth.company.internal/authorize',
     tokenUrl: 'https://oauth.company.internal/token',
     revokeUrl: 'https://oauth.company.internal/revoke',
-  }
+  },
 });
 ```
 
@@ -357,18 +361,21 @@ const oauth2 = new OAuth2Handler({
 ## Best Practices
 
 ### 1. Use Configuration-Driven Approach
+
 ❌ Don't hardcode endpoints:
+
 ```typescript
 const oauth2 = new OAuth2Handler({
   provider: 'custom',
   clientId: '...',
   endpoints: {
-    authorizationUrl: 'https://hardcoded.example.com/auth',  // ❌ Bad
-  }
+    authorizationUrl: 'https://hardcoded.example.com/auth', // ❌ Bad
+  },
 });
 ```
 
 ✅ Use YAML or environment variables:
+
 ```yaml
 # tools/custom/definition.yaml
 provider:
@@ -377,6 +384,7 @@ provider:
 ```
 
 ### 2. Document Provider Requirements
+
 Include setup instructions in provider definition:
 
 ```yaml
@@ -389,25 +397,28 @@ provider:
 ```
 
 ### 3. Use Semantic Versioning
+
 Update version when endpoints change:
 
 ```yaml
-version: '1.1.0'  # Increment for breaking changes
+version: '1.1.0' # Increment for breaking changes
 ```
 
 ### 4. Never Hardcode Secrets
+
 Always use environment variables:
 
 ```typescript
 const oauth2 = new OAuth2Handler({
   provider: 'google',
-  clientId: process.env.GOOGLE_CLIENT_ID,        // ✅ From env vars
+  clientId: process.env.GOOGLE_CLIENT_ID, // ✅ From env vars
   clientSecret: process.env.GOOGLE_CLIENT_SECRET, // ✅ From env vars
-  redirectUri: process.env.GOOGLE_REDIRECT_URI,   // ✅ From env vars
+  redirectUri: process.env.GOOGLE_REDIRECT_URI, // ✅ From env vars
 });
 ```
 
 ### 5. Validate Provider Definition
+
 Matimo automatically validates YAML structure:
 
 ```typescript
@@ -419,6 +430,7 @@ await loader.loadProviders();
 ## Troubleshooting
 
 ### Provider Not Found
+
 ```
 MatimoError: Unsupported OAuth2 provider: custom. Provide endpoints via:
   1. config.endpoints (runtime override)
@@ -429,18 +441,22 @@ MatimoError: Unsupported OAuth2 provider: custom. Provide endpoints via:
 **Solution:** Create `tools/custom/definition.yaml` with provider definition
 
 ### Invalid Provider Definition
+
 ```
 MatimoError: Invalid provider definition: Missing required field 'endpoints'
 ```
 
 **Solution:** Ensure YAML has required fields:
+
 - `name`
 - `type: provider`
 - `provider.endpoints.authorizationUrl`
 - `provider.endpoints.tokenUrl`
 
 ### Environment Variable Not Read
+
 Make sure env var name matches the pattern:
+
 ```bash
 # For provider: 'google'
 export OAUTH_GOOGLE_AUTH_URL=...

@@ -41,6 +41,7 @@ All code must compile in TypeScript strict mode.
 ### Type Safety
 
 **DO:**
+
 ```typescript
 // Explicit types everywhere
 function loadTool(path: string): ToolDefinition {
@@ -61,12 +62,13 @@ const EXECUTION_TYPES = ['command', 'http', 'script'] as const;
 ```
 
 **DON'T:**
+
 ```typescript
 // No implicit any
-function loadTool(path) { }
+function loadTool(path) {}
 
 // No any types
-function execute(tool: any, params: any): any { }
+function execute(tool: any, params: any): any {}
 
 // No untyped variables
 let result;
@@ -84,12 +86,12 @@ export interface ToolDefinition {
 }
 
 export class ToolLoader {
-  loadToolFromFile(path: string): ToolDefinition { }
+  loadToolFromFile(path: string): ToolDefinition {}
 }
 
 // ❌ DON'T: Types only in comments
 // ToolDefinition = { name: string, ... }
-class ToolLoader { }
+class ToolLoader {}
 ```
 
 ---
@@ -115,13 +117,13 @@ matimo-error.ts
 
 ```typescript
 // PascalCase for classes
-class ToolLoader { }
-class CommandExecutor { }
-class MatimoError extends Error { }
+class ToolLoader {}
+class CommandExecutor {}
+class MatimoError extends Error {}
 
 // PascalCase for types/interfaces
-interface ToolDefinition { }
-interface ExecutionConfig { }
+interface ToolDefinition {}
+interface ExecutionConfig {}
 type ExecutionType = 'command' | 'http' | 'script';
 ```
 
@@ -129,7 +131,7 @@ type ExecutionType = 'command' | 'http' | 'script';
 
 ```typescript
 // camelCase for functions and variables
-function loadTool() { }
+function loadTool() {}
 const toolRegistry = new Map();
 let executionCount = 0;
 
@@ -166,7 +168,7 @@ export enum ErrorCode {
   AUTH_FAILED = 'AUTH_FAILED',
   TOOL_NOT_FOUND = 'TOOL_NOT_FOUND',
   FILE_NOT_FOUND = 'FILE_NOT_FOUND',
-  VALIDATION_FAILED = 'VALIDATION_FAILED'
+  VALIDATION_FAILED = 'VALIDATION_FAILED',
 }
 
 // Use structured error class
@@ -182,15 +184,11 @@ export class MatimoError extends Error {
 }
 
 // Throw with context
-throw new MatimoError(
-  'Tool execution failed',
-  ErrorCode.EXECUTION_FAILED,
-  {
-    toolName: tool.name,
-    reason: 'timeout',
-    duration: 30000
-  }
-);
+throw new MatimoError('Tool execution failed', ErrorCode.EXECUTION_FAILED, {
+  toolName: tool.name,
+  reason: 'timeout',
+  duration: 30000,
+});
 ```
 
 ### Error Message Guidelines
@@ -203,11 +201,10 @@ throw new MatimoError(
 );
 
 // ✅ DO: Include context
-throw new MatimoError(
-  'HTTP request failed',
-  ErrorCode.EXECUTION_FAILED,
-  { status: 500, endpoint: '/api/issues' }
-);
+throw new MatimoError('HTTP request failed', ErrorCode.EXECUTION_FAILED, {
+  status: 500,
+  endpoint: '/api/issues',
+});
 
 // ❌ DON'T: Generic errors
 throw new Error('Something went wrong');
@@ -227,17 +224,15 @@ try {
     logger.error('Execution failed', {
       code: error.code,
       message: error.message,
-      context: error.context
+      context: error.context,
     });
     throw error;
   }
-  
+
   // Convert unknown errors
-  throw new MatimoError(
-    'Unknown error during execution',
-    ErrorCode.EXECUTION_FAILED,
-    { originalError: error.message }
-  );
+  throw new MatimoError('Unknown error during execution', ErrorCode.EXECUTION_FAILED, {
+    originalError: error.message,
+  });
 }
 ```
 
@@ -295,6 +290,7 @@ it('handles errors');
 ### Test Coverage
 
 **Minimum targets:**
+
 - Overall: **80%+**
 - Critical paths: **90%+**
 - Branch coverage: All if/else paths tested
@@ -318,8 +314,7 @@ pnpm test:coverage
 const validTool = loadYaml('./fixtures/calculator.yaml');
 
 // ✅ DO: Mock external dependencies
-const mockAPI = jest.spyOn(axios, 'get')
-  .mockResolvedValue({ data: { id: 1 } });
+const mockAPI = jest.spyOn(axios, 'get').mockResolvedValue({ data: { id: 1 } });
 
 // ✅ DO: Clean up mocks
 afterEach(() => {
@@ -330,10 +325,10 @@ afterEach(() => {
 it('should execute tool', () => {
   // Arrange
   const tool = loadTool('calculator');
-  
+
   // Act
   const result = executor.execute(tool, { a: 1, b: 2 });
-  
+
   // Assert
   expect(result.output.result).toBe(3);
 });
@@ -349,12 +344,12 @@ it('should execute tool', () => {
 // ✅ DO: JSDoc for all public APIs
 /**
  * Load a tool definition from a YAML/JSON file.
- * 
+ *
  * @param path - Path to tool definition file
  * @returns Loaded and validated tool definition
  * @throws {FileNotFoundError} If file doesn't exist
  * @throws {SchemaValidationError} If tool schema invalid
- * 
+ *
  * @example
  * const tool = loader.loadToolFromFile('./tools/calculator.yaml');
  */
@@ -363,7 +358,7 @@ export function loadToolFromFile(path: string): ToolDefinition {
 }
 
 // ❌ DON'T: Missing or vague documentation
-function load(p) { }
+function load(p) {}
 
 // ❌ DON'T: Obvious comments
 // Increment i
@@ -403,6 +398,7 @@ const first = items[0];
 Brief description (1 sentence)
 
 ## Features
+
 - Feature 1
 - Feature 2
 
@@ -424,7 +420,8 @@ Methods and options
 ## Troubleshooting
 
 Common issues and solutions
-```
+
+````
 
 ---
 
@@ -449,7 +446,6 @@ const validated = paramSchema.parse(params);
 
 // ❌ DON'T: Trust user input
 const command = `git clone ${userUrl}`;  // Dangerous!
-```
 
 ### Secret Management
 
@@ -467,11 +463,11 @@ if (!token || token.length === 0) {
 }
 
 // ❌ DON'T: Hardcode secrets
-const API_KEY = 'sk_live_abc123xyz789';  // NEVER!
+const API_KEY = 'sk_live_abc123xyz789'; // NEVER!
 
 // ❌ DON'T: Log secrets
-logger.info('Token retrieved:', apiKey);  // WRONG!
-logger.info('Token retrieved');  // OK
+logger.info('Token retrieved:', apiKey); // WRONG!
+logger.info('Token retrieved'); // OK
 ```
 
 ### Output Escaping
@@ -501,14 +497,14 @@ logger.info('tool_execution', {
   toolName: tool.name,
   parameters: sanitized(params),
   duration: executionTime,
-  status: 'success' | 'failed'
+  status: 'success' | 'failed',
 });
 
 // ✅ DO: Include trace IDs
 logger.error('execution_failed', {
   traceId: context.traceId,
   toolName: tool.name,
-  error: error.message
+  error: error.message,
 });
 
 // ❌ DON'T: Unstructured logging
@@ -522,10 +518,10 @@ logger.info('Token: ' + apiKey);
 ### Log Levels
 
 ```typescript
-logger.debug('Parsing tool definition');           // Detailed info
-logger.info('Tool loaded successfully');          // Informational
-logger.warn('Tool schema drift detected');        // Warning
-logger.error('Tool execution failed', error);     // Error
+logger.debug('Parsing tool definition'); // Detailed info
+logger.info('Tool loaded successfully'); // Informational
+logger.warn('Tool schema drift detected'); // Warning
+logger.error('Tool execution failed', error); // Error
 
 // ❌ DON'T: Use console.log in production
 console.log('Debug info');
@@ -639,7 +635,7 @@ pnpm test:coverage
 ### Pre-Merge Checklist
 
 - [ ] All tests passing
-- [ ] Coverage 80%+ 
+- [ ] Coverage 80%+
 - [ ] No TypeScript errors
 - [ ] No ESLint warnings
 - [ ] Code formatted with Prettier

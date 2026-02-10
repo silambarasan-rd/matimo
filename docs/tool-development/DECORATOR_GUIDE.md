@@ -21,13 +21,13 @@ import { tool, param } from 'matimo/decorators';
 
 @tool({
   name: 'greet',
-  description: 'Greet a person'
+  description: 'Greet a person',
 })
 export class GreetTool {
   @param({
     type: 'string',
     description: 'Person to greet',
-    required: true
+    required: true,
   })
   name: string;
 
@@ -40,15 +40,13 @@ export class GreetTool {
 Use with Matimo:
 
 ```typescript
-import { MatimoFactory } from 'matimo';
+import { MatimoInstance } from 'matimo';
 import { GreetTool } from './tools/greet.tool';
 
-const matimo = MatimoFactory.create({
-  toolClasses: [GreetTool]
-});
+const matimo = await MatimoInstance.init('./tools');
 
-const result = await matimo.executeTool('greet', {
-  name: 'Alice'
+const result = await matimo.execute('greet', {
+  name: 'Alice',
 });
 
 console.log(result); // "Hello, Alice!"
@@ -107,28 +105,28 @@ import { tool, param } from 'matimo/decorators';
 
 @tool({
   name: 'calculator',
-  description: 'Perform basic math operations'
+  description: 'Perform basic math operations',
 })
 export class CalculatorTool {
   @param({
     type: 'string',
     description: 'Math operation',
     required: true,
-    enum: ['add', 'subtract', 'multiply', 'divide']
+    enum: ['add', 'subtract', 'multiply', 'divide'],
   })
   operation: string;
 
   @param({
     type: 'number',
     description: 'First operand',
-    required: true
+    required: true,
   })
   a: number;
 
   @param({
     type: 'number',
     description: 'Second operand',
-    required: true
+    required: true,
   })
   b: number;
 
@@ -153,10 +151,10 @@ export class CalculatorTool {
 Usage:
 
 ```typescript
-const result = await matimo.executeTool('calculator', {
+const result = await matimo.execute('calculator', {
   operation: 'add',
   a: 10,
-  b: 5
+  b: 5,
 });
 
 console.log(result); // { result: 15 }
@@ -170,7 +168,7 @@ import fetch from 'node-fetch';
 
 @tool({
   name: 'fetch-user',
-  description: 'Fetch user information from an API'
+  description: 'Fetch user information from an API',
 })
 export class FetchUserTool {
   @param({
@@ -178,8 +176,8 @@ export class FetchUserTool {
     description: 'User ID',
     required: true,
     validation: {
-      pattern: '^[0-9]+$'
-    }
+      pattern: '^[0-9]+$',
+    },
   })
   userId: string;
 
@@ -188,9 +186,7 @@ export class FetchUserTool {
     name: string;
     email: string;
   }> {
-    const response = await fetch(
-      `https://jsonplaceholder.typicode.com/users/${this.userId}`
-    );
+    const response = await fetch(`https://jsonplaceholder.typicode.com/users/${this.userId}`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch user: ${response.statusText}`);
@@ -208,7 +204,7 @@ import { tool, param } from 'matimo/decorators';
 
 @tool({
   name: 'email-validator',
-  description: 'Validate email format'
+  description: 'Validate email format',
 })
 export class EmailValidatorTool {
   @param({
@@ -216,8 +212,8 @@ export class EmailValidatorTool {
     description: 'Email address to validate',
     required: true,
     validation: {
-      pattern: '^[^@]+@[^@]+\\.[^@]+$'
-    }
+      pattern: '^[^@]+@[^@]+\\.[^@]+$',
+    },
   })
   email: string;
 
@@ -227,7 +223,7 @@ export class EmailValidatorTool {
 
     return {
       valid,
-      message: valid ? 'Valid email' : 'Invalid email format'
+      message: valid ? 'Valid email' : 'Invalid email format',
     };
   }
 }
@@ -240,7 +236,7 @@ import { tool, param } from 'matimo/decorators';
 
 @tool({
   name: 'user-create',
-  description: 'Create a new user'
+  description: 'Create a new user',
 })
 export class UserCreateTool {
   @param({
@@ -249,8 +245,8 @@ export class UserCreateTool {
     required: true,
     validation: {
       minLength: 2,
-      maxLength: 50
-    }
+      maxLength: 50,
+    },
   })
   name: string;
 
@@ -259,8 +255,8 @@ export class UserCreateTool {
     description: 'User email',
     required: true,
     validation: {
-      pattern: '^[^@]+@[^@]+\\.[^@]+$'
-    }
+      pattern: '^[^@]+@[^@]+\\.[^@]+$',
+    },
   })
   email: string;
 
@@ -270,8 +266,8 @@ export class UserCreateTool {
     required: false,
     validation: {
       min: 13,
-      max: 120
-    }
+      max: 120,
+    },
   })
   age?: number;
 
@@ -279,7 +275,7 @@ export class UserCreateTool {
     type: 'array',
     description: 'User roles',
     required: false,
-    default: ['user']
+    default: ['user'],
   })
   roles?: string[];
 
@@ -295,7 +291,7 @@ export class UserCreateTool {
       name: this.name,
       email: this.email,
       age: this.age,
-      roles: this.roles || ['user']
+      roles: this.roles || ['user'],
     };
   }
 }
@@ -313,30 +309,29 @@ import { MatimoError, ErrorCode } from 'matimo';
 
 @tool({
   name: 'divide',
-  description: 'Divide two numbers'
+  description: 'Divide two numbers',
 })
 export class DivideTool {
   @param({
     type: 'number',
     description: 'Dividend',
-    required: true
+    required: true,
   })
   dividend: number;
 
   @param({
     type: 'number',
     description: 'Divisor',
-    required: true
+    required: true,
   })
   divisor: number;
 
   execute(): { result: number } {
     if (this.divisor === 0) {
-      throw new MatimoError(
-        'Division by zero not allowed',
-        ErrorCode.VALIDATION_FAILED,
-        { dividend: this.dividend, divisor: this.divisor }
-      );
+      throw new MatimoError('Division by zero not allowed', ErrorCode.VALIDATION_FAILED, {
+        dividend: this.dividend,
+        divisor: this.divisor,
+      });
     }
 
     return { result: this.dividend / this.divisor };
@@ -355,28 +350,28 @@ interface CalculationResult {
 
 @tool({
   name: 'typed-calculator',
-  description: 'Type-safe calculator'
+  description: 'Type-safe calculator',
 })
 export class TypedCalculatorTool {
   @param({
     type: 'string',
     description: 'Operation',
     required: true,
-    enum: ['add', 'subtract']
+    enum: ['add', 'subtract'],
   })
   operation: string;
 
   @param({
     type: 'number',
     description: 'First number',
-    required: true
+    required: true,
   })
   a: number;
 
   @param({
     type: 'number',
     description: 'Second number',
-    required: true
+    required: true,
   })
   b: number;
 
@@ -392,7 +387,7 @@ export class TypedCalculatorTool {
     return {
       result,
       timestamp: new Date().toISOString(),
-      operation: this.operation
+      operation: this.operation,
     };
   }
 }
@@ -412,7 +407,7 @@ class LoggerService {
 
 @tool({
   name: 'logged-operation',
-  description: 'Operation with logging'
+  description: 'Operation with logging',
 })
 export class LoggedOperationTool {
   private logger: LoggerService;
@@ -424,7 +419,7 @@ export class LoggedOperationTool {
   @param({
     type: 'string',
     description: 'Operation name',
-    required: true
+    required: true,
   })
   operation: string;
 
@@ -435,7 +430,7 @@ export class LoggedOperationTool {
 
     return {
       success: true,
-      message: `Operation '${this.operation}' completed`
+      message: `Operation '${this.operation}' completed`,
     };
   }
 }
@@ -448,6 +443,7 @@ export class LoggedOperationTool {
 ### When to Use Decorators
 
 ✅ **Decorators are best for:**
+
 - Complex business logic
 - Type-safe definitions
 - Reusing existing TypeScript code
@@ -457,6 +453,7 @@ export class LoggedOperationTool {
 ### When to Use YAML
 
 ✅ **YAML is best for:**
+
 - Simple command/HTTP tools
 - Configuration-driven tools
 - Non-technical tool definitions
@@ -468,23 +465,24 @@ export class LoggedOperationTool {
 **Same tool, two approaches:**
 
 **Decorator:**
+
 ```typescript
 @tool({
   name: 'fetch-issue',
-  description: 'Fetch GitHub issue by number'
+  description: 'Fetch GitHub issue by number',
 })
 export class FetchIssueTool {
   @param({
     type: 'string',
     description: 'Repository (owner/repo)',
-    required: true
+    required: true,
   })
   repo: string;
 
   @param({
     type: 'number',
     description: 'Issue number',
-    required: true
+    required: true,
   })
   number: number;
 
@@ -500,10 +498,11 @@ export class FetchIssueTool {
 ```
 
 **YAML:**
+
 ```yaml
 name: fetch-issue
 description: Fetch GitHub issue by number
-version: "1.0.0"
+version: '1.0.0'
 
 parameters:
   repo:
@@ -518,7 +517,7 @@ parameters:
 execution:
   type: http
   method: GET
-  url: "https://api.github.com/repos/{repo}/issues/{number}"
+  url: 'https://api.github.com/repos/{repo}/issues/{number}'
   auth:
     type: bearer
     secret_env_var: MATIMO_GITHUB_TOKEN
@@ -587,10 +586,11 @@ describe('CalculatorTool', () => {
 Convert existing YAML tools to decorators:
 
 **Before (YAML):**
+
 ```yaml
 name: echo
 description: Echo input back
-version: "1.0.0"
+version: '1.0.0'
 
 parameters:
   message:
@@ -600,20 +600,21 @@ parameters:
 execution:
   type: command
   command: echo
-  args: ["{message}"]
+  args: ['{message}']
 ```
 
 **After (Decorator):**
+
 ```typescript
 @tool({
   name: 'echo',
-  description: 'Echo input back'
+  description: 'Echo input back',
 })
 export class EchoTool {
   @param({
     type: 'string',
     description: 'Message to echo',
-    required: true
+    required: true,
   })
   message: string;
 

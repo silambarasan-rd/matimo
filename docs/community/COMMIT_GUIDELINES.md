@@ -42,6 +42,7 @@ test(loader): add tool loader tests
 ```
 
 Common scopes:
+
 - `executor` — Executor implementations
 - `schema` — Schema validation
 - `loader` — Tool loader
@@ -69,6 +70,7 @@ Short description of the change (50 characters max).
 ```
 
 **Rules:**
+
 - Imperative mood: "add" not "added" or "adds"
 - Lowercase first letter
 - No period at end
@@ -91,6 +93,7 @@ the rest of the codebase.
 ```
 
 **Guidelines:**
+
 - Explain WHAT and WHY, not HOW
 - Reference relevant issues
 - Wrap at 72 characters
@@ -108,6 +111,7 @@ BREAKING CHANGE: Tool YAML format changed (see migration guide)
 ```
 
 **Format:**
+
 - `Closes #<issue>` — Automatically close issue when PR merges
 - `Refs #<issue>` — Reference without closing
 - `BREAKING CHANGE:` — Document breaking changes
@@ -151,12 +155,12 @@ Closes #38
 ### Documentation
 
 ```
-docs(api-reference): document all executor methods
+docs(api-reference): document tool discovery methods
 
 Add comprehensive API documentation for:
-- CommandExecutor.execute()
-- HttpExecutor.execute()
-- ToolLoader.loadToolsFromDirectory()
+- MatimoInstance.listTools()
+- MatimoInstance.getTool()
+- MatimoInstance.searchTools()
 
 Include parameter types, return values, error codes, and examples
 for each method.
@@ -264,6 +268,7 @@ See migration guide at docs/MIGRATION_v2.md
 ### When to Use Scopes
 
 **Good (clear and specific):**
+
 ```
 feat(executor): add HTTP method support
 fix(loader): handle YAML parse errors
@@ -272,6 +277,7 @@ test(schema): add validation tests
 ```
 
 **Unclear (too broad):**
+
 ```
 feat(src): add new code
 fix(test): update tests
@@ -281,6 +287,7 @@ docs: various documentation
 ### Scope Examples by Area
 
 #### Core Components
+
 ```
 feat(executor)      # Executor implementations
 feat(loader)        # Tool loader
@@ -289,6 +296,7 @@ feat(registry)      # Tool registry
 ```
 
 #### Integration
+
 ```
 feat(mcp)           # MCP server
 feat(cli)           # CLI tools
@@ -296,6 +304,7 @@ feat(decorators)    # Decorator support
 ```
 
 #### Infrastructure
+
 ```
 chore(build)        # Build configuration
 chore(ci)           # CI/CD pipeline
@@ -304,6 +313,7 @@ chore(types)        # Type definitions
 ```
 
 #### Documentation & Testing
+
 ```
 docs(api)           # API documentation
 docs(guide)         # User guides
@@ -347,7 +357,7 @@ git commit
 
 # Opens editor with template:
 # feat(scope): subject
-# 
+#
 # Detailed body explaining the change.
 # Multiple paragraphs separated by blank lines.
 #
@@ -406,6 +416,7 @@ chore: maintenance
 ```
 
 **Better:**
+
 ```
 feat(executor): add HTTP method parameter support
 fix(schema): validate enum values in parameters
@@ -420,6 +431,7 @@ feat(executor): add HTTP support and fix timeout bug
 ```
 
 **Better (two commits):**
+
 ```
 feat(executor): add HTTP executor with response validation
 fix(executor): handle timeout edge cases correctly
@@ -434,6 +446,7 @@ docs(docs): update documentation
 ```
 
 **Better:**
+
 ```
 feat(executor): add HTTP support
 fix(loader): improve error messages
@@ -448,6 +461,7 @@ fix(schema): will fix validation
 ```
 
 **Better:**
+
 ```
 feat(executor): add HTTP support
 fix(schema): validate enum values
@@ -473,6 +487,7 @@ Create aliases for faster committing:
 ```
 
 Usage:
+
 ```bash
 git co -b feat/my-feature
 git ci                        # Opens commit editor

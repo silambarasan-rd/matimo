@@ -1,363 +1,497 @@
 # API Reference — Complete SDK
 
-Complete reference for the Matimo TypeScript SDK.
+Complete reference for the Matimo TypeScript SDK. For a simpler introduction, see [Quick Start](../getting-started/QUICK_START.md) or [SDK Patterns](../user-guide/SDK_PATTERNS.md).
 
 ## Table of Contents
 
-- [MatimoFactory](#matimofactory)
-- [ToolLoader](#toolloader)
-- [ToolRegistry](#toolregistry)
-- [Executors](#executors)
-  - [CommandExecutor](#commandexecutor)
-  - [HttpExecutor](#httpexecutor)
+- [MatimoInstance](#matimoinstance)
+  - [init()](#initoptions)
+  - [execute()](#executetoolname-params)
+  - [listTools()](#listtools)
+  - [getTool()](#gettoolname)
+  - [searchTools()](#searchtoolsquery)
+- [Decorators](#decorators)
+  - [@tool()](#toolttoolname)
+  - [setGlobalMatimoInstance()](#setglobalmatimoinstanceinstance)
+- [LangChain Integration](#langchain-integration)
 - [Error Handling](#error-handling)
 - [Types](#types)
 
 ---
 
-## MatimoFactory
+## MatimoInstance
 
-Factory pattern for creating Matimo instances.
+Main entry point for the Matimo SDK. Initialize once at startup, then execute tools as needed.
 
-### Methods
+### `init(options?)`
 
-#### `create(options)`
+Initialize Matimo with tools from specified paths or auto-discovery.
 
-Create a new Matimo instance with factory pattern.
+**Signature:**
 
 ```typescript
-const matimo = MatimoFactory.create({
-  toolsPath: './tools',
-  validateOnLoad: true
-});
+static async init(options?: InitOptions | string): Promise<MatimoInstance>
 ```
 
 **Parameters:**
-- `toolsPath` (string, required) - Path to tools directory
-- `validateOnLoad` (boolean, optional, default: true) - Validate tools on load
 
-**Returns:** `Matimo` instance
+- `options` (InitOptions | string, optional) - Initialization configuration
+  - `InitOptions` object:
+    - `autoDiscover` (boolean, optional) - Automatically discover tools from `node_modules/@matimo/*` packages
+    - `toolPaths` (string[], optional) - Array of explicit tool directory paths
+    - `includeCore` (boolean, optional) - Include core built-in tools (default: true when using InitOptions)
+  - String: Backward-compatible single directory path (e.g., `'./tools'`)
+
+**Returns:** `Promise<MatimoInstance>` - Initialized instance ready to execute tools
+
+**Throws:**
+
+- `MatimoError(INVALID_SCHEMA)` - If tool definitions have invalid schema
+- `MatimoError(FILE_NOT_FOUND)` - If tools directory doesn't exist
 
 **Example:**
-```typescript
-import { MatimoFactory } from 'matimo';
 
-const matimo = MatimoFactory.create({
-  toolsPath: './tools'
+```typescript
+import { MatimoInstance } from 'matimo';
+
+// Auto-discover tools from node_modules/@matimo/* packages
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+// Or specify custom tool paths
+const matimo = await MatimoInstance.init({
+  toolPaths: ['./tools'],
 });
 
-const tools = matimo.getToolRegistry().listTools();
+// Backward compatibility - single directory
+const matimo = await MatimoInstance.init('./tools');
+
+console.log(`Loaded ${matimo.listTools().length} tools`);
 ```
 
 ---
 
-## ToolLoader
+### `execute(toolName, params, options?)`
 
-Load tool definitions from YAML/JSON files.
+Execute a tool by name with parameters.
 
-### Constructor
-
-```typescript
-const loader = new ToolLoader(toolsPath: string);
-```
-
-### Methods
-
-#### `loadToolsFromDirectory()`
-
-Load all tools from a directory recursively.
+**Signature:**
 
 ```typescript
-const tools = await loader.loadToolsFromDirectory();
-```
-
-**Returns:** `ToolDefinition[]` - Array of loaded tools
-
-**Throws:**
-- `FileNotFoundError` - If tools directory doesn't exist
-- `SchemaValidationError` - If tool schema is invalid
-
-**Example:**
-```typescript
-const loader = new ToolLoader('./tools');
-const tools = await loader.loadToolsFromDirectory();
-console.log(`Loaded ${tools.length} tools`);
-```
-
-#### `loadToolFromFile(filePath)`
-
-Load a single tool from a YAML/JSON file.
-
-```typescript
-const tool = await loader.loadToolFromFile('./tools/calculator/tool.yaml');
+async execute(
+  toolName: string,
+  params: Record<string, unknown>,
+  options?: { timeout?: number }
+): Promise<unknown>
 ```
 
 **Parameters:**
-- `filePath` (string) - Path to tool file
 
-**Returns:** `ToolDefinition` - Loaded tool definition
+- `toolName` (string, required) - Exact name of the tool to execute
+- `params` (object, required) - Tool parameters (must match tool's parameter schema)
+- `options.timeout` (number, optional) - Execution timeout in milliseconds
+
+**Returns:** `Promise<unknown>` - Tool result (validated against output schema)
 
 **Throws:**
-- `FileNotFoundError` - If file doesn't exist
-- `SchemaValidationError` - If tool schema is invalid
+
+- `MatimoError(TOOL_NOT_FOUND)` - If tool name doesn't exist
+- `MatimoError(PARAMETER_VALIDATION)` - If params don't match tool schema
+- `MatimoError(EXECUTION_FAILED)` - If tool execution fails
+- `MatimoError(AUTH_FAILED)` - If authentication fails
+- `MatimoError(TIMEOUT)` - If execution exceeds timeout
+
+**Example:**
+
+```typescript
+import { MatimoInstance, MatimoError } from 'matimo';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+try {
+  // Execute calculator tool
+  const result = await matimo.execute('calculator', {
+    operation: 'add',
+    a: 10,
+    b: 5,
+  });
+  console.log('Result:', result); // { result: 15 }
+
+  // Execute another tool
+  const slackResult = await matimo.execute('slack-send-message', {
+    channel: '#general',
+    text: 'Hello',
+  });
+  console.log('Message sent:', slackResult);
+} catch (error) {
+  if (error instanceof MatimoError) {
+    console.error(`Error [${error.code}]:`, error.message);
+  }
+}
+```
 
 ---
 
-## ToolRegistry
+### `listTools()`
 
-In-memory registry of loaded tools.
+Get all available tools.
 
-### Methods
-
-#### `listTools()`
-
-Get all loaded tools.
+**Signature:**
 
 ```typescript
-const tools = registry.listTools();
+listTools(): ToolDefinition[]
 ```
 
-**Returns:** `ToolDefinition[]`
+**Returns:** `ToolDefinition[]` - Array of all loaded tool definitions
 
 **Example:**
+
 ```typescript
-registry.listTools().forEach(tool => {
-  console.log(`${tool.name}: ${tool.description}`);
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+const tools = matimo.listTools();
+console.log(`Available tools (${tools.length}):`);
+
+tools.forEach((tool) => {
+  console.log(`  - ${tool.name}: ${tool.description}`);
+  console.log(`    Parameters: ${Object.keys(tool.parameters || {}).join(', ')}`);
 });
 ```
 
-#### `getTool(name)`
+---
 
-Get a tool by name.
+### `getTool(name)`
+
+Get a single tool definition by name.
+
+**Signature:**
 
 ```typescript
-const tool = registry.getTool('calculator');
+getTool(name: string): ToolDefinition | undefined
 ```
 
 **Parameters:**
-- `name` (string) - Tool name
 
-**Returns:** `ToolDefinition | undefined`
+- `name` (string) - Exact tool name
+
+**Returns:** `ToolDefinition | undefined` - Tool definition if found, undefined otherwise
 
 **Example:**
+
 ```typescript
-const tool = registry.getTool('github-create-issue');
-if (tool) {
-  console.log(tool.parameters);
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+const slackTool = matimo.getTool('slack-send-message');
+if (slackTool) {
+  console.log('Tool:', slackTool.name);
+  console.log('Description:', slackTool.description);
+  console.log('Parameters:');
+  Object.entries(slackTool.parameters || {}).forEach(([name, param]) => {
+    console.log(`  - ${name}: ${param.type}${param.required ? ' (required)' : ''}`);
+  });
 } else {
   console.log('Tool not found');
 }
 ```
 
-#### `registerTool(tool)`
+---
 
-Register a tool in the registry.
+### `searchTools(query)`
+
+Search tools by name or description.
+
+**Signature:**
 
 ```typescript
-registry.registerTool(toolDefinition);
+searchTools(query: string): ToolDefinition[]
 ```
 
 **Parameters:**
-- `tool` (ToolDefinition) - Tool definition
+
+- `query` (string) - Search query (matched case-insensitively against name and description)
+
+**Returns:** `ToolDefinition[]` - Matching tools
 
 **Example:**
+
 ```typescript
-const newTool = {
-  name: 'my-tool',
-  description: 'My custom tool',
-  version: '1.0.0',
-  // ... other required fields
-};
-registry.registerTool(newTool);
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+// Find all Slack-related tools
+const slackTools = matimo.searchTools('slack');
+console.log(`Found ${slackTools.length} Slack tools`);
+
+// Find email tools
+const emailTools = matimo.searchTools('email');
+emailTools.forEach((tool) => console.log(`  - ${tool.name}`));
 ```
 
 ---
 
-## Executors
+## Decorators
 
-Execute tools with different backends.
+Use decorators for clean, declarative tool execution in class-based code.
 
-### CommandExecutor
+### `@tool(toolName)`
 
-Execute shell commands.
+Class method decorator that automatically executes a tool when the method is called.
 
-#### Constructor
+**Signature:**
 
 ```typescript
-const executor = new CommandExecutor();
+function tool(toolName: string): MethodDecorator;
 ```
 
-#### `execute(tool, params, context?)`
+**How it works:**
 
-Execute a command-based tool.
+1. When decorated method is called, decorator intercepts the call
+2. Method parameters are passed to `matimo.execute(toolName, params)`
+3. Tool result is returned directly
+4. Method body is never executed
+
+**Requirements:**
+
+- Global Matimo instance must be set: `setGlobalMatimoInstance(matimo)`
+- Tool name must match exactly (case-sensitive)
+- Method parameters must match tool parameters (by order or destructuring)
+
+**Example — Simple Tool Execution:**
 
 ```typescript
-const result = await executor.execute(tool, {
-  param1: 'value1',
-  param2: 'value2'
-});
+import { tool, setGlobalMatimoInstance, MatimoInstance } from 'matimo';
+
+const matimo = await MatimoInstance.init('./tools');
+setGlobalMatimoInstance(matimo);
+
+class Calculator {
+  @tool('calculator')
+  async add(operation: string, a: number, b: number) {
+    // Method body is ignored
+    // Decorator passes (operation, a, b) to matimo.execute('calculator', {...})
+  }
+}
+
+const calc = new Calculator();
+const result = await calc.add('add', 5, 3);
+console.log(result); // { result: 8 }
 ```
 
-**Parameters:**
-- `tool` (ToolDefinition) - Tool to execute
-- `params` (Record<string, unknown>) - Tool parameters
-- `context` (ExecutionContext, optional) - Execution context with traceId, etc.
-
-**Returns:** `ExecutionResult`
-
-**Throws:**
-- `ValidationError` - If parameters don't match schema
-- `ExecutionError` - If command fails
-
-**Example:**
-```typescript
-const executor = new CommandExecutor();
-const result = await executor.execute(calculator, {
-  operation: 'add',
-  a: 5,
-  b: 3
-});
-console.log(result.output); // { result: 8 }
-```
-
-#### `validateParameters(tool, params)`
-
-Validate parameters against tool schema.
+**Example — Slack Agent:**
 
 ```typescript
-const isValid = executor.validateParameters(tool, params);
-```
+import { tool, setGlobalMatimoInstance, MatimoInstance, MatimoError } from 'matimo';
 
-**Parameters:**
-- `tool` (ToolDefinition) - Tool definition
-- `params` (unknown) - Parameters to validate
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+setGlobalMatimoInstance(matimo);
 
-**Returns:** `boolean`
+class SlackAgent {
+  @tool('slack-send-message')
+  async sendMessage(channel: string, text: string) {
+    // Decorator handles execution
+  }
 
----
+  @tool('slack-get-channel')
+  async getChannel(name: string) {
+    // Also handled by decorator
+  }
+}
 
-### HttpExecutor
+try {
+  const agent = new SlackAgent();
 
-Execute HTTP requests.
+  // These calls trigger matimo.execute() automatically
+  await agent.sendMessage('#general', 'Hello world!');
+  const channelInfo = await agent.getChannel('general');
 
-#### Constructor
-
-```typescript
-const executor = new HttpExecutor();
-```
-
-#### `execute(tool, params, context?)`
-
-Execute an HTTP-based tool.
-
-```typescript
-const result = await executor.execute(tool, {
-  endpoint: '/api/users',
-  method: 'GET'
-});
-```
-
-**Parameters:**
-- `tool` (ToolDefinition) - Tool to execute
-- `params` (Record<string, unknown>) - Tool parameters
-- `context` (ExecutionContext, optional) - Execution context
-
-**Returns:** `ExecutionResult`
-
-**Throws:**
-- `ValidationError` - If parameters don't match schema
-- `ExecutionError` - If HTTP request fails
-- `AuthError` - If authentication fails
-
-**Example:**
-```typescript
-const executor = new HttpExecutor();
-const result = await executor.execute(githubApi, {
-  endpoint: '/repos/{owner}/{repo}/issues',
-  method: 'POST',
-  body: { title: 'Bug Report' }
-});
-```
-
----
-
-## Error Handling
-
-All errors inherit from `MatimoError`.
-
-### Error Codes
-
-```typescript
-enum ErrorCode {
-  INVALID_SCHEMA = 'INVALID_SCHEMA',
-  EXECUTION_FAILED = 'EXECUTION_FAILED',
-  AUTH_FAILED = 'AUTH_FAILED',
-  TOOL_NOT_FOUND = 'TOOL_NOT_FOUND',
-  FILE_NOT_FOUND = 'FILE_NOT_FOUND',
-  VALIDATION_FAILED = 'VALIDATION_FAILED'
+  console.log('Channel:', channelInfo);
+} catch (error) {
+  if (error instanceof MatimoError) {
+    console.error(`Tool error [${error.code}]:`, error.message);
+  }
 }
 ```
 
-### MatimoError
-
-Base error class.
+**Example — With Error Handling:**
 
 ```typescript
-throw new MatimoError(
-  message: string,
-  code: ErrorCode,
-  context?: Record<string, unknown>
-);
-```
+import { tool, setGlobalMatimoInstance, MatimoInstance, MatimoError } from 'matimo';
 
-**Example:**
-```typescript
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+setGlobalMatimoInstance(matimo);
+
+class APIClient {
+  @tool('api-call')
+  async makeRequest(method: string, url: string, body?: string) {
+    // Never runs, but provides type hints
+  }
+}
+
+const client = new APIClient();
+
 try {
-  const result = await executor.execute(tool, params);
+  const response = await client.makeRequest('GET', 'https://api.example.com/users');
+  console.log('Response:', response);
 } catch (error) {
   if (error instanceof MatimoError) {
-    console.error(`[${error.code}] ${error.message}`);
-    if (error.context) {
-      console.error('Context:', error.context);
+    switch (error.code) {
+      case 'TOOL_NOT_FOUND':
+        console.error('Tool not found');
+        break;
+      case 'AUTH_FAILED':
+        console.error('Authentication failed');
+        break;
+      case 'EXECUTION_FAILED':
+        console.error('Tool execution failed:', error.details);
+        break;
+      default:
+        console.error('Unknown error:', error.message);
     }
   }
 }
 ```
 
-### Common Errors
+---
 
-#### ValidationError
+### `setGlobalMatimoInstance(instance)`
 
-Parameters don't match tool schema.
+Set the global Matimo instance for all decorators to use.
+
+**Signature:**
 
 ```typescript
-catch (error) {
-  if (error.code === 'VALIDATION_FAILED') {
-    console.error('Invalid parameters:', error.message);
-  }
+function setGlobalMatimoInstance(instance: MatimoInstance): void;
+```
+
+**Parameters:**
+
+- `instance` (MatimoInstance) - Initialized Matimo instance from `MatimoInstance.init()`
+
+**Note:** Must be called before using any `@tool` decorators.
+
+**Example:**
+
+```typescript
+import { setGlobalMatimoInstance, MatimoInstance } from 'matimo';
+
+// Initialize once
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+// Set globally for all decorators
+setGlobalMatimoInstance(matimo);
+
+// Now @tool decorators will use this instance
+```
+
+---
+
+## LangChain Integration
+
+Convert Matimo tools to LangChain tool format for AI agents.
+
+### `convertToolsToLangChain(tools, matimo, secrets)`
+
+Convert Matimo tools to LangChain tool schema with integrated execution.
+
+**Signature:**
+
+```typescript
+function convertToolsToLangChain(
+  tools: ToolDefinition[],
+  matimo: MatimoInstance,
+  secrets?: Record<string, string>
+): LanguageModelToolUse[];
+```
+
+**Parameters:**
+
+- `tools` (ToolDefinition[], required) - Tools from `matimo.listTools()`
+- `matimo` (MatimoInstance, required) - Initialized Matimo instance
+- `secrets` (object, optional) - Environment variables for authentication
+  - Automatically detects params ending in TOKEN, KEY, SECRET, PASSWORD
+  - Injects from env vars: `process.env.MATIMO_{TOOL_NAME}_{PARAM_NAME}`
+
+**Returns:** `LanguageModelToolUse[]` - LangChain-compatible tool definitions
+
+**Example:**
+
+```typescript
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
+import { ChatOpenAI } from '@langchain/openai';
+import { createAgent } from './agent-utils';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+const tools = matimo.listTools();
+const langchainTools = convertToolsToLangChain(tools, matimo);
+
+// Use with LangChain agent
+const model = new ChatOpenAI({ modelName: 'gpt-4o-mini' });
+const agent = await createAgent({
+  model,
+  tools: langchainTools,
+  instructions: 'You are a helpful Slack assistant',
+});
+
+// Agent automatically selects and executes tools
+const response = await agent.invoke({
+  input: 'Send a message to #general saying hello',
+});
+```
+
+For complete LangChain integration guide, see [LangChain Integration](../framework-integrations/LANGCHAIN.md).
+
+---
+
+## Error Handling
+
+All SDK errors are instances of `MatimoError` with structured error codes.
+
+### MatimoError
+
+**Properties:**
+
+- `message` (string) - Human-readable error message
+- `code` (ErrorCode) - Machine-readable error code
+- `details` (object, optional) - Additional error context
+
+**Available Error Codes:**
+
+```typescript
+enum ErrorCode {
+  INVALID_SCHEMA = 'INVALID_SCHEMA', // Tool definition invalid
+  TOOL_NOT_FOUND = 'TOOL_NOT_FOUND', // Tool name not found
+  PARAMETER_VALIDATION = 'PARAMETER_VALIDATION', // Params don't match schema
+  EXECUTION_FAILED = 'EXECUTION_FAILED', // Tool execution error
+  AUTH_FAILED = 'AUTH_FAILED', // Authentication error
+  TIMEOUT = 'TIMEOUT', // Execution timeout
+  FILE_NOT_FOUND = 'FILE_NOT_FOUND', // Tool file not found
 }
 ```
 
-#### ExecutionError
-
-Tool execution failed.
+**Example:**
 
 ```typescript
-catch (error) {
-  if (error.code === 'EXECUTION_FAILED') {
-    console.error('Tool failed:', error.message);
-  }
-}
-```
+import { MatimoInstance, MatimoError } from 'matimo';
 
-#### AuthError
+const matimo = await MatimoInstance.init({ autoDiscover: true });
 
-Authentication failed.
+try {
+  await matimo.execute('unknown-tool', {});
+} catch (error) {
+  if (error instanceof MatimoError) {
+    console.error(`[${error.code}] ${error.message}`);
 
-```typescript
-catch (error) {
-  if (error.code === 'AUTH_FAILED') {
-    console.error('Authentication failed:', error.message);
+    // Handle specific errors
+    if (error.code === 'TOOL_NOT_FOUND') {
+      console.error(
+        'Available tools:',
+        matimo.listTools().map((t) => t.name)
+      );
+    }
+
+    // View additional context
+    if (error.details) {
+      console.error('Details:', error.details);
+    }
   }
 }
 ```
@@ -366,18 +500,20 @@ catch (error) {
 
 ## Types
 
+Complete TypeScript type definitions.
+
 ### ToolDefinition
 
 ```typescript
 interface ToolDefinition {
-  name: string;
-  description: string;
-  version: string;
-  parameters: Record<string, Parameter>;
-  execution: ExecutionConfig;
-  output_schema?: OutputSchema;
-  authentication?: AuthConfig;
-  error_handling?: ErrorHandlingConfig;
+  name: string; // Unique tool name
+  version: string; // Semantic version
+  description: string; // Tool description
+  parameters?: Record<string, Parameter>; // Tool parameters
+  execution: ExecutionConfig; // How to execute
+  output_schema?: Record<string, unknown>; // Response schema (Zod)
+  authentication?: AuthConfig; // Auth configuration
+  examples?: Example[]; // Usage examples
 }
 ```
 
@@ -385,198 +521,52 @@ interface ToolDefinition {
 
 ```typescript
 interface Parameter {
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
-  description: string;
-  required: boolean;
-  enum?: unknown[];
-  default?: unknown;
-  validation?: {
-    minLength?: number;
-    maxLength?: number;
-    min?: number;
-    max?: number;
-    pattern?: string;
-  };
+  type: string; // 'string', 'number', 'boolean', etc.
+  required?: boolean; // Required flag
+  description?: string; // Parameter description
+  enum?: (string | number)[]; // Allowed values
+  default?: unknown; // Default value
 }
 ```
 
 ### ExecutionConfig
 
 ```typescript
-interface ExecutionConfig {
-  type: 'command' | 'http' | 'script';
-}
-
-interface CommandExecution extends ExecutionConfig {
-  type: 'command';
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
-  timeout_ms?: number;
-}
-
-interface HttpExecution extends ExecutionConfig {
-  type: 'http';
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  url: string;
-  headers?: Record<string, string>;
-  auth?: AuthConfig;
-  timeout_ms?: number;
-}
-```
-
-### OutputSchema
-
-```typescript
-interface OutputSchema {
-  type: 'object' | 'array' | 'string' | 'number' | 'boolean';
-  properties?: Record<string, OutputSchema>;
-  items?: OutputSchema;
-  required?: string[];
-  description?: string;
-}
+type ExecutionConfig =
+  | {
+      type: 'command';
+      command: string;
+      args?: string[];
+    }
+  | {
+      type: 'http';
+      method: string;
+      url: string;
+      headers?: Record<string, string>;
+      body?: Record<string, unknown>;
+    }
+  | {
+      type: 'function';
+      function: string; // Path to function
+    };
 ```
 
 ### AuthConfig
 
 ```typescript
 interface AuthConfig {
-  type: 'api_key' | 'bearer' | 'oauth2' | 'basic';
-  location?: 'header' | 'query' | 'body';
-  name?: string; // For api_key and basic
-  secret_env_var: string;
+  type: 'api_key' | 'bearer' | 'basic' | 'oauth2';
+  location?: 'header' | 'query' | 'body'; // For api_key/bearer
+  name?: string; // Header/param name
+  provider?: string; // For oauth2
 }
 ```
-
-### ExecutionResult
-
-```typescript
-interface ExecutionResult {
-  success: boolean;
-  output: unknown;
-  duration_ms: number;
-  error?: {
-    code: string;
-    message: string;
-  };
-}
-```
-
-### ExecutionContext
-
-```typescript
-interface ExecutionContext {
-  traceId: string;
-  userId?: string;
-  metadata?: Record<string, unknown>;
-}
-```
-
----
-
-## Complete Example
-
-```typescript
-import { MatimoFactory } from 'matimo';
-
-// 1. Create Matimo instance
-const matimo = MatimoFactory.create({
-  toolsPath: './tools'
-});
-
-// 2. List available tools
-const tools = matimo.getToolRegistry().listTools();
-console.log(`Available tools: ${tools.map(t => t.name).join(', ')}`);
-
-// 3. Get specific tool
-const calculator = matimo.getToolRegistry().getTool('calculator');
-if (!calculator) {
-  throw new Error('Calculator tool not found');
-}
-
-// 4. Execute with error handling
-try {
-  const result = await matimo.executeTool('calculator', {
-    operation: 'add',
-    a: 10,
-    b: 5
-  });
-  
-  console.log('Result:', result);
-  // Output: Result: { result: 15 }
-} catch (error) {
-  if (error.code === 'VALIDATION_FAILED') {
-    console.error('Invalid parameters');
-  } else if (error.code === 'EXECUTION_FAILED') {
-    console.error('Tool execution failed:', error.message);
-  } else {
-    console.error('Unknown error:', error);
-  }
-}
-```
-
----
-
-## Advanced Usage
-
-### Custom Execution Context
-
-```typescript
-const result = await executor.execute(tool, params, {
-  traceId: 'trace-12345',
-  userId: 'user-789',
-  metadata: {
-    source: 'api',
-    version: '1.0'
-  }
-});
-```
-
-### Parameter Templating
-
-```yaml
-# In tool YAML:
-execution:
-  type: command
-  command: echo
-  args:
-    - "Hello {name}, your age is {age}"
-```
-
-```typescript
-const result = await executor.execute(tool, {
-  name: 'Alice',
-  age: 30
-});
-// Output: "Hello Alice, your age is 30"
-```
-
-### Output Validation
-
-HTTP executor automatically validates responses against `output_schema`:
-
-```yaml
-output_schema:
-  type: object
-  properties:
-    id:
-      type: number
-    name:
-      type: string
-    email:
-      type: string
-  required:
-    - id
-    - name
-```
-
-The executor will throw `ValidationError` if the response doesn't match.
 
 ---
 
 ## See Also
 
-- [Quick Start](../getting-started/QUICK_START.md) — Get started in 5 minutes
-- [Tool Specification](../tool-development/TOOL_SPECIFICATION.md) — Write YAML tools
-- [Decorator Guide](../tool-development/DECORATOR_GUIDE.md) — Use decorators
-- [CONTRIBUTING.md](../CONTRIBUTING.md) — Development guide
+- [Quick Start](../getting-started/QUICK_START.md) — 5-minute guide
+- [SDK Patterns](../user-guide/SDK_PATTERNS.md) — Factory, Decorator, LangChain patterns
+- [LangChain Integration](../framework-integrations/LANGCHAIN.md) — AI agent integration
+- [Architecture Overview](../architecture/OVERVIEW.md) — System design
