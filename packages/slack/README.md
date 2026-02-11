@@ -1,53 +1,147 @@
-# Slack Tools - Complete Reference
+# @matimo/slack - Slack Tools for Matimo
 
-This directory contains **19 Slack tools** covering all major Slack operations. All tools are built on official Slack Web API methods and fully documented.
+Slack workspace integration tools for Matimo's universal AI tools ecosystem. Send messages, manage channels, upload files, and interact with Slack through YAML-defined tools that work with any AI framework.
 
-## 📦 Available Tools (19 Total)
+## 📦 Installation
 
-### Messaging Tools (4)
+```bash
+npm install @matimo/slack
+# or
+pnpm add @matimo/slack
+```
 
-- **slack-send-message** - Post message to channel (chat.postMessage)
-- **slack_send_channel_message** - Post message with markdown/blocks (chat.postMessage)
-- **slack_reply_to_message** - Reply in thread (chat.postMessage with thread_ts)
-- **slack_send_dm** - Send direct message (conversations.open + chat.postMessage)
+## 🛠️ Available Tools (19 Total)
 
-### Channel Management (4)
+| Category | Tools | Description |
+|----------|-------|-------------|
+| **Messaging** | 4 tools | Send messages, replies, DMs |
+| **Channels** | 4 tools | Create, join, manage channels |
+| **Files** | 3 tools | Upload and share files |
+| **Reading** | 3 tools | Read messages and history |
+| **Reactions** | 2 tools | Add/get emoji reactions |
+| **Users** | 2 tools | Get user information |
 
-- **slack-list-channels** - List all channels/DMs (conversations.list)
-- **slack_create_channel** - Create public/private channel (conversations.create)
-- **slack_join_channel** - Add bot to channel (conversations.join)
-- **slack_set_channel_topic** - Update channel description (conversations.setTopic)
+### Complete Tool List
 
-### File Management (3 - Modern API)
-
-- **slack_upload_file** - Upload file to Slack (files.getUploadURLExternal - modern API)
-- **slack_upload_file_v2** - Get upload URL for files (files.getUploadURLExternal)
-- **slack_complete_file_upload** - Complete upload and share (files.completeUploadExternal)
-
-### Message Reading (3)
-
-- **slack_get_channel_history** - Get messages from channel (conversations.history)
-- **slack_get_thread_replies** - Get thread replies (conversations.replies)
-- **slack_search_messages** - Search message history (search.messages)
-
-### Reactions (2)
-
-- **slack_add_reaction** - Add emoji reaction (reactions.add)
-- **slack_get_reactions** - Get reactions on message (reactions.get)
-
-### User Info (2)
-
-- **slack_get_user_info** - Get user details (users.info)
+- **slack-send-message** - Post message to channel
+- **slack_send_channel_message** - Post message with markdown/blocks
+- **slack_reply_to_message** - Reply in thread
+- **slack_send_dm** - Send direct message
+- **slack-list-channels** - List all channels/DMs
+- **slack_create_channel** - Create public/private channel
+- **slack_join_channel** - Add bot to channel
+- **slack_set_channel_topic** - Update channel description
+- **slack_upload_file** - Upload file to Slack (modern API)
+- **slack_upload_file_v2** - Get upload URL for files
+- **slack_complete_file_upload** - Complete upload and share
+- **slack_get_channel_history** - Get messages from channel
+- **slack_get_thread_replies** - Get thread replies
+- **slack_search_messages** - Search message history
+- **slack_add_reaction** - Add emoji reaction
+- **slack_get_reactions** - Get reactions on message
+- **slack_get_user_info** - Get user details
 - **slack-get-user** - Alias of slack_get_user_info
+
+## 🚀 Quick Start
+
+```typescript
+import { MatimoInstance } from 'matimo';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+// Send a message to a channel
+await matimo.execute('slack-send-message', {
+  channel: '#general',
+  text: 'Hello from Matimo AI!'
+});
+
+// List available channels
+const channels = await matimo.execute('slack-list-channels', {});
+```
+
+## 🔐 Authentication
+
+Set your Slack Bot token:
+
+```bash
+export SLACK_BOT_TOKEN="xoxb-your-bot-token"
+```
+
+Or use environment variables in your application.
+
+## 📚 Integration Examples
+
+### With LangChain
+
+```typescript
+import { MatimoInstance } from 'matimo';
+import { ChatOpenAI } from '@langchain/openai';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+const tools = matimo.listTools().filter(t => t.name.startsWith('slack'));
+
+// Use with LangChain agent
+```
+
+### With Custom Code
+
+```typescript
+import { MatimoInstance } from 'matimo';
+
+class SlackAgent {
+  private matimo: MatimoInstance;
+
+  constructor() {
+    this.matimo = await MatimoInstance.init({ autoDiscover: true });
+  }
+
+  async sendMessage(channel: string, text: string) {
+    return await this.matimo.execute('slack-send-message', { channel, text });
+  }
+}
+```
 
 ## 🔗 API Reference
 
-All tools are based on official Slack Web API methods. See [Slack API Documentation](https://docs.slack.dev/).
+All tools are based on official Slack Web API methods. See [Slack API Documentation](https://api.slack.com/methods).
 
-| Tool                       | Slack API Method                     | Scopes Required      |
-| -------------------------- | ------------------------------------ | -------------------- |
-| slack-send-message         | chat.postMessage                     | chat:write           |
-| slack_send_channel_message | chat.postMessage                     | chat:write           |
+| Tool | Slack API Method | Bot Scopes Required |
+|------|------------------|-------------------|
+| slack-send-message | chat.postMessage | chat:write |
+| slack_send_channel_message | chat.postMessage | chat:write |
+| slack_reply_to_message | chat.postMessage | chat:write |
+| slack_send_dm | conversations.open + chat.postMessage | chat:write, im:write |
+| slack-list-channels | conversations.list | channels:read, groups:read, im:read, mpim:read |
+| slack_create_channel | conversations.create | channels:manage |
+| slack_join_channel | conversations.join | channels:write |
+| slack_set_channel_topic | conversations.setTopic | channels:write |
+| slack_upload_file | files.getUploadURLExternal | files:write |
+| slack_upload_file_v2 | files.getUploadURLExternal | files:write |
+| slack_complete_file_upload | files.completeUploadExternal | files:write |
+| slack_get_channel_history | conversations.history | channels:history |
+| slack_get_thread_replies | conversations.replies | channels:history |
+| slack_search_messages | search.messages | search:read |
+| slack_add_reaction | reactions.add | reactions:write |
+| slack_get_reactions | reactions.get | reactions:read |
+| slack_get_user_info | users.info | users:read |
+| slack-get-user | users.info | users:read |
+
+## 📋 Tool Specifications
+
+Each tool is defined in YAML with complete parameter validation and error handling. Tools include:
+
+- **Parameter validation** with Zod schemas
+- **OAuth2/bot token authentication** with automatic injection
+- **Error handling** with structured error codes
+- **Output validation** against defined schemas
+
+## 🤝 Contributing
+
+Found a bug or want to add a Slack tool? See [Contributing Guide](../../CONTRIBUTING.md) and [Adding Tools Guide](../tool-development/ADDING_TOOLS.md).
+
+---
+
+**Part of the Matimo ecosystem** - Define tools once, use them everywhere! 🎯
 | slack_reply_to_message     | chat.postMessage                     | chat:write           |
 | slack_send_dm              | conversations.open, chat.postMessage | im:write, chat:write |
 | slack-list-channels        | conversations.list                   | channels:read        |
