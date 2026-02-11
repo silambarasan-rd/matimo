@@ -1,53 +1,111 @@
-# Matimo Gmail Tools Ecosystem
+# @matimo/gmail - Gmail Tools for Matimo
 
-Complete guide to Gmail tools in Matimo: OAuth2 setup, YAML architecture, tool ecosystem, and integration patterns.
+Gmail integration tools for Matimo's universal AI tools ecosystem. Send emails, manage drafts, and read messages through YAML-defined tools that work with any AI framework.
 
-## 📋 Table of Contents
+## 📦 Installation
 
-- [Ecosystem Overview](#ecosystem-overview)
-- [YAML-Based Tool Architecture](#yaml-based-tool-architecture)
-- [Quick Start](#quick-start)
-- [Available Tools](#available-tools)
-- [Integration Patterns](#integration-patterns)
-- [Advanced Usage](#advanced-usage)
-- [Security & Best Practices](#security--best-practices)
-
-## Ecosystem Overview
-
-### What is the Gmail Tool Ecosystem?
-
-The Gmail tools are part of Matimo's universal AI tools ecosystem. Unlike traditional libraries where each tool requires custom code, **Gmail tools are defined once in YAML and work everywhere**:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                  YAML Tool Definition                        │
-│  (tools/gmail/send-email/definition.yaml)                   │
-│  - What the tool does                                        │
-│  - Input parameters & validation                             │
-│  - Authentication requirements                               │
-│  - Output schema                                             │
-│  - Execution configuration (command/HTTP)                    │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-        ┌───────────────────┴────────────────────┐
-        ↓                                         ↓
-    SDK API                                 MCP Server (comming soon)
-    (JavaScript)                            (Claude)
-    ↓                                       ↓
-    - matimo.execute()                      - Claude can use
-    - LangChain tools                         natively
-    - CrewAI agents
-    - Custom code
+```bash
+npm install @matimo/gmail
+# or
+pnpm add @matimo/gmail
 ```
 
-**Key Principle: Define Once, Use Everywhere**
+## 🛠️ Available Tools
 
-- ✅ One YAML file per tool
-- ✅ Works with any framework (LangChain, CrewAI, custom code)
-- ✅ No code changes needed to add/modify tools
-- ✅ Scales to 1000s of tools
+| Tool | Description | API Method |
+|------|-------------|------------|
+| `gmail-send-email` | Send email to recipients | Gmail API send |
+| `gmail-create-draft` | Create email draft | Gmail API drafts.create |
+| `gmail-list-messages` | List recent messages | Gmail API messages.list |
 
-### Why YAML?
+## 🚀 Quick Start
+
+```typescript
+import { MatimoInstance } from 'matimo';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+// Send an email
+await matimo.execute('gmail-send-email', {
+  to: 'recipient@example.com',
+  subject: 'Hello from Matimo',
+  body: 'This email was sent by AI!'
+});
+
+// List recent messages
+const messages = await matimo.execute('gmail-list-messages', {
+  maxResults: 10
+});
+```
+
+## 🔐 Authentication
+
+Set your Gmail OAuth2 access token:
+
+```bash
+export GMAIL_ACCESS_TOKEN="ya29.a0AfH6SMBx..."
+```
+
+Or use environment variables in your application.
+
+## 📚 Integration Examples
+
+### With LangChain
+
+```typescript
+import { MatimoInstance } from 'matimo';
+import { ChatOpenAI } from '@langchain/openai';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+const tools = matimo.listTools().filter(t => t.name.startsWith('gmail'));
+
+// Use with LangChain agent
+```
+
+### With Custom Code
+
+```typescript
+import { MatimoInstance } from 'matimo';
+
+class GmailAgent {
+  private matimo: MatimoInstance;
+
+  constructor() {
+    this.matimo = await MatimoInstance.init({ autoDiscover: true });
+  }
+
+  async sendEmail(to: string, subject: string, body: string) {
+    return await this.matimo.execute('gmail-send-email', { to, subject, body });
+  }
+}
+```
+
+## 🔗 API Reference
+
+All tools are based on the official Gmail REST API. See [Gmail API Documentation](https://developers.google.com/gmail/api).
+
+| Tool | Gmail API Method | OAuth Scopes |
+|------|------------------|--------------|
+| gmail-send-email | gmail.send | https://www.googleapis.com/auth/gmail.send |
+| gmail-create-draft | drafts.create | https://www.googleapis.com/auth/gmail.compose |
+| gmail-list-messages | messages.list | https://www.googleapis.com/auth/gmail.readonly |
+
+## 📋 Tool Specifications
+
+Each tool is defined in YAML with complete parameter validation and error handling. Tools include:
+
+- **Parameter validation** with Zod schemas
+- **OAuth2 authentication** with automatic token injection
+- **Error handling** with structured error codes
+- **Output validation** against defined schemas
+
+## 🤝 Contributing
+
+Found a bug or want to add a Gmail tool? See [Contributing Guide](../../CONTRIBUTING.md) and [Adding Tools Guide](../tool-development/ADDING_TOOLS.md).
+
+---
+
+**Part of the Matimo ecosystem** - Define tools once, use them everywhere! 🎯
 
 YAML keeps tool definitions **maintainable, readable, and contributor-friendly**:
 

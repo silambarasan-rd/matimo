@@ -112,6 +112,9 @@ importers:
       '@matimo/core':
         specifier: workspace:*
         version: link:../core
+      matimo:
+        specifier: workspace:*
+        version: link:../..
     devDependencies:
       '@types/node':
         specifier: ^25.1.0
@@ -199,7 +202,7 @@ importers:
   packages/gmail:
     dependencies:
       matimo:
-        specifier: ^0.1.0-alpha.4
+        specifier: workspace:*
         version: link:../..
     devDependencies:
       '@matimo/core':
@@ -212,7 +215,7 @@ importers:
   packages/slack:
     dependencies:
       matimo:
-        specifier: ^0.1.0-alpha.4
+        specifier: workspace:*
         version: link:../..
     devDependencies:
       '@matimo/core':
