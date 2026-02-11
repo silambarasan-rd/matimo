@@ -22,7 +22,7 @@
     "tsx": "^4.21.0"
   },
    "peerDependencies": {
-    "matimo": "^0.1.0-alpha.5"
+    "matimo": "workspace:*"
   },
   "scripts": {
     "build": "tsc",
