@@ -75,7 +75,7 @@ async function runFactoryPatternExamples() {
   // Parse CLI arguments
   const args = process.argv.slice(2);
   let userEmail = process.env.TEST_EMAIL || 'test@example.com';
-  
+
   for (const arg of args) {
     if (arg.startsWith('--email:')) {
       userEmail = arg.split(':')[1];
@@ -102,8 +102,7 @@ async function runFactoryPatternExamples() {
   try {
     // Initialize Matimo
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     const matimoTools = matimo.listTools();
     console.info(`📦 Loaded ${matimoTools.length} tools:\n`);
@@ -128,7 +127,7 @@ async function runFactoryPatternExamples() {
         GMAIL_ACCESS_TOKEN: accessToken,
       });
       console.info('📤 Raw Result:', JSON.stringify(listResult, null, 2));
-      
+
       if (typeof listResult === 'object' && listResult !== null) {
         const data = listResult as any;
         if (data.data?.messages && Array.isArray(data.data.messages)) {
@@ -165,7 +164,7 @@ async function runFactoryPatternExamples() {
         GMAIL_ACCESS_TOKEN: accessToken,
       });
       console.info('📤 Raw Result:', JSON.stringify(sendResult, null, 2));
-      
+
       if (typeof sendResult === 'object' && sendResult !== null) {
         const data = sendResult as any;
         if (data.data?.id) {
@@ -198,7 +197,7 @@ async function runFactoryPatternExamples() {
         GMAIL_ACCESS_TOKEN: accessToken,
       });
       console.info('📤 Raw Result:', JSON.stringify(draftResult, null, 2));
-      
+
       if (typeof draftResult === 'object' && draftResult !== null) {
         const data = draftResult as any;
         if (data.data?.id) {

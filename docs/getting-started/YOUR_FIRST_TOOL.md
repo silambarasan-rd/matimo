@@ -13,12 +13,12 @@ Execute your first Matimo tool in 5 minutes.
 Create `first-tool.ts`:
 
 ```typescript
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 async function main() {
   // Initialize Matimo with tools directory
-  const m = await matimo.init('./tools');
-  
+  const m = await MatimoInstance.init('./tools');
+
   console.log(`✅ Loaded ${m.listTools().length} tools`);
 }
 
@@ -32,6 +32,7 @@ npx tsx first-tool.ts
 ```
 
 **Output:**
+
 ```
 ✅ Loaded 8 tools
 ```
@@ -43,16 +44,16 @@ npx tsx first-tool.ts
 Update `first-tool.ts`:
 
 ```typescript
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 async function main() {
-  const m = await matimo.init('./tools');
-  
+  const m = await MatimoInstance.init('./tools');
+
   // List all tools
   const tools = m.listTools();
-  
+
   console.log('\n📦 Available Tools:\n');
-  tools.forEach(tool => {
+  tools.forEach((tool) => {
     console.log(`  • ${tool.name}`);
     console.log(`    ${tool.description}\n`);
   });
@@ -62,6 +63,7 @@ main().catch(console.error);
 ```
 
 **Output:**
+
 ```
 📦 Available Tools:
 
@@ -70,7 +72,7 @@ main().catch(console.error);
 
   • gmail-send-email
     Send an email via Gmail API
-    
+
   ... (more tools)
 ```
 
@@ -87,6 +89,7 @@ console.log(`Parameters:`, tool.parameters);
 ```
 
 **Output:**
+
 ```
 Tool: calculator
 Description: Perform basic math operations
@@ -105,7 +108,7 @@ Parameters: {
 const result = await m.execute('calculator', {
   operation: 'add',
   a: 5,
-  b: 3
+  b: 3,
 });
 
 console.log('Result:', result);
@@ -117,19 +120,19 @@ console.log('Result:', result);
 ```typescript
 // Add
 const add = await m.execute('calculator', { operation: 'add', a: 10, b: 5 });
-console.log('10 + 5 =', add.result);  // 15
+console.log('10 + 5 =', add.result); // 15
 
 // Subtract
 const sub = await m.execute('calculator', { operation: 'subtract', a: 10, b: 5 });
-console.log('10 - 5 =', sub.result);  // 5
+console.log('10 - 5 =', sub.result); // 5
 
 // Multiply
 const mul = await m.execute('calculator', { operation: 'multiply', a: 10, b: 5 });
-console.log('10 * 5 =', mul.result);  // 50
+console.log('10 * 5 =', mul.result); // 50
 
 // Divide
 const div = await m.execute('calculator', { operation: 'divide', a: 10, b: 5 });
-console.log('10 / 5 =', div.result);  // 2
+console.log('10 / 5 =', div.result); // 2
 ```
 
 ---
@@ -141,7 +144,7 @@ try {
   const result = await m.execute('calculator', {
     operation: 'divide',
     a: 10,
-    b: 0  // ⚠️ Invalid
+    b: 0, // ⚠️ Invalid
   });
 } catch (error) {
   if (error.code === 'EXECUTION_FAILED') {
@@ -170,17 +173,17 @@ See [Error Codes](../api-reference/ERRORS.md) for all possible errors.
 ## Complete Example
 
 ```typescript
-import { matimo } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
 async function main() {
   // 1. Initialize
-  const m = await matimo.init('./tools');
+  const m = await MatimoInstance.init('./tools');
   console.log(`✅ Loaded ${m.listTools().length} tools\n`);
 
   // 2. List tools
   const tools = m.listTools();
   console.log('📦 Available tools:');
-  tools.forEach(t => console.log(`  - ${t.name}`));
+  tools.forEach((t) => console.log(`  - ${t.name}`));
 
   // 3. Get tool
   const calc = m.getTool('calculator');
@@ -191,7 +194,7 @@ async function main() {
   const result = await m.execute('calculator', {
     operation: 'add',
     a: 5,
-    b: 3
+    b: 3,
   });
   console.log('✅ Result:', result.result);
 }
@@ -200,6 +203,7 @@ main().catch(console.error);
 ```
 
 **Output:**
+
 ```
 ✅ Loaded 8 tools
 
@@ -214,4 +218,3 @@ main().catch(console.error);
 ⚙️ Executing calculator...
 ✅ Result: 8
 ```
-

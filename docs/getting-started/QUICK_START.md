@@ -1,6 +1,6 @@
 # Quick Start — 5 Minutes
 
-Get Matimo up and running in 5 minutes.
+Get Matimo up and running in 5 minutes with the factory pattern.
 
 ## 1. Installation (1 min)
 
@@ -10,70 +10,175 @@ npm install matimo
 pnpm add matimo
 ```
 
-## 2. Load Tools (2 min)
+## 2. Create Your First Script (3 min)
 
-Create a file `load-tools.ts`:
-
-```typescript
-import { ToolLoader } from 'matimo';
-
-const loader = new ToolLoader('./tools');
-const tools = await loader.loadToolsFromDirectory();
-
-console.log(`Loaded ${tools.length} tools`);
-```
-
-## 3. Execute a Tool (1 min)
+Create a file `demo.ts`:
 
 ```typescript
-import { CommandExecutor } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
-const executor = new CommandExecutor();
-const result = await executor.execute(tools[0], {
-  param1: 'value1',
-  param2: 'value2'
-});
+async function main() {
+  // Initialize Matimo with your tools
+  const matimo = await MatimoInstance.init('./tools');
 
-console.log(result);
+  // List available tools
+  const tools = matimo.listTools();
+  console.log(`📦 Loaded ${tools.length} tools`);
+
+  // Execute a tool
+  const result = await matimo.execute('calculator', {
+    operation: 'add',
+    a: 10,
+    b: 5,
+  });
+
+  console.log('✅ Result:', result);
+}
+
+main().catch(console.error);
 ```
 
-## 4. Use the SDK Factory (1 min)
+## 3. Create Your First Tool (1 min)
 
-```typescript
-import { MatimoFactory } from 'matimo';
+Create `tools/calculator/definition.yaml`:
 
-// Create instance with factory pattern
-const matimo = MatimoFactory.create({
-  toolsPath: './tools'
-});
+```yaml
+name: calculator
+description: Perform basic math operations
+version: '1.0.0'
 
-// List all tools
-const allTools = matimo.getToolRegistry().listTools();
+parameters:
+  operation:
+    type: string
+    enum: [add, subtract, multiply, divide]
+    required: true
+    description: Mathematical operation to perform
+  a:
+    type: number
+    required: true
+    description: First operand
+  b:
+    type: number
+    required: true
+    description: Second operand
 
-// Execute a tool
-const result = await matimo.executeTool('calculator', {
-  operation: 'add',
-  a: 5,
-  b: 3
-});
+execution:
+  type: command
+  command: node
+  args:
+    - -e
+    - |
+      const op = process.argv[1];
+      const a = parseFloat(process.argv[2]);
+      const b = parseFloat(process.argv[3]);
+      const ops = { add: a + b, subtract: a - b, multiply: a * b, divide: a / b };
+      console.log(JSON.stringify({ result: ops[op] }));
+    - '{operation}'
+    - '{a}'
+    - '{b}'
 
-console.log(result); // { result: 8 }
+output_schema:
+  type: object
+  properties:
+    result:
+      type: number
+      description: Result of the operation
+  required: [result]
+
+error_handling:
+  retry: 2
+  backoff_type: exponential
+  initial_delay_ms: 100
 ```
+
+## 4. Run It (< 1 min)
+
+```bash
+# Compile TypeScript
+npx tsc demo.ts
+
+# Run the script
+node demo.js
+
+# Output:
+# 📦 Loaded 1 tools
+# ✅ Result: { result: 15 }
+```
+
+---
+
+## What Just Happened?
+
+1. **MatimoInstance.init('./tools')** — Loaded all YAML files from `./tools/**/*.yaml`
+2. **matimo.listTools()** — Listed discovered tools
+3. **matimo.execute('calculator', {...})** — Executed the tool with parameters
+4. Matimo **validated parameters**, **spawned process**, **validated output**, **returned result**
+
+---
 
 ## Next Steps
 
-- **[API Reference](../api-reference/SDK.md)** — Full SDK documentation
-- **[Tool Specification](../tool-development/TOOL_SPECIFICATION.md)** — Write your own tools
-- **[Decorator Guide](../tool-development/DECORATOR_GUIDE.md)** — Use TypeScript decorators
-- **[Development Guide](../CONTRIBUTING.md)** — Contributing to Matimo
+### Choose Your Pattern
+
+- **Factory Pattern** (you just used this) — Best for simple scripts and backends
+- **Decorator Pattern** — Best for class-based code
+- **LangChain** — Best for AI agents with automatic tool selection
+
+See [SDK Usage Patterns](../user-guide/SDK_PATTERNS.md) for details.
+
+### Add More Tools
+
+Create more YAML files in `tools/`:
+
+```
+tools/
+├── calculator/
+│   └── definition.yaml      # Done ✅
+├── my-api/
+│   └── definition.yaml      # Create more
+└── slack/
+    └── definition.yaml
+```
+
+Each tool is just a YAML file — no code needed!
+
+### Use Provider Tools
+
+Install pre-built tools from npm:
+
+```bash
+pnpm add @matimo/slack @matimo/gmail
+```
+
+Then load them alongside your custom tools:
+
+```typescript
+const matimo = await MatimoInstance.init([
+  './tools',                    # Your custom tools
+  './node_modules/@matimo/slack/tools',  # Pre-built tools
+  './node_modules/@matimo/gmail/tools'
+]);
+```
+
+---
+
+## Further Reading
+
+- **[API Reference](../api-reference/SDK.md)** — Full SDK methods and types
+- **[Tool Specification](../tool-development/TOOL_SPECIFICATION.md)** — Write production tools
+- **[SDK Usage Patterns](../user-guide/SDK_PATTERNS.md)** — Factory, Decorator, LangChain patterns
+- **[Architecture Overview](../architecture/OVERVIEW.md)** — How Matimo works internally
+- **[Framework Integrations](../framework-integrations/LANGCHAIN.md)** — LangChain integration examples
+
+---
 
 ## Common Tasks
 
 ### List All Loaded Tools
 
 ```typescript
-const tools = matimo.getToolRegistry().listTools();
-tools.forEach(tool => {
+const tools = matimo.listTools();
+tools.forEach((tool) => {
   console.log(`${tool.name} - ${tool.description}`);
 });
 ```
@@ -81,132 +186,100 @@ tools.forEach(tool => {
 ### Get Tool by Name
 
 ```typescript
-const tool = matimo.getToolRegistry().getTool('calculator');
+const tool = matimo.getTool('calculator');
 if (tool) {
-  console.log(tool.parameters);
+  console.log('Parameters:', tool.parameters);
 }
+```
+
+### Search Tools
+
+```typescript
+const results = matimo.searchTools('calculate');
+console.log(
+  'Found:',
+  results.map((t) => t.name)
+);
 ```
 
 ### Execute with Error Handling
 
 ```typescript
 try {
-  const result = await matimo.executeTool('github-create-issue', {
-    repo: 'owner/repo',
-    title: 'Bug Report'
+  const result = await matimo.execute('calculator', {
+    operation: 'divide',
+    a: 10,
+    b: 0,
   });
   console.log('Success:', result);
 } catch (error) {
-  if (error.code === 'VALIDATION_FAILED') {
-    console.error('Invalid parameters:', error.message);
+  if (error.code === 'TOOL_NOT_FOUND') {
+    console.error('Tool not found:', error.message);
+  } else if (error.code === 'INVALID_PARAMETERS') {
+    console.error('Invalid parameters:', error.details);
   } else if (error.code === 'EXECUTION_FAILED') {
-    console.error('Tool execution failed:', error.message);
-  } else {
-    console.error('Unknown error:', error);
+    console.error('Execution failed:', error.details);
   }
 }
 ```
 
-### Use with MCP Server
+---
+
+## Example: Using Slack
+
+After installing `@matimo/slack`:
 
 ```typescript
-// MCP Server - Coming in Phase 2
-// import { MCPServer } from 'matimo/mcp';
+import { MatimoInstance } from 'matimo';
 
-const server = new MCPServer({
-  toolsPath: './tools',
-  port: 3000
+const matimo = await MatimoInstance.init(['./tools', './node_modules/@matimo/slack/tools']);
+
+// Execute a Slack tool
+const result = await matimo.execute('slack-send-message', {
+  channel: '#general',
+  text: 'Hello from Matimo!',
 });
 
-await server.start();
-console.log('MCP Server running on port 3000');
-// Claude can now discover and call all tools via MCP
+console.log(result);
 ```
 
-## Example Directory Structure
-
-```
-project/
-├── tools/
-│   ├── calculator/
-│   │   └── defination.yaml
-│   └── github/
-|       └── defination.yaml
-│       └── create-issue
-|            └── defination.yaml
-├── src/
-│   └── app.ts
-└── package.json
-```
-
-## Example Tool YAML
-
-Create `tools/calculator/tool.yaml`:
-
-```yaml
-name: calculator
-description: Perform basic math operations
-version: "1.0.0"
-
-parameters:
-  operation:
-    type: string
-    enum: [add, subtract, multiply, divide]
-    required: true
-  a:
-    type: number
-    required: true
-  b:
-    type: number
-    required: true
-
-execution:
-  type: command
-  command: node
-  args:
-    - -e
-    - "console.log(JSON.stringify({ result: eval(`${process.argv[1]} ${process.argv[2]} ${process.argv[3]}`) }))"
-    - "{operation === 'add' ? '+' : operation === 'subtract' ? '-' : operation === 'multiply' ? '*' : '/'}"
-    - "{a}"
-    - "{b}"
-
-output_schema:
-  type: object
-  properties:
-    result:
-      type: number
-```
-
-Load and execute:
-
-```typescript
-const result = await matimo.executeTool('calculator', {
-  operation: 'add',
-  a: 10,
-  b: 5
-});
-// result = { result: 15 }
-```
+---
 
 ## Troubleshooting
 
 **Tools not loading?**
-- Check that tool YAML files are in the correct path
-- Verify YAML syntax is valid
-- Run `pnpm lint` to check for errors
+
+```bash
+# Check that YAML files exist
+ls tools/*/definition.yaml
+
+# Validate YAML syntax
+pnpm validate-tools
+```
 
 **Execution failing?**
-- Check parameters match the tool's parameter schema
-- Verify required environment variables are set
-- Check error message for specific failure reason
+
+```typescript
+// Enable detailed error messages
+try {
+  const result = await matimo.execute('tool-name', params);
+} catch (error) {
+  console.error('Full error:', JSON.stringify(error, null, 2));
+}
+```
 
 **Type errors?**
-- Ensure TypeScript strict mode is enabled
-- Check that tool definitions match expected types
-- Run `pnpm build` to catch compilation errors
+
+```bash
+# Check TypeScript compilation
+npx tsc --noEmit
+```
+
+---
 
 ## Support
 
-- **Questions?** Open a [GitHub Discussion](https://github.com/tallclub/matimo/discussions)
-- **Found a bug?** [Open an issue](https://github.com/tallclub/matimo/issues)
-- **Want to contribute?** See [CONTRIBUTING.md](../CONTRIBUTING.md)
+- 📖 [Full Documentation](../)
+- 💬 [GitHub Discussions](https://github.com/tallclub/matimo/discussions)
+- 🐛 [Report Issues](https://github.com/tallclub/matimo/issues)
+- 🤝 [Contributing](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md)

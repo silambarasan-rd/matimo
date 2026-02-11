@@ -1,6 +1,6 @@
 # Matimo Roadmap
 
-## v0.1.0-alpha.3 (Current Release)
+## v0.1.0-alpha.4 (Current Release)
 
 ### ✅ Core Features Implemented
 
@@ -20,7 +20,7 @@
 **SDK Patterns**
 - Factory pattern (recommended for simple use cases)
 - Decorator pattern (@tool decorators for class-based code)
-- Tool discovery and filtering
+- Tool auto discovery and filtering
 - Full TypeScript type safety (zero `any` types)
 
 **Tool Examples**
@@ -28,6 +28,20 @@
 - GitHub provider configuration
 - Slack provider configuration
 - Calculator and echo tools (reference implementations)
+
+**Monorepo packaging** 
+- Implemented tools packages moved under `packages/` and configured for workspace publishing.
+
+**Tools included in packages** 
+- Tool YAML/assets are packaged inside their parent packages (`/provider-name`) and published as seperate npm package.
+
+**CLI Tool**
+- `matimo list`    - List all tools
+- `matimo install` - install tools from command line
+- `matimo search`  - search tool 
+- `matimo list`    - List tools
+
+
 
 **Quality Assurance**
 - 100% test passing
@@ -50,12 +64,6 @@
 ## Future Release (not in specific order)
 
 ### 🔜 Planned Features
-
-**CLI Tool**
-- `matimo list` - List all tools
-- `matimo execute` - Execute tools from command line
-- `matimo validate` - Validate tool YAML files
-- `matimo test` - Test tool execution locally
 
 **MCP (Model Context Protocol) Server**
 - Native MCP server 
@@ -111,13 +119,14 @@
 - Advanced orchestration
 
 
-## How to Use This Roadmap
+-## How to Use This Roadmap
 
 - **v0.1.0-alpha.1**: Initial SDK implementation with OAuth2 and tool execution
 - **v0.1.0-alpha.2**: Npm workflow improvements and export fixes
 - **v0.1.0-alpha.3**: Slack tools, error standardization, comprehensive examples
+- **v0.1.0-alpha.4**: Monorepo packaging, CLI, workspace publish CI, docs and examples updates
 - **Future Releases**: These are planned but not yet implemented. Contributions welcome!
-- **Contributing**: See [CONTRIBUTING.md](../CONTRIBUTING.md) for how to help
+- **Contributing**: See [CONTRIBUTING.md](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) for how to help
 
 ---
 

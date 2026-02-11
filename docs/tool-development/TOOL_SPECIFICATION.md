@@ -20,7 +20,7 @@ Every Matimo tool is defined in a YAML file with a standardized schema. Tools de
 ```yaml
 name: tool-name
 description: Brief description of what the tool does
-version: "1.0.0"
+version: '1.0.0'
 
 parameters:
   # Define input parameters here
@@ -31,10 +31,10 @@ execution:
 output_schema:
   # Define the output format
 
-authentication:  # Optional
+authentication: # Optional
   # Define authentication if needed
 
-error_handling:  # Optional
+error_handling: # Optional
   # Define retry and error recovery logic
 ```
 
@@ -53,6 +53,7 @@ name: calculator
 ```
 
 **Rules:**
+
 - Lowercase only
 - Kebab-case (hyphens, no spaces)
 - Globally unique
@@ -245,14 +246,15 @@ execution:
   command: node
   args:
     - script.js
-    - "{param1}"
-    - "{param2}"
+    - '{param1}'
+    - '{param2}'
   timeout_ms: 5000
   env:
     CUSTOM_VAR: value
 ```
 
 **Fields:**
+
 - `command` (string, required) — Command to execute
 - `args` (array, optional) — Command arguments with parameter substitution
 - `timeout_ms` (number, optional, default: 30000) — Timeout in milliseconds
@@ -264,12 +266,13 @@ Use `{param_name}` to reference parameters.
 
 ```yaml
 args:
-  - "--operation={operation}"
-  - "{a}"
-  - "{b}"
+  - '--operation={operation}'
+  - '{a}'
+  - '{b}'
 ```
 
 When executed with `{ operation: 'add', a: 5, b: 3 }`, becomes:
+
 ```
 --operation=add 5 3
 ```
@@ -282,10 +285,10 @@ Make HTTP requests.
 execution:
   type: http
   method: POST
-  url: "https://api.example.com/endpoint"
+  url: 'https://api.example.com/endpoint'
   headers:
     Content-Type: application/json
-    Authorization: "Bearer {api_key}"
+    Authorization: 'Bearer {api_key}'
   auth:
     type: bearer
     secret_env_var: MATIMO_API_KEY
@@ -293,6 +296,7 @@ execution:
 ```
 
 **Fields:**
+
 - `method` (string, required) — HTTP method: GET, POST, PUT, DELETE, PATCH
 - `url` (string, required) — API endpoint URL with parameter substitution
 - `headers` (object, optional) — HTTP headers
@@ -302,10 +306,11 @@ execution:
 **URL Templating:**
 
 ```yaml
-url: "https://api.github.com/repos/{owner}/{repo}/issues"
+url: 'https://api.github.com/repos/{owner}/{repo}/issues'
 ```
 
 When executed with `{ owner: 'tallclub', repo: 'matimo' }`:
+
 ```
 https://api.github.com/repos/tallclub/matimo/issues
 ```
@@ -510,6 +515,7 @@ error_handling:
 ```
 
 **Fields:**
+
 - `retry` (number, default: 0) — Number of retry attempts
 - `backoff_type` (string) — Backoff strategy
 - `initial_delay_ms` (number) — Initial delay between retries
@@ -562,7 +568,7 @@ Delays: 2s, 2s, 2s, 2s
 ```yaml
 name: calculator
 description: Perform basic math calculations
-version: "1.0.0"
+version: '1.0.0'
 
 parameters:
   operation:
@@ -588,10 +594,10 @@ execution:
   command: node
   args:
     - -e
-    - "console.log(JSON.stringify({ result: eval(`${process.argv[1]} ${process.argv[2]} ${process.argv[3]}`) }))"
+    - 'console.log(JSON.stringify({ result: eval(`${process.argv[1]} ${process.argv[2]} ${process.argv[3]}`) }))'
     - "{operation === 'add' ? '+' : operation === 'subtract' ? '-' : operation === 'multiply' ? '*' : '/'}"
-    - "{a}"
-    - "{b}"
+    - '{a}'
+    - '{b}'
 
 output_schema:
   type: object
@@ -607,7 +613,7 @@ output_schema:
 ```yaml
 name: github-create-issue
 description: Create a new issue in a GitHub repository
-version: "1.0.0"
+version: '1.0.0'
 
 parameters:
   owner:
@@ -637,7 +643,7 @@ parameters:
 execution:
   type: http
   method: POST
-  url: "https://api.github.com/repos/{owner}/{repo}/issues"
+  url: 'https://api.github.com/repos/{owner}/{repo}/issues'
   headers:
     Accept: application/vnd.github.v3+json
   auth:
@@ -672,7 +678,7 @@ error_handling:
 ```yaml
 name: slack-send-message
 description: Send a message to a Slack channel
-version: "1.0.0"
+version: '1.0.0'
 
 parameters:
   channel:
@@ -694,7 +700,7 @@ parameters:
 execution:
   type: http
   method: POST
-  url: "https://slack.com/api/chat.postMessage"
+  url: 'https://slack.com/api/chat.postMessage'
   headers:
     Content-Type: application/json
   auth:

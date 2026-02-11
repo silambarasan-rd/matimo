@@ -55,114 +55,11 @@
 import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { z } from 'zod';
-import { tool, createAgent } from 'langchain';
+import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
-import { MatimoInstance } from 'matimo';
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-/**
- * Convert a Matimo Gmail tool to a LangChain tool
- * Used by the AI agent to call Matimo tools
- */
-function convertMatimoToolToLangChain(
-  matimo: MatimoInstance,
-  toolName: string,
-  accessToken: string,
-  userEmail: string
-) {
-  const matimoTool = matimo.getTool(toolName);
-  if (!matimoTool) {
-    throw new Error(`Tool not found: ${toolName}`);
-  }
-
-  // Build Zod schema from Matimo parameters
-  const schemaShape: any = {};
-
-  if (matimoTool.parameters) {
-    Object.entries(matimoTool.parameters).forEach(([paramName, param]) => {
-      // Skip GMAIL_ACCESS_TOKEN - we'll add it automatically
-      if (paramName === 'GMAIL_ACCESS_TOKEN') return;
-
-      let fieldSchema: any;
-
-      // Map Matimo types to Zod types
-      const paramType = param.type as string;
-      switch (paramType) {
-        case 'string':
-          fieldSchema = z.string();
-          break;
-        case 'number':
-          fieldSchema = z.number();
-          break;
-        case 'integer':
-          fieldSchema = z.number().int();
-          break;
-        case 'boolean':
-          fieldSchema = z.boolean();
-          break;
-        case 'array':
-          fieldSchema = z.array(z.unknown());
-          break;
-        default:
-          fieldSchema = z.unknown();
-      }
-
-      // Add description if available
-      if (param.description) {
-        fieldSchema = fieldSchema.describe(param.description);
-      }
-
-      // Make required/optional based on schema
-      if (!param.required) {
-        fieldSchema = fieldSchema.optional();
-      }
-
-      schemaShape[paramName] = fieldSchema;
-    });
-  }
-
-  const zodSchema = z.object(schemaShape);
-
-  // Create LangChain tool using the tool() function
-  return tool(
-    async (input: Record<string, unknown>) => {
-      try {
-        // Add access token to parameters
-        const params = {
-          ...input,
-          GMAIL_ACCESS_TOKEN: accessToken,
-        };
-
-        const result = await matimo.execute(toolName, params);
-
-        // Format result nicely for the LLM
-        if (result && typeof result === 'object') {
-          // For list-messages, format nicely
-          if ('messages' in result && Array.isArray(result.messages)) {
-            const messages = result.messages as any[];
-            return `Found ${messages.length} messages. First few: ${JSON.stringify(messages.slice(0, 2))}`;
-          }
-          // For send/create, just confirm success
-          if ('id' in result) {
-            return `Success! Created/sent with ID: ${result.id}`;
-          }
-        }
-
-        return JSON.stringify(result, null, 2);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        throw new Error(`Tool execution failed: ${errorMsg}`);
-      }
-    },
-    {
-      name: matimoTool.name,
-      description: matimoTool.description || `Gmail tool: ${matimoTool.name}`,
-      schema: zodSchema,
-    }
-  );
-}
 
 /**
  * Run AI Agent with Gmail tools
@@ -172,7 +69,7 @@ async function runGmailAIAgent() {
   // Parse CLI arguments
   const args = process.argv.slice(2);
   let userEmail = process.env.TEST_EMAIL || 'test@example.com';
-  
+
   for (const arg of args) {
     if (arg.startsWith('--email:')) {
       userEmail = arg.split(':')[1];
@@ -207,8 +104,7 @@ async function runGmailAIAgent() {
   try {
     // Initialize Matimo
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     // Get Gmail tools and convert to LangChain format
     console.info('📬 Loading Gmail tools...');
@@ -217,9 +113,9 @@ async function runGmailAIAgent() {
     console.info(`✅ Loaded ${gmailTools.length} Gmail tools\n`);
 
     // Convert to LangChain tools
-    const langchainTools = gmailTools.map((toolDef) =>
-      convertMatimoToolToLangChain(matimo, toolDef.name, accessToken, userEmail)
-    );
+    const langchainTools = await convertToolsToLangChain(gmailTools, matimo, {
+      GMAIL_ACCESS_TOKEN: accessToken,
+    });
 
     // Initialize OpenAI LLM
     console.info('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');

@@ -101,7 +101,7 @@ async function runDecoratorPatternExamples() {
   // Parse CLI arguments
   const args = process.argv.slice(2);
   let userEmail = process.env.TEST_EMAIL || 'test@example.com';
-  
+
   for (const arg of args) {
     if (arg.startsWith('--email:')) {
       userEmail = arg.split(':')[1];
@@ -128,8 +128,7 @@ async function runDecoratorPatternExamples() {
   try {
     // Initialize Matimo
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
     setGlobalMatimoInstance(matimo);
 
     const matimoTools = matimo.listTools();

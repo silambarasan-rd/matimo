@@ -13,13 +13,13 @@ interface ToolDefinition {
   name: string;
   description: string;
   version: string;
-  
+
   parameters?: Record<string, Parameter>;
   execution: ExecutionConfig;
   output_schema?: OutputSchema;
   authentication?: AuthConfig;
   error_handling?: ErrorHandling;
-  
+
   tags?: string[];
   author?: string;
   license?: string;
@@ -27,6 +27,7 @@ interface ToolDefinition {
 ```
 
 **Example:**
+
 ```typescript
 const tool: ToolDefinition = {
   name: 'calculator',
@@ -36,16 +37,16 @@ const tool: ToolDefinition = {
     operation: {
       type: 'string',
       enum: ['add', 'subtract', 'multiply', 'divide'],
-      required: true
+      required: true,
     },
     a: { type: 'number', required: true },
-    b: { type: 'number', required: true }
+    b: { type: 'number', required: true },
   },
   execution: {
     type: 'command',
     command: 'node calculator.js',
-    args: ['--op', '{operation}', '{a}', '{b}']
-  }
+    args: ['--op', '{operation}', '{a}', '{b}'],
+  },
 };
 ```
 
@@ -61,19 +62,19 @@ interface Parameter {
   description?: string;
   required?: boolean;
   default?: unknown;
-  
+
   // String constraints
   minLength?: number;
   maxLength?: number;
   pattern?: string;
-  
+
   // Number constraints
   minimum?: number;
   maximum?: number;
-  
+
   // Enum constraint
   enum?: unknown[];
-  
+
   // Array/Object items
   items?: Parameter;
   properties?: Record<string, Parameter>;
@@ -87,7 +88,7 @@ interface Parameter {
 const operation: Parameter = {
   type: 'string',
   enum: ['add', 'subtract', 'multiply', 'divide'],
-  required: true
+  required: true,
 };
 
 // Number with range
@@ -95,21 +96,21 @@ const count: Parameter = {
   type: 'number',
   minimum: 1,
   maximum: 100,
-  required: true
+  required: true,
 };
 
 // Optional string with pattern
 const email: Parameter = {
   type: 'string',
   pattern: '^[^@]+@[^@]+\\.[^@]+$',
-  required: false
+  required: false,
 };
 
 // Array parameter
 const tags: Parameter = {
   type: 'array',
   items: { type: 'string' },
-  required: false
+  required: false,
 };
 ```
 
@@ -151,7 +152,7 @@ const cmdExecution: CommandExecution = {
   type: 'command',
   command: 'python script.py',
   args: ['--param', '{param}'],
-  timeout_ms: 30000
+  timeout_ms: 30000,
 };
 
 // HTTP execution
@@ -161,11 +162,11 @@ const httpExecution: HttpExecution = {
   method: 'POST',
   headers: {
     Authorization: 'Bearer {GMAIL_ACCESS_TOKEN}',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   },
   request_body: {
-    raw: '{emailData}'
-  }
+    raw: '{emailData}',
+  },
 };
 ```
 
@@ -192,23 +193,21 @@ interface AuthConfig {
 const oauth2: AuthConfig = {
   type: 'oauth2',
   provider: 'google',
-  required_scopes: [
-    'https://www.googleapis.com/auth/gmail.send'
-  ]
+  required_scopes: ['https://www.googleapis.com/auth/gmail.send'],
 };
 
 // API Key
 const apiKey: AuthConfig = {
   type: 'api_key',
   location: 'header',
-  parameter_name: 'X-API-Key'
+  parameter_name: 'X-API-Key',
 };
 
 // Bearer token
 const bearer: AuthConfig = {
   type: 'bearer',
   location: 'header',
-  parameter_name: 'Authorization'
+  parameter_name: 'Authorization',
 };
 ```
 
@@ -236,9 +235,9 @@ const schema: OutputSchema = {
   properties: {
     result: { type: 'number' },
     calculation: { type: 'string' },
-    timestamp: { type: 'string' }
+    timestamp: { type: 'string' },
   },
-  required: ['result']
+  required: ['result'],
 };
 ```
 
@@ -264,7 +263,7 @@ const errorHandling: ErrorHandling = {
   retry: 3,
   backoff_type: 'exponential',
   initial_delay_ms: 1000,
-  max_delay_ms: 30000
+  max_delay_ms: 30000,
 };
 ```
 
@@ -280,21 +279,18 @@ Main SDK class for tool execution.
 class MatimoInstance {
   // List all tools
   listTools(): ToolDefinition[];
-  
+
   // Get specific tool
   getTool(name: string): ToolDefinition | null;
-  
+
   // Find tools by tag
   getToolsByTag(tag: string): ToolDefinition[];
-  
+
   // Search tools
   searchTools(query: string): ToolDefinition[];
-  
+
   // Execute tool
-  execute(
-    toolName: string,
-    params: Record<string, unknown>
-  ): Promise<unknown>;
+  execute(toolName: string, params: Record<string, unknown>): Promise<unknown>;
 }
 ```
 
@@ -320,9 +316,9 @@ try {
   await m.execute('unknown-tool', {});
 } catch (error) {
   const matimoError = error as MatimoError;
-  console.log(matimoError.code);      // 'TOOL_NOT_FOUND'
-  console.log(matimoError.message);   // 'Tool not found'
-  console.log(matimoError.details);   // { toolName: 'unknown-tool' }
+  console.log(matimoError.code); // 'TOOL_NOT_FOUND'
+  console.log(matimoError.message); // 'Tool not found'
+  console.log(matimoError.details); // { toolName: 'unknown-tool' }
 }
 ```
 
@@ -358,7 +354,7 @@ import {
   OutputSchema,
   ErrorHandling,
   MatimoInstance,
-  MatimoError
+  MatimoError,
 } from 'matimo';
 
 // Load and type tool
@@ -368,7 +364,7 @@ const tool: ToolDefinition = matimo.getTool('calculator')!;
 const params: Record<string, unknown> = {
   operation: 'add',
   a: 5,
-  b: 3
+  b: 3,
 };
 
 // Execute with types
@@ -412,4 +408,3 @@ const params: CalculatorParams = { ... };
 - **Error Codes**: [Error Reference](./ERRORS.md)
 - **API Methods**: [SDK API Reference](./SDK.md)
 - **Tool Definition**: [YAML Tool Specification](../tool-development/YAML_TOOLS.md)
-

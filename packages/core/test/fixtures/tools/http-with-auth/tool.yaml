@@ -1,0 +1,39 @@
+name: http-with-auth
+version: '1.0.0'
+description: 'HTTP tool that requires API key authentication'
+
+parameters:
+  API_KEY:
+    type: string
+    description: 'API key for authentication'
+    required: true
+  query:
+    type: string
+    description: 'Search query'
+    required: true
+  page:
+    type: number
+    description: 'Page number'
+    required: false
+
+execution:
+  type: http
+  method: GET
+  url: 'https://httpbin.org/get?q={query}'
+  query_params:
+    key: '{API_KEY}'
+    search: '{query}'
+    page: '{page}'
+  headers:
+    Authorization: 'Bearer {API_KEY}'
+    X-API-Key: '{API_KEY}'
+
+output_schema:
+  type: object
+  properties:
+    args:
+      type: object
+    headers:
+      type: object
+
+tags: [http, auth, test]

@@ -508,9 +508,9 @@ npm run agent:langchain   # or agent:decorator, agent:factory
 
 ## 🔗 Related Documentation
 
-- [Matimo API Reference](../../docs/API_REFERENCE.md)
-- [Tool Specification](../../docs/TOOL_SPECIFICATION.md)
-- [Decorator Guide](../../docs/DECORATOR_GUIDE.md)
+- [Matimo API Reference](../../docs/api-reference/SDK.md)
+- [Tool Specification](../../docs/tool-development/TOOL_SPECIFICATION.md)
+- [Decorator Guide](../../docs/tool-development/DECORATOR_GUIDE.md)
 - [LangChain Documentation](https://docs.langchain.com/)
 - [OpenAI API](https://platform.openai.com/docs/)
 

@@ -1,6 +1,7 @@
 # Matimo Documentation
+
 <p align="center">
-<img src="./assets/logo.png" alt="Matimo Logo" width="120" style="border-radius: 8px; margin: 20px 0;" />
+<img src="./assets/logo.png" alt="Matimo Logo" width="300" style="border-radius: 8px; margin: 20px 0;" />
 </p>
 
 **Matimo** (Maximum AI Tools in Modular Objects) — Define tools once in YAML, use them everywhere.
@@ -18,21 +19,52 @@ Complete documentation for Matimo.
   - Use MCP Server
   - Common tasks and examples
 
+- **[Installation](./getting-started/installation.md)** — Detailed setup instructions
+  - Requirements and dependencies
+  - npm/pnpm installation options
+  - From source for contributors
+  - Verification and troubleshooting
+
+- **[Your First Tool](./getting-started/YOUR_FIRST_TOOL.md)** — Create your first YAML tool
+  - Step-by-step tool creation
+  - Basic YAML structure
+  - Testing your first tool
+  - Common beginner mistakes
+
 ## Reference
 
 - **[API Reference](./api-reference/SDK.md)** — Complete TypeScript SDK documentation
-  - MatimoFactory for creating instances
-  - ToolLoader for loading tools
-  - ToolRegistry for managing tools
-  - CommandExecutor and HttpExecutor
+  - MatimoInstance for tool management
+  - MatimoInstance.init() with auto-discovery
+  - Tool execution and discovery methods
+  - @tool decorator pattern
+  - LangChain integration helper
   - Error handling and error codes
   - Complete type definitions
+
+- **[Error Reference](./api-reference/ERRORS.md)** — Error handling and troubleshooting
+  - Error codes and meanings
+  - Common error scenarios
+  - Debugging techniques
+  - Error recovery patterns
+
+- **[Type Definitions](./api-reference/TYPES.md)** — Complete TypeScript types
+  - ToolDefinition interface
+  - Parameter and execution types
+  - Authentication configurations
+  - Response and validation types
 
 - **[Architecture Overview](./architecture/OVERVIEW.md)** — System design and patterns
   - High-level architecture
   - Framework integration patterns (3 approaches)
   - Pure SDK vs Framework integration
   - Data flow diagrams
+
+- **[OAuth Architecture](./architecture/OAUTH.md)** — OAuth2 implementation details
+  - OAuth2 protocol flow
+  - Provider integrations
+  - Token lifecycle management
+  - Security considerations
 
 - **[Tool Specification](./tool-development/TOOL_SPECIFICATION.md)** — How to write YAML tools
   - Tool metadata (name, version, description)
@@ -43,13 +75,39 @@ Complete documentation for Matimo.
   - Error handling and retry logic
   - Complete YAML examples
 
-- **[Decorator Guide](./tool-development/DECORATOR_GUIDE.md)** — Using @tool TypeScript decorators
-  - @tool and @param decorators
-  - Type-safe tool definitions
-  - Async tool execution
-  - Error handling in decorators
-  - Testing decorator tools
-  - Migration from YAML to decorators
+- **[Adding Tools to Matimo](./tool-development/ADDING_TOOLS.md)** — Create tool provider packages
+  - 6-step guide for tool creation
+  - Publishing to npm as @matimo/{provider}
+  - Auto-discovery mechanism
+  - Independent package structure
+  - Real GitHub provider example
+  - CLI tool management (matimo install, list, search)
+
+- **[YAML Tools](./tool-development/YAML_TOOLS.md)** — Writing tools in YAML
+  - YAML syntax and structure
+  - Parameter templating
+  - Command execution patterns
+  - HTTP request tools
+  - Function-based tools
+
+- **[Testing Tools](./tool-development/TESTING.md)** — Testing your tools
+  - Unit testing patterns
+  - Integration testing
+  - Mocking external services
+  - Test fixtures and examples
+  - Coverage requirements
+
+- **[OAuth Setup](./tool-development/OAUTH_LINK.md)** — OAuth authentication for tools
+  - OAuth2 flow implementation
+  - Provider-specific configurations
+  - Token storage and refresh
+  - Security best practices
+
+- **[Provider Configuration](./tool-development/PROVIDER_CONFIGURATION.md)** — Multi-provider tool setup
+  - Managing multiple providers
+  - Configuration patterns
+  - Environment variable organization
+  - Provider-specific settings
 
 - **[Framework Integrations](./framework-integrations/LANGCHAIN.md)** — LangChain & CrewAI patterns
   - LangChain Agent integration
@@ -57,9 +115,19 @@ Complete documentation for Matimo.
   - CrewAI tool composition
   - Custom AI framework integration
 
-## Security
+## Project Information
 
-- **[Security Guide](../SECURITY.md)** — Security standards and best practices
+- **[Release Notes](./RELEASES.md)** — Changelog and version history
+  - New features and improvements
+  - Bug fixes and patches
+  - Breaking changes
+  - Migration guides
+
+- **[Roadmap](./ROADMAP.md)** — Project roadmap and future plans
+  - Upcoming features
+  - Planned improvements
+  - Long-term vision
+  - Community requests
   - Core security principles
   - Secret management (environment variables)
   - Input validation with schemas
@@ -80,18 +148,29 @@ Complete documentation for Matimo.
   - Best practices and common mistakes
   - Git workflow and aliases
 
-- **[Development Standards](./user-guide/DEVELOPMENT_STANDARDS.md)** — Code quality rules
-  - TypeScript strict mode requirements
-  - Naming conventions (classes, functions, constants)
-  - Error handling patterns
-  - Testing standards and coverage targets
-  - Documentation and JSDoc standards
-  - Security standards (validation, secrets, escaping)
-  - Logging with structured information
-  - Performance and memory targets
+- **[SDK Patterns](./user-guide/SDK_PATTERNS.md)** — Usage patterns and best practices
+  - Factory pattern usage
+  - Decorator pattern examples
+  - LangChain integration patterns
+  - Error handling strategies
+  - Performance optimization
+
+- **[Tool Discovery](./user-guide/TOOL_DISCOVERY.md)** — Finding and using tools
+  - Auto-discovery mechanism
+  - Tool search and filtering
+  - Registry management
+  - Loading from directories
+  - Dynamic tool loading
+
+- **[Authentication](./user-guide/AUTHENTICATION.md)** — Authentication setup and management
+  - API key authentication
+  - OAuth2 flows
+  - Token management
+  - Provider-specific auth
+  - Security considerations
   - Quality metrics and checklists
 
-- **[Contributing Guidelines](../CONTRIBUTING.md)** — How to contribute to Matimo
+- **[Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md)** — How to contribute to Matimo
   - Getting started and setup
   - Code standards and best practices
   - Testing with TDD approach
@@ -105,30 +184,37 @@ Complete documentation for Matimo.
 ## Quick Navigation
 
 ### For First-Time Users
+
 1. Start with [Quick Start](./getting-started/QUICK_START.md) for setup
-2. Check [API Reference](./api-reference/SDK.md) for SDK usage
-3. See [Tool Specification](./tool-development/TOOL_SPECIFICATION.md) to write tools
-4. Review [Architecture Overview](./architecture/OVERVIEW.md) to understand design
+2. Try [Your First Tool](./getting-started/YOUR_FIRST_TOOL.md) to create a tool
+3. Check [API Reference](./api-reference/SDK.md) for SDK usage
+4. See [Tool Specification](./tool-development/TOOL_SPECIFICATION.md) to write tools
+5. Review [Architecture Overview](./architecture/OVERVIEW.md) to understand design
 
 ### For Tool Writers
+
 1. Read [Tool Specification](./tool-development/TOOL_SPECIFICATION.md) for YAML tools
 2. Or use [Decorator Guide](./tool-development/DECORATOR_GUIDE.md) for TypeScript tools
-3. Follow [Development Standards](./user-guide/DEVELOPMENT_STANDARDS.md) for code quality
+3. See [Adding Tools to Matimo](./tool-development/ADDING_TOOLS.md) to publish packages
+4. Follow [Development Standards](./user-guide/DEVELOPMENT_STANDARDS.md) for code quality
 
 ### For Framework Integration
+
 1. Check [Framework Integrations](./framework-integrations/LANGCHAIN.md) for LangChain/CrewAI
 2. See [Architecture Overview](./architecture/OVERVIEW.md) for integration patterns
 3. Review examples in `examples/` directory
 
 ### For Contributors
-1. Check [Contributing Guidelines](../CONTRIBUTING.md) for contribution guidelines
+
+1. Check [Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) for contribution guidelines
 2. Follow [Development Standards](./user-guide/DEVELOPMENT_STANDARDS.md) for code quality
 3. Use [Commit Guidelines](./community/COMMIT_GUIDELINES.md) for proper commit format
 
 ### For Maintainers
+
 1. Review [Development Standards](./user-guide/DEVELOPMENT_STANDARDS.md) for quality metrics
 2. Check [Commit Guidelines](./community/COMMIT_GUIDELINES.md) for PR commit validation
-3. See [Contributing Guidelines](../CONTRIBUTING.md) for overall workflow
+3. See [Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) for overall workflow
 
 ---
 
@@ -149,6 +235,8 @@ docs/
 │   └── TYPES.md                  # TypeScript type definitions
 ├── tool-development/
 │   ├── TOOL_SPECIFICATION.md     # YAML tool schema
+│   ├── YAML_TOOLS.md             # YAML tool writing guide
+│   ├── ADDING_TOOLS.md           # Creating tool packages
 │   ├── DECORATOR_GUIDE.md        # TypeScript decorators
 │   ├── TESTING.md                # Testing tools
 │   ├── PROVIDER_CONFIGURATION.md # Multi-provider setup
@@ -156,7 +244,8 @@ docs/
 ├── framework-integrations/
 │   └── LANGCHAIN.md              # LangChain & framework patterns
 ├── architecture/
-│   └── OVERVIEW.md               # System design and patterns
+│   ├── OVERVIEW.md               # System design and patterns
+│   └── OAUTH.md                  # OAuth2 implementation
 ├── user-guide/
 │   ├── SDK_PATTERNS.md           # SDK usage patterns
 │   ├── TOOL_DISCOVERY.md         # Discovering tools
@@ -168,9 +257,9 @@ docs/
     └── FAQ.md                    # Common questions & solutions
 
 Root-level files:
-├── ../CONTRIBUTING.md            # Contribution guidelines
-├── ../SECURITY.md                # Security policy
-└── ../README.md                  # Project overview
+├── [CONTRIBUTING.md](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) — Contribution guidelines
+├── [SECURITY.md](https://github.com/tallclub/matimo/blob/main/SECURITY.md) — Security policy
+└── [README.md](https://github.com/tallclub/matimo/blob/main/README.md) — Project overview
 ```
 
 ---
@@ -178,31 +267,36 @@ Root-level files:
 ## Key Concepts
 
 ### Tools
+
 Tools are the building blocks of Matimo. They define what can be executed, what parameters they accept, and how they run.
 
 - **YAML Tools** — Declarative tool definitions (see [Tool Specification](./TOOL_SPECIFICATION.md))
 - **Decorator Tools** — TypeScript-based tool definitions (see [Decorator Guide](./DECORATOR_GUIDE.md))
 
 ### Executors
+
 Executors run tools with different backends:
+
 - **CommandExecutor** — Execute shell commands
 - **HttpExecutor** — Make HTTP requests
 
-See [API Reference](./API_REFERENCE.md) for details.
+See [API Reference](./api-reference/SDK.md) for details.
 
 ### SDK
+
 Use the Matimo SDK (TypeScript) to load and execute tools:
 
 ```typescript
-import { MatimoFactory } from 'matimo';
+import { MatimoInstance } from 'matimo';
 
-const matimo = MatimoFactory.create({ toolsPath: './tools' });
-const result = await matimo.executeTool('tool-name', { param: 'value' });
+const matimo = await MatimoInstance.init('./tools');
+const result = await matimo.execute('tool-name', { param: 'value' });
 ```
 
 See [Quick Start](./getting-started/QUICK_START.md) and [API Reference](./api-reference/SDK.md).
 
 ### MCP Server
+
 Matimo can run as an MCP server, allowing Claude and other clients to discover and use tools:
 
 ```typescript
@@ -220,6 +314,7 @@ See [Quick Start](./getting-started/QUICK_START.md) for setup.
 ## Standards & Practices
 
 ### Code Quality
+
 - **TypeScript**: Strict mode enforced (no `any`)
 - **Testing**: 80%+ coverage, TDD approach
 - **Linting**: ESLint with automatic formatting
@@ -228,6 +323,7 @@ See [Quick Start](./getting-started/QUICK_START.md) for setup.
 See [Development Standards](./DEVELOPMENT_STANDARDS.md).
 
 ### Commits
+
 - **Format**: Conventional Commits (type(scope): subject)
 - **Types**: feat, fix, docs, refactor, test, chore, perf, style, ci
 - **Examples**: "feat(executor): add HTTP support", "fix(schema): validate enums"
@@ -235,18 +331,20 @@ See [Development Standards](./DEVELOPMENT_STANDARDS.md).
 See [Commit Guidelines](./community/COMMIT_GUIDELINES.md).
 
 ### Pull Requests
+
 - Follow TDD approach (test first, implement after)
 - Keep PRs focused (one feature/fix per PR)
 - Ensure tests pass and coverage maintained (80%+)
 - Follow code standards and get code review
 
-See [Contributing Guidelines](../CONTRIBUTING.md).
+See [Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md).
 
 ---
 
 ## Common Tasks
 
 ### Write a YAML Tool
+
 1. Create `tools/provider/tool-name.yaml`
 2. Follow [Tool Specification](./tool-development/TOOL_SPECIFICATION.md) schema
 3. Include parameters, execution, output_schema
@@ -254,6 +352,7 @@ See [Contributing Guidelines](../CONTRIBUTING.md).
 5. Test with `pnpm test`
 
 ### Write a Decorator Tool
+
 1. Create `src/tools/tool-name.tool.ts`
 2. Use @tool and @param decorators
 3. Implement execute() or async execute()
@@ -261,11 +360,13 @@ See [Contributing Guidelines](../CONTRIBUTING.md).
 5. Add unit tests
 
 ### Integrate with LangChain
+
 1. See [Framework Integrations](./framework-integrations/LANGCHAIN.md) for patterns
 2. Check `examples/tools/` for working examples
 3. Follow [Architecture Overview](./architecture/OVERVIEW.md) for design decisions
 
 ### Contribute Code
+
 1. Fork and clone repository
 2. Create feature branch: `git checkout -b feat/description`
 3. Write tests first (TDD)
@@ -273,7 +374,7 @@ See [Contributing Guidelines](../CONTRIBUTING.md).
 5. Follow [Development Standards](./user-guide/DEVELOPMENT_STANDARDS.md)
 6. Commit using [Commit Guidelines](./community/COMMIT_GUIDELINES.md)
 7. Push and create PR
-8. Follow [Contributing Guidelines](../CONTRIBUTING.md) checklist
+8. Follow [Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) checklist
 
 ---
 
@@ -282,7 +383,11 @@ See [Contributing Guidelines](../CONTRIBUTING.md).
 - **Questions?** Check relevant documentation or open a [GitHub Discussion](https://github.com/tallclub/matimo/discussions)
 - **Found a bug?** [Open an issue](https://github.com/tallclub/matimo/issues)
 - **Troubleshooting?** See [FAQ](./troubleshooting/FAQ.md)
-- **Want to contribute?** See [Contributing Guidelines](../CONTRIBUTING.md)
+- **Want to contribute?** See [Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md)
+
+---
+
+> **Documentation Note:** While I strive for accuracy and completeness, this documentation may contain oversights, outdated information, or areas needing improvement, due to my limitations. If you notice any errors, missing information, or have suggestions for enhancement, please help me to improve! See our [Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) to learn how to submit corrections and improvements. Your contributions to documentation are highly valued! Thank you.
 
 ---
 

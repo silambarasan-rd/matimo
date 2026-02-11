@@ -56,117 +56,11 @@
 import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { z } from 'zod';
-import { tool, createAgent } from 'langchain';
+import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
-import { MatimoInstance } from 'matimo';
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-/**
- * Convert a Matimo Slack tool to a LangChain tool
- * Used by the AI agent to call Matimo tools
- */
-function convertMatimoToolToLangChain(
-  matimo: MatimoInstance,
-  toolName: string,
-  botToken: string
-) {
-  const matimoTool = matimo.getTool(toolName);
-  if (!matimoTool) {
-    throw new Error(`Tool not found: ${toolName}`);
-  }
-
-  // Build Zod schema from Matimo parameters
-  const schemaShape: any = {};
-
-  if (matimoTool.parameters) {
-    Object.entries(matimoTool.parameters).forEach(([paramName, param]) => {
-      // Skip SLACK_BOT_TOKEN - we'll add it automatically
-      if (paramName === 'SLACK_BOT_TOKEN') return;
-
-      let fieldSchema: any;
-
-      // Map Matimo types to Zod types
-      const paramType = param.type as string;
-      switch (paramType) {
-        case 'string':
-          fieldSchema = z.string();
-          break;
-        case 'number':
-          fieldSchema = z.number();
-          break;
-        case 'integer':
-          fieldSchema = z.number().int();
-          break;
-        case 'boolean':
-          fieldSchema = z.boolean();
-          break;
-        case 'array':
-          fieldSchema = z.array(z.unknown());
-          break;
-        default:
-          fieldSchema = z.unknown();
-      }
-
-      // Add description if available
-      if (param.description) {
-        fieldSchema = fieldSchema.describe(param.description);
-      }
-
-      // Make required/optional based on schema
-      if (!param.required) {
-        fieldSchema = fieldSchema.optional();
-      }
-
-      schemaShape[paramName] = fieldSchema;
-    });
-  }
-
-  const zodSchema = z.object(schemaShape);
-
-  // Create LangChain tool using the tool() function
-  return tool(
-    async (input: Record<string, unknown>) => {
-      try {
-        // Add bot token to parameters
-        const params = {
-          ...input,
-          SLACK_BOT_TOKEN: botToken,
-        };
-
-        const result = await matimo.execute(toolName, params);
-
-        // Format result nicely for the LLM
-        if (result && typeof result === 'object') {
-          // For list-channels, format nicely
-          if ('channels' in result && Array.isArray(result.channels)) {
-            const channels = result.channels as any[];
-            return `Found ${channels.length} channels. First few: ${JSON.stringify(channels.slice(0, 3))}`;
-          }
-          // For send message, just confirm success
-          if ('ok' in result && result.ok === true) {
-            return 'Message sent successfully!';
-          }
-          // For errors
-          if ('error' in result) {
-            return `Slack API error: ${result.error}`;
-          }
-        }
-
-        return JSON.stringify(result, null, 2);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        throw new Error(`Tool execution failed: ${errorMsg}`);
-      }
-    },
-    {
-      name: matimoTool.name,
-      description: matimoTool.description || `Slack tool: ${matimoTool.name}`,
-      schema: zodSchema,
-    }
-  );
-}
 
 /**
  * Run AI Agent with Slack tools
@@ -206,15 +100,13 @@ async function runSlackAIAgent() {
     process.exit(1);
   }
 
-  
   console.info(`📍 Target Channel: ${channelId}`);
   console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
 
   try {
-    // Initialize Matimo
+    // Initialize Matimo with auto-discovery
     console.info('🚀 Initializing Matimo...');
-    const toolsPath = path.resolve(__dirname, '../../../tools');
-    const matimo = await MatimoInstance.init(toolsPath);
+    const matimo = await MatimoInstance.init({ autoDiscover: true });
 
     // Get Slack tools and convert to LangChain format
     console.info('💬 Loading Slack tools...');
@@ -228,17 +120,21 @@ async function runSlackAIAgent() {
       types: 'public_channel,private_channel',
       limit: 10,
     });
-    
+
     const listData = (listChannelsResult as any).data || listChannelsResult;
     let activeChannel = channelId;
-    
+
     if (listData.ok === true && listData.channels && listData.channels.length > 0) {
       const defaultChannelExists = listData.channels.some((ch: any) => ch.id === channelId);
       if (!defaultChannelExists) {
         activeChannel = listData.channels[0].id;
-        console.info(`   Using first available channel: #${listData.channels[0].name} (${activeChannel})\n`);
+        console.info(
+          `   Using first available channel: #${listData.channels[0].name} (${activeChannel})\n`
+        );
       } else {
-        console.info(`   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})\n`);
+        console.info(
+          `   Using specified channel: #${listData.channels.find((ch: any) => ch.id === channelId)?.name} (${channelId})\n`
+        );
       }
     } else {
       console.info(`   ⚠️  Could not list channels, using default: ${channelId}\n`);
@@ -255,9 +151,10 @@ async function runSlackAIAgent() {
       ].includes(t.name)
     );
 
-    const langchainTools = keySlackTools.map((toolDef) =>
-      convertMatimoToolToLangChain(matimo, toolDef.name, botToken)
-    );
+    // ✅ Convert Matimo tools to LangChain format using the new integration
+    const langchainTools = await convertToolsToLangChain(keySlackTools, matimo, {
+      SLACK_BOT_TOKEN: botToken,
+    });
 
     // Initialize OpenAI LLM
     console.info('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');
