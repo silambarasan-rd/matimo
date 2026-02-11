@@ -1,3 +1,23 @@
+## v0.1.0-alpha.5
+
+> Readme addition to core, slack and gmail packages, custom domain setup for github pages (docs), and al-folio theme
+
+**Released**: February 11, 2026
+
+## What's New
+
+- **Documentation Theme**: Upgraded to al-folio theme for improved visual presentation and navigation
+- **Custom Domain**: Configured docs at `docs.matimo.dev` with CNAME setup and GitHub Pages integration
+- **Build Improvements**: Removed redundant custom GitHub Pages workflow, now using GitHub's built-in `pages-build-deployment`
+- **Package READMEs**: Added comprehensive README documentation for missing packages (Gmail, Slack, core) with setup and usage instructions
+- **Build Configuration**: Updated Jekyll build settings and base URLs to support custom domain hosting
+
+## Notes
+- Documentation now accessible at https://docs.matimo.dev with al-folio theme
+- Simplified GitHub Pages workflow reduces maintenance overhead
+- All packages now have complete README documentation for developers
+
+
 ## v0.1.0-alpha.4
 
 > Packaging restructure, Matimo CLI, independent tools package publishing, and docs
