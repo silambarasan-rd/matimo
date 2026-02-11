@@ -7,8 +7,11 @@ Matimo core provides the TypeScript SDK that loads, validates, and executes YAML
 Install the unified package (includes core exports):
 
 ```bash
+# install unscope package which includes core and cli 
 npm install matimo
+pnpm add matimo
 # or install scoped core package directly
+npm insatll @matimo/core
 pnpm add @matimo/core
 ```
 

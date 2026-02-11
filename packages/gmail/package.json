@@ -9,7 +9,7 @@
     "definition.yaml"
   ],
   "peerDependencies": {
-    "matimo": "^0.1.0-alpha.4"
+    "matimo": "^0.1.0-alpha.5"
   },
   "devDependencies": {
     "@matimo/core": "workspace:*",
