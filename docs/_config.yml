@@ -1,6 +1,7 @@
-remote_theme: alshedivat/al-folio
+theme: jekyll-theme-slate
 title: Matimo - AI Tools Ecosystem
 description: Define tools once in YAML, use them everywhere
+show_downloads: true
 google_analytics: false
 
 # Matimo Documentation
