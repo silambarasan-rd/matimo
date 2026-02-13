@@ -15,24 +15,68 @@
  *
  * SETUP:
  * ─────────────────────────────────────────────────────────────────────────
- * 1. Create .env file:
+ * 1. Create .env file in examples/tools/:
  *    OPENAI_API_KEY=sk-xxxxxxxxxxxxx
  *
  * 2. Install dependencies:
- *    npm install
+ *    cd examples/tools && npm install
  *
  * USAGE:
  * ─────────────────────────────────────────────────────────────────────────
- *   export OPENAI_API_KEY=sk-xxxx
+ *   # From root directory:
+ *   pnpm search:langchain
+ *
+ *   # Or from examples/tools directory:
  *   npm run search:langchain
  *
  * ============================================================================
  */
 
 import 'dotenv/config';
+import readline from 'readline';
 import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
-import { MatimoInstance, convertToolsToLangChain, type ToolDefinition } from '@matimo/core';
+import {
+  MatimoInstance,
+  convertToolsToLangChain,
+  type ToolDefinition,
+  getPathApprovalManager,
+} from '@matimo/core';
+
+// Create readline interface for interactive approval prompts
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+let isReadlineClosed = false;
+
+// Track when readline closes (e.g., piped input ends)
+rl.on('close', () => {
+  isReadlineClosed = true;
+});
+
+/**
+ * Prompt user for approval decision
+ */
+async function promptForApproval(
+  filePath: string,
+  mode: 'read' | 'write' | 'search'
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    // If readline is closed (e.g., non-TTY/piped input), auto-approve
+    if (isReadlineClosed) {
+      console.info(
+        `[${mode.toUpperCase()}] Access to ${filePath} auto-approved (non-interactive mode)`
+      );
+      resolve(true);
+      return;
+    }
+    rl.question(`[${mode.toUpperCase()}] Approve access to ${filePath}? (y/n): `, (answer) => {
+      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    });
+  });
+}
 
 /**
  * Run AI Agent with Search tool
@@ -58,6 +102,10 @@ async function runSearchAIAgent() {
     // Initialize Matimo with auto-discovery
     console.info('🚀 Initializing Matimo...');
     const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+    // Set up approval callback for interactive approval
+    const approvalManager = getPathApprovalManager();
+    approvalManager.setApprovalCallback(promptForApproval);
 
     // Get search tool
     console.info('💬 Loading search tool...');
@@ -155,6 +203,11 @@ async function runSearchAIAgent() {
       console.error('Stack:', error.stack);
     }
     process.exit(1);
+  } finally {
+    if (!isReadlineClosed) {
+      rl.close();
+      isReadlineClosed = true;
+    }
   }
 }
 

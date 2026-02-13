@@ -1,9 +1,50 @@
-import { MatimoInstance, setGlobalMatimoInstance, tool } from '@matimo/core';
+import {
+  MatimoInstance,
+  setGlobalMatimoInstance,
+  tool,
+  getPathApprovalManager,
+} from '@matimo/core';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Create readline interface for interactive approval prompts
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+let isReadlineClosed = false;
+
+// Track when readline closes (e.g., piped input ends)
+rl.on('close', () => {
+  isReadlineClosed = true;
+});
+
+/**
+ * Prompt user for approval decision
+ */
+async function promptForApproval(
+  filePath: string,
+  mode: 'read' | 'write' | 'search'
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    // If readline is closed (e.g., non-TTY/piped input), auto-approve
+    if (isReadlineClosed) {
+      console.info(
+        `[${mode.toUpperCase()}] Access to ${filePath} auto-approved (non-interactive mode)`
+      );
+      resolve(true);
+      return;
+    }
+    rl.question(`[${mode.toUpperCase()}] Approve access to ${filePath}? (y/n): `, (answer) => {
+      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    });
+  });
+}
 
 /**
  * Example: Edit tool using @tool decorator pattern
@@ -40,7 +81,11 @@ async function decoratorExample() {
   const matimo = await MatimoInstance.init({ autoDiscover: true });
   setGlobalMatimoInstance(matimo);
 
-  console.info('=== Edit Tool - Decorator Pattern ===\n');
+  // Set up approval callback for interactive approval
+  const approvalManager = getPathApprovalManager();
+  approvalManager.setApprovalCallback(promptForApproval);
+
+  console.info('=== Edit Tool - Decorator Pattern (Interactive Approval) ===\n');
 
   const editor = new FileEditor();
 
@@ -72,6 +117,10 @@ async function decoratorExample() {
     // Clean up temp file
     if (fs.existsSync(tempFile)) {
       fs.unlinkSync(tempFile);
+    }
+    if (!isReadlineClosed) {
+      rl.close();
+      isReadlineClosed = true;
     }
   }
 }
