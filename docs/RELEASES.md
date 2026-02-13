@@ -4,9 +4,13 @@
 
 **Released**: February 13, 2026
 
-## What's New
+### Security & Safety Improvements
+
+- **Approval flow for file operation tools** — File read/write operations now require explicit approval to prevent unauthorized access
+- **Command injection detection in execute tool** — Added security validation to detect and block potentially malicious shell commands
 
 ### Core Tools Architecture Overhaul
+
 - **All core tools converted to function-type execution** — Eliminates subprocess spawning and `tsx` PATH dependencies
 - **Unified execution model** — All core tools now use direct async function calls for better performance and error handling
 - **Core tools suite expanded**:
@@ -18,12 +22,14 @@
   - **calculator** — Refactored to function-type for consistency
 
 ### Execution Model Improvements
+
 - **No external dependencies** — Core tools no longer depend on `tsx` or other CLI tools
 - **Direct in-process execution** — Function-based tools execute directly without subprocess overhead
 - **Better error handling** — Native exception throwing instead of stdout/stderr parsing
 - **Simpler type safety** — Direct TypeScript function signatures for all tools
 
 ### Testing & Examples
+
 - **Comprehensive unit tests** for all 5 new core tools (execute, read, edit, search, web)
 - **Complete examples** for all core tools in 3 integration patterns:
   - Factory pattern (direct tool execution)
@@ -32,6 +38,7 @@
 - **Tests pass**: 624+ test suite with 100% pass rate
 
 ### Schema & Tool Loading Improvements
+
 - **Enhanced ToolDefinitionSchema** — Better parameter validation and default value handling
 - **Improved tool caching** — Tool packages cached for faster discovery and loading
 - **Better tool discovery** — Provider auto-discovery with efficient lookup
@@ -39,11 +46,13 @@
 - **Default parameters support** — YAML definitions can now specify default values
 
 ### Developer Experience
+
 - **Unified core tools** — Consistent execution model across all built-in tools
 - **Cleaner imports** — Tools properly structured under `packages/core/tools/`
 - **commitlint updates** — Added support for 'example' commit type in conventional commits
 
 ### Quality & Reliability
+
 - **Build fixes** — Resolved issues from previous release
 - **Lint fixes** — Eliminated linting issues in updated code
 - **Type safety** — All tools properly typed with strict TypeScript checking
@@ -51,6 +60,7 @@
 ## Architecture Comparison
 
 ### Before (alpha.5)
+
 ```yaml
 # Command-type execution (subprocess spawning)
 execution:
@@ -60,6 +70,7 @@ execution:
 ```
 
 ### After (alpha.6)
+
 ```yaml
 # Function-type execution (direct calls)
 execution:
@@ -72,6 +83,7 @@ execution:
 ## Tools Now Available
 
 ### Core Utilities (6 tools)
+
 - `calculator` — Arithmetic operations (add, subtract, multiply, divide)
 - `execute` — Execute shell commands with full control
 - `read` — Read file contents with line ranges
@@ -80,16 +92,18 @@ execution:
 - `web` — Fetch and parse web content
 
 ### Provider Integrations (21+ tools)
+
 - `slack` — 16+ Slack tools (messaging, channels, users, etc.)
 - `gmail` — 5 Gmail tools (send, list, get, draft, delete)
 
 ## Examples
 
 ### Execute Tool - All 3 Patterns
+
 ```typescript
 // Factory pattern
 const matimo = await MatimoInstance.init('./tools');
-const result = await matimo.execute('execute', { 
+const result = await matimo.execute('execute', {
   command: 'ls -la',
   cwd: '/tmp'
 });
@@ -104,37 +118,41 @@ const tools = matimo.listTools()
 ```
 
 ### Read Tool
+
 ```typescript
 const result = await matimo.execute('read', {
   filePath: './src/index.ts',
   startLine: 10,
-  endLine: 50
+  endLine: 50,
 });
 ```
 
 ### Edit Tool
+
 ```typescript
 const result = await matimo.execute('edit', {
   filePath: './config.json',
   newContent: '{"updated": true}',
-  createBackup: true
+  createBackup: true,
 });
 ```
 
 ### Search Tool
+
 ```typescript
 const result = await matimo.execute('search', {
   pattern: 'function execute',
   directoryPattern: './src/**/*.ts',
-  outputLines: true
+  outputLines: true,
 });
 ```
 
 ### Web Tool
+
 ```typescript
 const result = await matimo.execute('web', {
   url: 'https://example.com',
-  method: 'GET'
+  method: 'GET',
 });
 ```
 
@@ -143,12 +161,14 @@ const result = await matimo.execute('web', {
 ### If you were using core tools:
 
 **Before (command-type with tsx)**:
+
 ```typescript
 // Tools required tsx in PATH
 const result = await matimo.execute('read', {...});
 ```
 
 **After (function-type, no dependencies)**:
+
 ```typescript
 // Same API, better performance, no PATH dependencies
 const result = await matimo.execute('read', {...});
@@ -158,8 +178,8 @@ API remains the same — no code changes needed! Just update Matimo version.
 
 ## Testing & Quality
 
-- ✅ **625+ tests** across all packages
-- ✅ **0 lint errors** — Strict ESLint configuration
+- ✅ **Improved test coverage** across all packages
+- ✅ **No lint errors** — Strict ESLint configuration
 - ✅ **100% TypeScript strict mode** — Full type safety
 - ✅ **Complete test coverage** — Unit + integration tests for all tools
 - ✅ **All examples tested** — 3 patterns × 6 core tools
@@ -204,10 +224,10 @@ pnpm add matimo@0.1.0-alpha.6
 - **Package Documentation**: Added comprehensive README documentation to core, slack, and gmail packages
 
 ## Notes
+
 - Documentation now uses Slate theme for better compatibility with GitHub Pages
 - All workspace packages updated with consistent versioning
 - Simplified GitHub Actions workflow reduces maintenance and improves reliability
-
 
 ## v0.1.0-alpha.4
 
@@ -218,16 +238,15 @@ pnpm add matimo@0.1.0-alpha.6
 ## What's New
 
 - **Monorepo packaging**: repository updated to a workspace layout. Core packages are split under `packages/` and publishable as separate npm packages.
-- **Matimo CLI**: cli operations for list, search, install, help within Matimo eco-system. 
+- **Matimo CLI**: cli operations for list, search, install, help within Matimo eco-system.
 - **CI publish update**: GitHub Actions updated to publish workspace packages via `pnpm -r publish` so non-private workspace packages are released together.
 - **Tools packages**: Tool YAML and assets live under `package/<provider-name>` folders and are published as separate npm packages with in `@matimo/<provider-name>`
 - **Examples & docs**: Updated examples and docs to reflect packaging changes and improved quick-start guidance.
 - **Build & test fixes**: Ensured `pnpm build` and `pnpm test` run across workspace packages.
 
 ## Notes
+
 - The release workflow now publishes all non-private workspace packages (filterable if needed).
-
-
 
 # v0.1.0-alpha.3
 
@@ -238,24 +257,28 @@ pnpm add matimo@0.1.0-alpha.6
 ## What's New
 
 ### Slack Integration Suite
+
 - **16+ Slack tools** across messaging, channel management, user queries, and topic management
 - Real OAuth2 integration with Slack workspace testing
 - Complete examples for all integration patterns
 - Comprehensive Slack API coverage: send messages, list/manage channels, set topics, list users, and more
 
 ### Error Handling & Quality
+
 - **Standardized MatimoError** throughout SDK with machine-readable error codes
 - Consistent error structure across all executors and decorators
 - Error codes: `INVALID_SCHEMA`, `FILE_NOT_FOUND`, `EXECUTION_FAILED`, `TOOL_NOT_FOUND`, `INVALID_PARAMETER`
 - Proper error context without exposing sensitive data
 
 ### Testing Improvements
+
 - **Mocked HTTP tests** - Removed real network calls from test suite
 - 14 HTTP executor test cases with mocked axios responses
 - **410 tests** across 23 test suites with 100% pass rate
 - Deterministic, fast test execution with no external dependencies
 
 ### Examples & Documentation
+
 - **Examples directory renamed** from `langchain` to `tools` - better reflects all three patterns
 - **Comprehensive examples README** - 300+ lines covering all integration patterns with code examples
 - **Three integration patterns** documented: Factory (direct), Decorator (class-based), LangChain (AI agents)
@@ -264,6 +287,7 @@ pnpm add matimo@0.1.0-alpha.6
 - Configuration guides for Slack, Gmail, and OpenAI setup
 
 ### Package Improvements
+
 - Examples package now uses published matimo (`^0.1.0-alpha.3`) instead of local path
 - Examples are now portable and work without building the SDK locally
 - Proper version constraints for all dependencies
@@ -286,15 +310,17 @@ pnpm add matimo@0.1.0-alpha.3
 ## Quick Start - Three Integration Patterns
 
 ### 1. Factory Pattern (Direct SDK Usage)
+
 ```typescript
 const matimo = await MatimoInstance.init('./tools');
-const result = await matimo.execute('slack-send-message', { 
+const result = await matimo.execute('slack-send-message', {
   channel: '#general',
-  message: 'Hello from Matimo!'
+  message: 'Hello from Matimo!',
 });
 ```
 
 ### 2. Decorator Pattern (Class-Based)
+
 ```typescript
 @tool('slack-send-message')
 async sendMessage(channel: string, message: string) {
@@ -303,6 +329,7 @@ async sendMessage(channel: string, message: string) {
 ```
 
 ### 3. LangChain Integration (AI Agents)
+
 ```typescript
 const tools = matimo.listTools()
   .map(t => ({
@@ -348,12 +375,14 @@ See [Roadmap](./ROADMAP.md) for future features (REST API, MCP server, Python SD
 ## What's Improved
 
 ### Release & Distribution
+
 - Improved npm publish workflow configuration (pre-releases currently publish under default 'latest' dist-tag)
 - Replaced deprecated GitHub Actions (softprops/action-gh-release@v2)
 - Proper semantic versioning for release titles
 - Fixed broken documentation links in releases
 
 ### Package & Exports
+
 - Explicit package exports for main and MCP modules
 - Accurate npm description (reflects current Phase 1 scope)
 - Proper Node.js module resolution
@@ -369,12 +398,14 @@ See [Roadmap](./ROADMAP.md) for future features (REST API, MCP server, Python SD
 ## What's New
 
 ### OAuth2 Multi-Provider Support
+
 - OAuth2 handler with token injection
 - Providers: Google (Gmail), GitHub, Slack
 - Provider YAML configuration
 - Automatic token injection into requests
 
 ### Tool System
+
 - YAML/JSON tool definitions with Zod validation
 - Command executor (shell commands with templating)
 - HTTP executor (REST APIs with OAuth2)
@@ -382,12 +413,14 @@ See [Roadmap](./ROADMAP.md) for future features (REST API, MCP server, Python SD
 - Tool discovery and filtering
 
 ### SDK Patterns
+
 - **Factory pattern**: `const m = await matimo.init('./tools'); m.execute(toolName, params)`
 - **Decorator pattern**: `@tool('calculator')` for class-based usage
 - Tool discovery, filtering, and search
 - Full TypeScript support with strict types
 
 ### Tools Included
+
 - **Gmail** (5 tools): send, list, get, draft, delete
 - **Utilities**: calculator, echo, HTTP client
 - **Provider configs**: Google, GitHub, Slack
@@ -405,8 +438,10 @@ pnpm add matimo@0.1.0-alpha.1
 import { matimo } from 'matimo';
 
 const m = await matimo.init('./tools');
-const result = await m.execute('calculator', { 
-  operation: 'add', a: 5, b: 3 
+const result = await m.execute('calculator', {
+  operation: 'add',
+  a: 5,
+  b: 3,
 });
 ```
 
@@ -418,7 +453,6 @@ const result = await m.execute('calculator', {
 - [OAuth2 Guide](./architecture/OAUTH.md)
 - [API Reference](./api-reference/SDK.md)
 - [Examples](../examples/)
-
 
 ## Known Limitations
 

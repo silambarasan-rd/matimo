@@ -170,6 +170,13 @@ Complete documentation for Matimo.
   - Security considerations
   - Quality metrics and checklists
 
+- **[File Operation Approval](./user-guide/FILE_OPERATION_APPROVAL.md)** — Security controls for file operations
+  - Approval system overview
+  - Permanent and interactive approvals
+  - Path matching with glob patterns
+  - Configuration examples
+  - Security best practices
+
 - **[Contributing Guidelines](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md)** — How to contribute to Matimo
   - Getting started and setup
   - Code standards and best practices

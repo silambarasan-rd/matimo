@@ -5,6 +5,7 @@
 **Latest Release**: v0.1.0-alpha.6 (February 13, 2026)
 
 ✅ **Completed Features**:
+
 - OAuth2 authentication with multi-provider support
 - Tool execution (function, command, and HTTP types)
 - YAML-based tool definitions with Zod validation
@@ -39,6 +40,7 @@ Expand provider ecosystem with real-world integrations:
 - [ ] **Azure** — VMs, Storage, Functions
 
 **Acceptance Criteria**:
+
 - Each provider has 5+ tools
 - OAuth2 or API key authentication working
 - Comprehensive examples for all patterns
@@ -59,6 +61,7 @@ Full-featured Python implementation with feature parity:
 - [ ] **Type Hints** — Full type safety with mypy support
 
 **Acceptance Criteria**:
+
 - Package published on PyPI
 - Installation via `pip install matimo`
 - Works with Python 3.8+
@@ -78,6 +81,7 @@ Enable Claude and other MCP clients to use Matimo tools:
 - [ ] **Claude Integration** — Works natively with Claude via MCP
 
 **Acceptance Criteria**:
+
 - Server implements MCP spec correctly
 - Works with Claude and other MCP clients
 - All tools discoverable and callable
@@ -98,6 +102,7 @@ Production-ready observability:
 - [ ] **Audit Trail** — Log who ran what tool and when
 
 **Acceptance Criteria**:
+
 - Structured JSON logs for easy parsing
 - Integration with common logging services (DataDog, New Relic, etc.)
 - Configurable log levels
@@ -117,11 +122,13 @@ Advanced capabilities for complex automation:
 - [ ] **Skill Versioning** — Multiple versions per skill
 
 **Example Skills**:
+
 - Process customer support tickets (GitHub → Slack → Email)
 - Sync data between systems (Stripe → Hubspot → Airtable)
 - Monitor and alert on metrics (AWS → Datadog → Slack)
 
 **Acceptance Criteria**:
+
 - Skill definition format (YAML or JSON)
 - Skill execution engine working correctly
 - Error recovery on tool failures
@@ -130,11 +137,12 @@ Advanced capabilities for complex automation:
 
 ---
 
-## Future Phases (Post-v0.1.0) / Not sure Yet - but trying to be ambitious. 
+## Future Phases (Post-v0.1.0) / Not sure Yet - but trying to be ambitious.
 
 ### Phase 2: Enterprise & DevOps (Q3-Q4 2026)
 
 **REST API Server**
+
 - [ ] HTTP API for tool execution
 - [ ] Async job execution and webhooks
 - [ ] OpenAPI/Swagger documentation
@@ -142,6 +150,7 @@ Advanced capabilities for complex automation:
 - [ ] Multi-tenant support
 
 **Tool Marketplace**
+
 - [ ] Distributed tool registry
 - [ ] Tool publishing and versioning
 - [ ] Community tool submissions
@@ -149,6 +158,7 @@ Advanced capabilities for complex automation:
 - [ ] Tool analytics and usage tracking
 
 **Container & Orchestration**
+
 - [ ] Docker images and containers
 - [ ] Kubernetes Helm charts
 - [ ] CloudRun/Lambda deployment templates
@@ -157,6 +167,7 @@ Advanced capabilities for complex automation:
 ### Phase 3: Ecosystem Maturity (2027+)
 
 **Advanced Features**
+
 - [ ] Schema auto-translation (OpenAPI ↔ Matimo YAML)
 - [ ] Tool auto-generation from specifications
 - [ ] Intelligent tool discovery and recommendations
@@ -183,7 +194,7 @@ v0.1.0 Release (📅 Coming)
     3. MCP Server             April-May 2026
     4. Logging & Monitoring   May 2026
     5. Skills/Workflows       May 2026
-  
+
   v0.1.0-rc.1     Early March 2026
   v0.1.0          March 2026 ← Stable Release
 
@@ -192,7 +203,8 @@ Post-Release (🎯 Future)
   Phase 3: Ecosystem Maturity     2027+
 ```
 
-**Realistic Estimate**: 
+**Realistic Estimate**:
+
 - **3-4 weeks per priority** depending on scope
 - v0.1.0 stable release: **~6 weeks from now** (Late-March 2026)
 - Total from alpha.1 to v0.1.0: ~8 weeks in rapid iteration
@@ -224,12 +236,14 @@ We welcome contributions at any level!
 ### ✅ Core Features Implemented
 
 **Unified Core Tools Architecture**
+
 - **Function-based execution model** for all core tools (no subprocess spawning)
 - Eliminated `tsx` PATH dependency
 - All core tools use direct async function calls for better performance
 - Native exception throwing and error handling
 
 **Expanded Core Tools Suite**
+
 - `execute` — Shell command execution with timeout, cwd, and environment control
 - `read` — File reading with line range support and encoding detection
 - `edit` — File editing/replacement with backup support
@@ -238,12 +252,14 @@ We welcome contributions at any level!
 - `calculator` — Refactored to function-type for consistency
 
 **Execution Models**
+
 - Function-type tools (direct calls, recommended for SDK)
 - Command-type tools (still supported for external commands)
 - HTTP tools (powered by HttpExecutor with OAuth2)
 - Unified dispatcher for all execution types
 
 **Schema & Tool Loading**
+
 - Enhanced ToolDefinitionSchema with better validation
 - Default parameter support in YAML definitions
 - Improved tool caching for faster discovery
@@ -251,6 +267,7 @@ We welcome contributions at any level!
 - Stricter schema validation (removed passthrough)
 
 **Examples & Integration Patterns**
+
 - Complete examples for all 6 core tools
 - Factory pattern examples (direct execution)
 - Decorator pattern examples (class-based @tool)
@@ -258,6 +275,7 @@ We welcome contributions at any level!
 - All patterns tested and working
 
 **Quality & Reliability**
+
 - 625+ test suite with 100% pass rate
 - Comprehensive unit tests for all core tools
 - Build and lint issues resolved
@@ -265,6 +283,7 @@ We welcome contributions at any level!
 - Zero external command dependencies
 
 **Developer Experience**
+
 - Cleaner tool structure under `packages/core/tools/`
 - commitlint support for 'example' commit type
 - Simplified error handling patterns
@@ -277,12 +296,14 @@ We welcome contributions at any level!
 ### ✅ Core Features Implemented
 
 **OAuth2 Authentication**
+
 - OAuth2 handler with token management
 - Provider-agnostic configuration via YAML
 - Multi-provider support (Google, GitHub, Slack)
 - Token injection system for tools
 
 **Tool System**
+
 - YAML-based tool definitions with Zod validation
 - Tool loader and registry
 - Command executor (shell commands + templating)
@@ -291,6 +312,7 @@ We welcome contributions at any level!
 - Function executor for inline JavaScript/TypeScript execution
 
 **SDK Patterns**
+
 - Factory pattern (recommended for simple use cases)
 - Decorator pattern (@tool decorators for class-based code)
 - Tool auto discovery and filtering
@@ -298,6 +320,7 @@ We welcome contributions at any level!
 - LangChain integration for OpenAI function schemas
 
 **Tool Examples**
+
 - Gmail tools (list, get, send, create-draft, delete)
 - Slack tools suite (16+ tools for messaging, channels, users, topics)
 - GitHub provider configuration
@@ -305,17 +328,20 @@ We welcome contributions at any level!
 - Calculator and echo tools (reference implementations)
 
 **Monorepo Packaging**
+
 - Workspace-based structure with independent package publishing
-- Tools packages under `packages/{provider}/` 
+- Tools packages under `packages/{provider}/`
 - Separate npm package publication via `pnpm publish -r`
 - Workspace dependency versioning with `workspace:*` protocol
 
 **CLI Tool**
-- `matimo list`    - List all available tools
-- `matimo search`  - Search tools by name/keyword
+
+- `matimo list` - List all available tools
+- `matimo search` - Search tools by name/keyword
 - `matimo install` - Install tools from CLI
 
 **Documentation**
+
 - Complete YAML tool specification guide
 - OAuth2 implementation documentation
 - Decorator pattern usage guide
@@ -327,6 +353,7 @@ We welcome contributions at any level!
 - Architecture overview with data flow diagrams
 
 **Quality Assurance**
+
 - 100% test passing across all packages
 - Full TypeScript strict mode enforcement
 - ESLint configuration with no warnings
@@ -341,41 +368,45 @@ We welcome contributions at any level!
 ### ✅ Features Implemented
 
 **Monorepo Structure & Packaging**
+
 - Workspace-based monorepo with independent package publishing
 - Tool definitions and assets packaged with providers
 - Workspace publishing via `pnpm publish -r`
 - Proper dependency management across packages
 
 **Schema & Error Handling**
+
 - Tool deprecation warnings in schema
 - Definition path tracking in ToolDefinition
 - Standardized error codes (INVALID_SCHEMA, EXECUTION_FAILED, AUTH_FAILED, etc.)
 - Enhanced error recovery and retry logic
 
 **LangChain Integration**
+
 - Automatic OpenAI function schema generation
 - Secret parameter detection with camelCase support
 - Seamless integration with LangChain agents
 
 **Search & Discovery**
+
 - Dynamic package discovery in CLI
 - Enhanced search command with filtering
 - Improved error messaging and UX
 
 **Security & Stability**
+
 - Security warnings for embedded code execution
 - Input validation enhancements
 - Installation improvements for ESM environments
 
 **Documentation Expansion**
+
 - Security guidelines for code execution
 - Troubleshooting FAQ and common issues
 - Tool specification documentation
 - Decorator pattern guide
 
 ---
-
-
 
 ## How to Use This Roadmap
 

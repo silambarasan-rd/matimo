@@ -86,9 +86,9 @@ Auto-discovery also loads tools from the local `./tools` directory if provided:
 
 ```typescript
 // Load from both node_modules (auto-discovery) AND local ./tools directory
-const m = await MatimoInstance.init({ 
-  autoDiscover: true, 
-  toolPaths: ['./tools'] 
+const m = await MatimoInstance.init({
+  autoDiscover: true,
+  toolPaths: ['./tools'],
 });
 
 // Includes:
@@ -118,9 +118,9 @@ project/
 ```typescript
 import { MatimoInstance } from 'matimo';
 
-const m = await MatimoInstance.init({ 
-  autoDiscover: true, 
-  toolPaths: ['./tools'] 
+const m = await MatimoInstance.init({
+  autoDiscover: true,
+  toolPaths: ['./tools'],
 });
 
 // List all loaded tools

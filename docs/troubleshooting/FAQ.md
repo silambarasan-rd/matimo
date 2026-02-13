@@ -57,6 +57,7 @@ pnpm list typescript
 **Explanation**: Matimo disables inline code execution in tool YAML to prevent Remote Code Execution (RCE) if tool definitions come from untrusted sources.
 
 **Default behavior**:
+
 ```typescript
 // embeddedCodeDisabled = (MATIMO_ALLOW_EMBEDDED_CODE !== 'true')
 // If env var is NOT set → embeddedCodeDisabled = true → throws error ✓
@@ -73,7 +74,7 @@ if (embeddedCodeDisabled) {
 # ✅ Secure: External file
 execution:
   type: function
-  code: ./handler.ts  # Version-controlled, auditable
+  code: ./handler.ts # Version-controlled, auditable
   timeout: 10000
 ```
 
@@ -90,11 +91,13 @@ pnpm agent:factory
 ### Q: What's the security risk with embedded code?
 
 **Risk**: `new Function()` executes arbitrary JavaScript with access to:
+
 - `fs` module (file system read/write)
 - `path` module (path manipulation)
 - `axios` module (network requests)
 
 **If tool YAML comes from untrusted sources**, an attacker could inject malicious code that:
+
 - Steals environment variables (tokens, keys)
 - Modifies files
 - Makes unauthorized API requests
@@ -102,12 +105,14 @@ pnpm agent:factory
 **Mitigation**:
 
 ✅ **DO**:
+
 - Use external .ts files for tool logic
 - Review all tool YAML before loading
 - Only enable embedded code in fully-trusted environments
 - Never commit embedded code to repositories
 
 ❌ **DON'T**:
+
 - Load tool YAML from untrusted sources without review
 - Enable embedded code in production
 - Allow users to upload arbitrary tool definitions
