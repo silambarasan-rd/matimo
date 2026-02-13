@@ -397,7 +397,7 @@ describe('List Command', () => {
 
   it('should traverse up directory tree to find node_modules', () => {
     let callCount = 0;
-    fs.existsSync.mockImplementation((dir: string) => {
+    fs.existsSync.mockImplementation((_dir: string) => {
       // Simulate node_modules found after 2 levels up
       callCount++;
       return callCount >= 2;
