@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { ToolLoader } from '../../../src/core/tool-loader';
+import { MatimoError } from '../../../src/errors/matimo-error';
 import type { Parameter } from '../../../src/core/types';
 
 describe('Execute Tool', () => {
@@ -119,7 +120,14 @@ describe('Execute Tool', () => {
 });
 
 describe('Injection Detection', () => {
-  let executeCommand: any;
+  let executeCommand: (params: { command: string; cwd?: string; timeout?: number }) => Promise<{
+    success: boolean;
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+    command: string;
+    duration: number;
+  }>;
 
   beforeAll(async () => {
     // Import the execute function
@@ -215,10 +223,11 @@ describe('Injection Detection', () => {
       try {
         await executeCommand({ command: 'echo hello; rm -rf /' });
         fail('Should have thrown');
-      } catch (error: any) {
-        expect(error.message).toBe('Command injection detected');
-        expect(error.code).toBe('INVALID_PARAMETER');
-        expect(error.details.reason).toBe(
+      } catch (error: unknown) {
+        const matimoError = error as MatimoError;
+        expect(matimoError.message).toBe('Command injection detected');
+        expect(matimoError.code).toBe('INVALID_PARAMETER');
+        expect(matimoError.details?.reason).toBe(
           'Command contains potentially dangerous shell metacharacters'
         );
       }
