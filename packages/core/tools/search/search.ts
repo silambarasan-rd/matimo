@@ -64,8 +64,6 @@ export default async function searchTool(params: SearchParams): Promise<SearchRe
     });
   }
 
-  console.info('[search] Searching for:', { query, directory, filePattern, isRegex, caseSensitive });
-
   // Resolve directory
   const resolvedDir = directory.startsWith('~')
     ? path.join(process.env.HOME || '/', directory.slice(1))
@@ -173,8 +171,6 @@ export default async function searchTool(params: SearchParams): Promise<SearchRe
     duration: Date.now() - startTime,
     truncated: matches.length >= safeMaxResults && files.length > filesSearched,
   };
-
-  console.info('[search] Search complete:', { query, totalMatches: result.totalMatches, filesSearched });
 
   return result;
 }

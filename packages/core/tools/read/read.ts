@@ -51,8 +51,6 @@ export default async function readTool(params: ReadParams): Promise<ReadResult> 
     ? filePath
     : path.resolve(process.cwd(), filePath);
 
-  console.info('[read] Reading:', { filePath: resolvedPath, startLine, endLine, encoding });
-
   // Check file exists
   if (!fs.existsSync(resolvedPath)) {
     throw new MatimoError('File not found', ErrorCode.FILE_NOT_FOUND, {
@@ -115,8 +113,6 @@ export default async function readTool(params: ReadParams): Promise<ReadResult> 
     size: stats.size,
     mtime: stats.mtime.toISOString(),
   };
-
-  console.info('[read] Successfully read file:', { filePath: resolvedPath, readLines });
 
   return result;
 }

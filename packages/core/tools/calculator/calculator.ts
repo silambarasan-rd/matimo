@@ -70,8 +70,6 @@ export default async function calculator(
 ): Promise<CalculatorResult> {
   const { operation, a, b } = params;
 
-  console.info('[calculator] Executing with params:', { operation, a, b });
-
   if (typeof a !== 'number' || typeof b !== 'number') {
     throw new MatimoError('Parameters a and b must be numbers', ErrorCode.INVALID_PARAMETER, {
       a,
@@ -115,8 +113,6 @@ export default async function calculator(
     original_operation: operation,
     operands: { a, b },
   };
-
-  console.info('[calculator] Returning:', returnValue);
 
   return returnValue;
 }

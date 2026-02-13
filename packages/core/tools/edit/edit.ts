@@ -55,8 +55,6 @@ export default async function editTool(params: EditParams): Promise<EditResult> 
     });
   }
 
-  console.info('[edit] Editing file:', { filePath, operation, startLine, endLine });
-
   // Resolve path
   const resolvedPath = filePath.startsWith('~')
     ? path.join(process.env.HOME || '/', filePath.slice(1))
@@ -182,8 +180,6 @@ export default async function editTool(params: EditParams): Promise<EditResult> 
   result.success = true;
   result.newLineCount = newLines.length;
   result.duration = Date.now() - startTime;
-
-  console.info('[edit] Successfully edited file:', { filePath: resolvedPath, linesAffected: result.linesAffected });
 
   return result;
 }

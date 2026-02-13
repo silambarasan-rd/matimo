@@ -65,8 +65,6 @@ export default async function webTool(params: WebParams): Promise<WebResult> {
     });
   }
 
-  console.info('[web] Fetching:', { url, method, timeout });
-
   const requestConfig: AxiosRequestConfig = {
     method: method.toUpperCase() || 'GET',
     url,
@@ -118,8 +116,6 @@ export default async function webTool(params: WebParams): Promise<WebResult> {
       size: JSON.stringify(response.data).length,
       duration: Date.now() - startTime,
     };
-
-    console.info('[web] Response received:', { url, statusCode: result.statusCode, size: result.size });
 
     return result;
   } catch (error) {
