@@ -102,7 +102,7 @@ export const ToolDefinitionSchema = z.object({
   name: z.string(),
   description: z.string(),
   version: z.string(),
-  parameters: z.record(z.string(), ParameterSchema).default({}),
+  parameters: z.record(z.string(), ParameterSchema).optional(),
   execution: ExecutionConfigSchema,
   authentication: AuthConfigSchema.optional(),
   output_schema: OutputSchemaSchema.optional(),
@@ -120,10 +120,20 @@ export const ToolDefinitionSchema = z.object({
   deprecated: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
   deprecation_message: z.string().optional(),
-  _definitionPath: z.string().optional(),
+  // _definitionPath: z.string().optional(), // Internal use for tracking source file path
 });
 
-export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>;
+// remove the _definitionPath entry from ToolDefinitionSchema (delete that line)
+
+export type ToolDefinition = z.infer<typeof ToolDefinitionSchema> & {
+  /**
+   * Internal metadata indicating where this tool definition was loaded from.
+   * Not part of the external schema; added programmatically after validation.
+   */
+  _definitionPath?: string;
+};
+
+// export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>;
 
 // OAuth2 provider endpoints schema
 export const OAuth2EndpointsSchema = z.object({
