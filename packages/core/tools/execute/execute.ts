@@ -10,6 +10,40 @@ import { MatimoError, ErrorCode } from '../../src/errors/matimo-error';
 
 const execAsync = promisify(exec);
 
+/**
+ * Basic injection detection - checks for common shell metacharacters
+ * that could be used for command injection attacks
+ */
+function detectCommandInjection(command: string): boolean {
+  // Common injection patterns: command chaining, redirection, substitution
+  const dangerousPatterns = [
+    /;/,      // Command separator
+    /\|/,     // Pipe
+    /&/,      // Background/AND
+    /`/,      // Command substitution (backticks)
+    /\$\(/,   // Command substitution ($(command))
+    /</,      // Input redirection
+    />/,      // Output redirection
+    /\$\{/,   // Variable expansion ${VAR}
+    /\$\w+/,  // Simple variable expansion $VAR (but allow $PATH etc.)
+  ];
+
+  // Allow some safe variable expansions like $HOME, $PATH, but flag suspicious ones
+  const safeVars = /^\$(HOME|PATH|USER|PWD|SHELL|LANG|TERM)$/i;
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(command)) {
+      // Special case: allow $VAR if it's a known safe environment variable
+      if (pattern.source === '\\$\\w+' && safeVars.test(command.match(/\$\w+/)?.[0] || '')) {
+        continue;
+      }
+      return true;
+    }
+  }
+
+  return false;
+}
+
 interface ExecuteParams {
   command: string;
   cwd?: string;
@@ -41,7 +75,20 @@ export default async function executeCommand(
     });
   }
 
+  // Check for potential command injection
+  if (detectCommandInjection(command)) {
+    throw new MatimoError('Command injection detected', ErrorCode.INVALID_PARAMETER, {
+      reason: 'Command contains potentially dangerous shell metacharacters',
+      command: command, // Log for debugging, but be careful in production
+    });
+  }
+
   try {
+    // SECURITY WARNING: This tool executes arbitrary shell commands directly.
+    // The 'command' parameter is passed to exec() without sanitization, creating
+    // a command injection vulnerability if user input is not properly validated.
+    // Basic injection detection is performed above, but this is NOT foolproof.
+    // Only use with trusted input or implement additional validation layers.
     // exec() auto-selects shell: cmd.exe on Windows, /bin/sh on Unix
     const { stdout, stderr } = await execAsync(command, {
       cwd,
