@@ -123,8 +123,6 @@ export const ToolDefinitionSchema = z.object({
   // _definitionPath: z.string().optional(), // Internal use for tracking source file path
 });
 
-// remove the _definitionPath entry from ToolDefinitionSchema (delete that line)
-
 export type ToolDefinition = z.infer<typeof ToolDefinitionSchema> & {
   /**
    * Internal metadata indicating where this tool definition was loaded from.
