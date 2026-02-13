@@ -16,6 +16,7 @@ const execAsync = promisify(exec);
  */
 function detectCommandInjection(command: string): boolean {
   // Common injection patterns: command chaining, redirection, substitution
+  // Note: $\w+ pattern is handled separately below
   const dangerousPatterns = [
     /;/,      // Command separator
     /\|/,     // Pipe
@@ -25,19 +26,26 @@ function detectCommandInjection(command: string): boolean {
     /</,      // Input redirection
     />/,      // Output redirection
     /\$\{/,   // Variable expansion ${VAR}
-    /\$\w+/,  // Simple variable expansion $VAR (but allow $PATH etc.)
   ];
 
   // Allow some safe variable expansions like $HOME, $PATH, but flag suspicious ones
   const safeVars = /^\$(HOME|PATH|USER|PWD|SHELL|LANG|TERM)$/i;
 
+  // Check for dangerous patterns first
   for (const pattern of dangerousPatterns) {
     if (pattern.test(command)) {
-      // Special case: allow $VAR if it's a known safe environment variable
-      if (pattern.source === '\\$\\w+' && safeVars.test(command.match(/\$\w+/)?.[0] || '')) {
-        continue;
-      }
       return true;
+    }
+  }
+
+  // Special handling for environment variables: allow safe ones, flag suspicious ones
+  const variablePattern = /\$\w+/g;
+  const variables = command.match(variablePattern);
+  if (variables) {
+    for (const variable of variables) {
+      if (!safeVars.test(variable)) {
+        return true;
+      }
     }
   }
 
