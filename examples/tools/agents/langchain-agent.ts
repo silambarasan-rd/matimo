@@ -103,7 +103,7 @@ async function runLangChainAgent() {
             // Add tool result to conversation
             messages.push(
               new ToolMessage({
-                tool_call_id: toolCall.id,
+                tool_call_id: toolCall.id || '',
                 content: JSON.stringify(result),
                 name: toolCall.name,
               })
@@ -115,7 +115,7 @@ async function runLangChainAgent() {
             // Add error to conversation
             messages.push(
               new ToolMessage({
-                tool_call_id: toolCall.id,
+                tool_call_id: toolCall.id || '',
                 content: `Error: ${msg}`,
                 name: toolCall.name,
               })

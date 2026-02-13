@@ -58,9 +58,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
-import { MatimoInstance, convertToolsToLangChain } from 'matimo';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { MatimoInstance, convertToolsToLangChain, ToolDefinition } from 'matimo';
 
 /**
  * Run AI Agent with Slack tools
@@ -152,9 +150,13 @@ async function runSlackAIAgent() {
     );
 
     // ✅ Convert Matimo tools to LangChain format using the new integration
-    const langchainTools = await convertToolsToLangChain(keySlackTools, matimo, {
-      SLACK_BOT_TOKEN: botToken,
-    });
+    const langchainTools = await convertToolsToLangChain(
+      keySlackTools as ToolDefinition[],
+      matimo,
+      {
+        SLACK_BOT_TOKEN: botToken,
+      }
+    );
 
     // Initialize OpenAI LLM
     console.info('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');
@@ -167,7 +169,7 @@ async function runSlackAIAgent() {
     console.info('🔧 Creating agent...\n');
     const agent = await createAgent({
       model,
-      tools: langchainTools,
+      tools: langchainTools as any[], // Type casting for LangChain tools
     });
 
     // Define agent tasks (natural language requests)
