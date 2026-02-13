@@ -1,21 +1,212 @@
+## v0.1.0-alpha.6
+
+> Core tools architecture overhaul: function-based execution, unified SDK model, and comprehensive tool suite
+
+**Released**: February 13, 2026
+
+## What's New
+
+### Core Tools Architecture Overhaul
+- **All core tools converted to function-type execution** — Eliminates subprocess spawning and `tsx` PATH dependencies
+- **Unified execution model** — All core tools now use direct async function calls for better performance and error handling
+- **Core tools suite expanded**:
+  - **execute** — Execute shell commands with timeout, cwd control, and environment variables
+  - **read** — Read files with line range support, encoding detection, and large file handling
+  - **edit** — Edit/replace file contents with optional encoding and backup support
+  - **search** — Search files using grep patterns with line output and context display
+  - **web** — Fetch and parse web content with headers, cookies, and response validation
+  - **calculator** — Refactored to function-type for consistency
+
+### Execution Model Improvements
+- **No external dependencies** — Core tools no longer depend on `tsx` or other CLI tools
+- **Direct in-process execution** — Function-based tools execute directly without subprocess overhead
+- **Better error handling** — Native exception throwing instead of stdout/stderr parsing
+- **Simpler type safety** — Direct TypeScript function signatures for all tools
+
+### Testing & Examples
+- **Comprehensive unit tests** for all 5 new core tools (execute, read, edit, search, web)
+- **Complete examples** for all core tools in 3 integration patterns:
+  - Factory pattern (direct tool execution)
+  - Decorator pattern (class-based with @tool)
+  - LangChain pattern (AI agent integration)
+- **Tests pass**: 624+ test suite with 100% pass rate
+
+### Schema & Tool Loading Improvements
+- **Enhanced ToolDefinitionSchema** — Better parameter validation and default value handling
+- **Improved tool caching** — Tool packages cached for faster discovery and loading
+- **Better tool discovery** — Provider auto-discovery with efficient lookup
+- **Passthrough validation removed** — Stricter schema validation for tool definitions
+- **Default parameters support** — YAML definitions can now specify default values
+
+### Developer Experience
+- **Unified core tools** — Consistent execution model across all built-in tools
+- **Cleaner imports** — Tools properly structured under `packages/core/tools/`
+- **commitlint updates** — Added support for 'example' commit type in conventional commits
+
+### Quality & Reliability
+- **Build fixes** — Resolved issues from previous release
+- **Lint fixes** — Eliminated linting issues in updated code
+- **Type safety** — All tools properly typed with strict TypeScript checking
+
+## Architecture Comparison
+
+### Before (alpha.5)
+```yaml
+# Command-type execution (subprocess spawning)
+execution:
+  type: command
+  command: 'tsx'
+  args: ['packages/core/tools/read/read.ts', '{filePath}']
+```
+
+### After (alpha.6)
+```yaml
+# Function-type execution (direct calls)
+execution:
+  type: function
+  code: './read.ts'
+```
+
+**Benefits**: Faster execution, no PATH dependencies, native error handling, simpler debugging
+
+## Tools Now Available
+
+### Core Utilities (6 tools)
+- `calculator` — Arithmetic operations (add, subtract, multiply, divide)
+- `execute` — Execute shell commands with full control
+- `read` — Read file contents with line ranges
+- `edit` — Edit/replace file contents
+- `search` — Search files by pattern
+- `web` — Fetch and parse web content
+
+### Provider Integrations (21+ tools)
+- `slack` — 16+ Slack tools (messaging, channels, users, etc.)
+- `gmail` — 5 Gmail tools (send, list, get, draft, delete)
+
+## Examples
+
+### Execute Tool - All 3 Patterns
+```typescript
+// Factory pattern
+const matimo = await MatimoInstance.init('./tools');
+const result = await matimo.execute('execute', { 
+  command: 'ls -la',
+  cwd: '/tmp'
+});
+
+// Decorator pattern
+@tool('execute')
+async runCommand(command: string) { }
+
+// LangChain pattern
+const tools = matimo.listTools()
+  .map(t => ({ type: 'function', function: {...} }));
+```
+
+### Read Tool
+```typescript
+const result = await matimo.execute('read', {
+  filePath: './src/index.ts',
+  startLine: 10,
+  endLine: 50
+});
+```
+
+### Edit Tool
+```typescript
+const result = await matimo.execute('edit', {
+  filePath: './config.json',
+  newContent: '{"updated": true}',
+  createBackup: true
+});
+```
+
+### Search Tool
+```typescript
+const result = await matimo.execute('search', {
+  pattern: 'function execute',
+  directoryPattern: './src/**/*.ts',
+  outputLines: true
+});
+```
+
+### Web Tool
+```typescript
+const result = await matimo.execute('web', {
+  url: 'https://example.com',
+  method: 'GET'
+});
+```
+
+## Migration from Alpha.5
+
+### If you were using core tools:
+
+**Before (command-type with tsx)**:
+```typescript
+// Tools required tsx in PATH
+const result = await matimo.execute('read', {...});
+```
+
+**After (function-type, no dependencies)**:
+```typescript
+// Same API, better performance, no PATH dependencies
+const result = await matimo.execute('read', {...});
+```
+
+API remains the same — no code changes needed! Just update Matimo version.
+
+## Testing & Quality
+
+- ✅ **625+ tests** across all packages
+- ✅ **0 lint errors** — Strict ESLint configuration
+- ✅ **100% TypeScript strict mode** — Full type safety
+- ✅ **Complete test coverage** — Unit + integration tests for all tools
+- ✅ **All examples tested** — 3 patterns × 6 core tools
+
+## Known Issues & Limitations
+
+This is an **alpha release**. Not recommended for production without thorough testing.
+
+## Installation
+
+```bash
+npm install matimo@0.1.0-alpha.6
+pnpm add matimo@0.1.0-alpha.6
+```
+
+## Documentation
+
+- [Quick Start](./getting-started/QUICK_START.md)
+- [SDK Patterns](./user-guide/SDK_PATTERNS.md)
+- [Tool Reference](./api-reference/SDK.md)
+- [Examples](../examples/)
+
+## Contributing
+
+[Contributing Guide](../CONTRIBUTING.md) | [Report Issues](https://github.com/tallclub/matimo/issues)
+
+---
+
 ## v0.1.0-alpha.5
 
-> Readme addition to core, slack and gmail packages, custom domain setup for github pages (docs), and al-folio theme
+> Readme addition to core, slack and gmail packages and custom domain setup for github pages (docs).
 
 **Released**: February 11, 2026
 
 ## What's New
 
-- **Documentation Theme**: Upgraded to al-folio theme for improved visual presentation and navigation
-- **Custom Domain**: Configured docs at `docs.matimo.dev` with CNAME setup and GitHub Pages integration
-- **Build Improvements**: Removed redundant custom GitHub Pages workflow, now using GitHub's built-in `pages-build-deployment`
-- **Package READMEs**: Added comprehensive README documentation for missing packages (Gmail, Slack, core) with setup and usage instructions
-- **Build Configuration**: Updated Jekyll build settings and base URLs to support custom domain hosting
+- **Documentation Theme**: Updated to Jekyll Slate theme for cleaner, simpler documentation rendering with GitHub Pages native support
+- **Workspace Dependencies**: Updated all peer dependencies across cli, gmail, and slack packages to use `workspace:*` versioning for better monorepo management
+- **Version Bump**: Official release of v0.1.0-alpha.5 with updated package versions across workspace
+- **Release Workflow**: Removed redundant custom GitHub Pages workflow in favor of GitHub's native pages-build-deployment action
+- **CNAME Configuration**: Maintained custom domain setup for `docs.matimo.dev`
+- **Package Documentation**: Added comprehensive README documentation to core, slack, and gmail packages
 
 ## Notes
-- Documentation now accessible at https://docs.matimo.dev with al-folio theme
-- Simplified GitHub Pages workflow reduces maintenance overhead
-- All packages now have complete README documentation for developers
+- Documentation now uses Slate theme for better compatibility with GitHub Pages
+- All workspace packages updated with consistent versioning
+- Simplified GitHub Actions workflow reduces maintenance and improves reliability
 
 
 ## v0.1.0-alpha.4
