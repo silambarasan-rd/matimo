@@ -65,3 +65,11 @@ export { OAuth2Handler } from './auth/oauth2-handler';
 // LangChain integration
 export { convertToolsToLangChain } from './integrations/langchain';
 export type { LangChainTool } from './integrations/langchain';
+
+// Path Approval System
+export {
+  PathApprovalManager,
+  getPathApprovalManager,
+  setPathApprovalManager,
+} from './approval/path-approval';
+export type { ApprovalCallback } from './approval/path-approval';
