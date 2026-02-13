@@ -263,7 +263,7 @@ describe('MatimoInstance - Core Functionality', () => {
         const tool = tools[0];
         expect(tool.execution).toBeDefined();
         expect(tool.execution.type).toBeDefined();
-        expect(['http', 'command']).toContain(tool.execution.type);
+        expect(['http', 'command', 'function']).toContain(tool.execution.type);
       }
     });
 

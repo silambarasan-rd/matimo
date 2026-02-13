@@ -31,7 +31,8 @@ module.exports = {
         'test',        // Test additions/modifications
         'chore',       // Build, dependencies, tooling
         'ci',          // CI/CD configuration
-        'revert'       // Revert previous commit
+        'revert',       // Revert previous commit
+        'example',     // Example code changes
       ]
     ],
     'type-case': [2, 'always', 'lower-case'],

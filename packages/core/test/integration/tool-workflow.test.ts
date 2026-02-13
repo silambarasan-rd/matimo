@@ -1,24 +1,28 @@
 import { ToolDefinition } from '../../src/core/schema';
 import { ToolLoader } from '../../src/core/tool-loader';
 import { ToolRegistry } from '../../src/core/tool-registry';
+import { MatimoInstance } from '../../src/matimo-instance';
 import { CommandExecutor } from '../../src/executors/command-executor';
 import * as path from 'path';
 
 describe('Integration: Tool Loading and Execution', () => {
   let loader: ToolLoader;
   let registry: ToolRegistry;
+  let matimo: MatimoInstance;
   let commandExecutor: CommandExecutor;
-  const fixturesDir = path.join(__dirname, '../fixtures/tools');
+  const coreToolsDir = path.join(__dirname, '../../tools');
 
-  beforeEach(() => {
+  beforeEach(async () => {
     loader = new ToolLoader();
     registry = new ToolRegistry();
     commandExecutor = new CommandExecutor();
+    // Initialize MatimoInstance with core tools for proper executor routing
+    matimo = await MatimoInstance.init(coreToolsDir);
   });
 
   describe('Complete tool workflow', () => {
     it('should load, register, and execute a tool', async () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
 
       // Step 1: Load tool from file
       const tool = loader.loadToolFromFile(toolPath);
@@ -29,19 +33,19 @@ describe('Integration: Tool Loading and Execution', () => {
       registry.register(tool);
       expect(registry.get('calculator')).toBeDefined();
 
-      // Step 3: Execute tool
-      const result = (await commandExecutor.execute(tool, {
+      // Step 3: Execute tool with MatimoInstance (routes to correct executor)
+      const result = (await matimo.execute('calculator', {
         operation: 'add',
         a: 5,
         b: 3,
       })) as Record<string, unknown>;
 
       expect(result).toBeDefined();
-      expect(result.stdout).toBeDefined();
+      expect(result.result).toBe(8);
     });
 
     it('should load multiple tools and manage them in registry', async () => {
-      const tools = loader.loadToolsFromDirectory(fixturesDir);
+      const tools = loader.loadToolsFromDirectory(coreToolsDir);
 
       tools.forEach((tool) => {
         registry.register(tool);
@@ -53,7 +57,7 @@ describe('Integration: Tool Loading and Execution', () => {
 
   describe('Tool definition compliance', () => {
     it('loaded tool should have all required properties', async () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       expect(tool.name).toBeDefined();
@@ -69,11 +73,11 @@ describe('Integration: Tool Loading and Execution', () => {
       expect(typeof tool.parameters).toBe('object');
 
       expect(tool.execution).toBeDefined();
-      expect(['command', 'http']).toContain(tool.execution?.type);
+      expect(['command', 'http', 'function']).toContain(tool.execution?.type);
     });
 
     it('tool parameters should be properly validated', async () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       if (tool.parameters) {
@@ -112,7 +116,7 @@ describe('Integration: Tool Loading and Execution', () => {
 
   describe('Tool registry operations', () => {
     it('should retrieve tool and execute it', async () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       registry.register(tool);
@@ -120,18 +124,19 @@ describe('Integration: Tool Loading and Execution', () => {
 
       expect(registeredTool).toBe(tool);
 
-      const result = (await commandExecutor.execute(registeredTool!, {
+      // Use MatimoInstance to properly route to FunctionExecutor for function-type tools
+      const result = (await matimo.execute('calculator', {
         operation: 'add',
         a: 10,
         b: 5,
       })) as Record<string, unknown>;
 
       expect(result).toBeDefined();
-      expect(result.stdout).toBeDefined();
+      expect(result.result).toBe(15);
     });
 
     it('should list all registered tools', async () => {
-      const tools = loader.loadToolsFromDirectory(fixturesDir);
+      const tools = loader.loadToolsFromDirectory(coreToolsDir);
 
       tools.forEach((tool) => {
         registry.register(tool);
@@ -149,37 +154,39 @@ describe('Integration: Tool Loading and Execution', () => {
 
   describe('Tool execution with various parameters', () => {
     it('should execute tool with string parameters', async () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
-      const tool = loader.loadToolFromFile(toolPath);
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
+      toolPath; // Tool path loaded but used via matimo instance
 
-      const result = (await commandExecutor.execute(tool, {
+      // Use MatimoInstance to properly route to correct executor
+      const result = (await matimo.execute('calculator', {
         operation: 'add',
         a: 5,
         b: 3,
       })) as Record<string, unknown>;
 
       expect(result).toBeDefined();
-      expect(result.stdout).toBeDefined();
+      expect(result.result).toBe(8);
     });
 
     it('should handle missing optional parameters', async () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
-      const tool = loader.loadToolFromFile(toolPath);
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
+      loader.loadToolFromFile(toolPath);
 
-      // Try executing with minimal parameters
-      const result = await commandExecutor.execute(tool, {
+      // Try executing with minimal parameters using MatimoInstance
+      const result = await matimo.execute('calculator', {
         operation: 'add',
         a: 5,
         b: 3,
       });
 
       expect(result).toBeDefined();
+      expect((result as Record<string, unknown>).result).toBe(8);
     });
   });
 
   describe('Tool validation on load', () => {
     it('should validate tool schema on load', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       // Tool should be validated and loadable

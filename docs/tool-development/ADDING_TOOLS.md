@@ -364,7 +364,7 @@ Matimo supports two patterns for function execution:
 ```yaml
 execution:
   type: function
-  code: ./handler.ts  # Path to external .ts or .js file
+  code: ./handler.ts # Path to external .ts or .js file
   timeout: 10000
 ```
 
@@ -394,11 +394,13 @@ execution:
 ```
 
 **SECURITY WARNING**: Embedded code execution is **disabled by default** because it:
+
 - Runs arbitrary JavaScript with access to `fs`, `path`, `axios` modules
 - Creates an RCE (Remote Code Execution) vector if YAML comes from untrusted sources
 - Cannot be audited without parsing the YAML
 
 **How it works**:
+
 ```typescript
 // Logic in function-executor.ts
 const embeddedCodeDisabled = process.env.MATIMO_ALLOW_EMBEDDED_CODE !== 'true';

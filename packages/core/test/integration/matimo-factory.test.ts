@@ -3,10 +3,10 @@ import * as path from 'path';
 
 describe('Matimo Factory Pattern', () => {
   let matimoInstance: MatimoInstance;
-  const fixturesDir = path.join(__dirname, '../fixtures/tools');
+  const coreToolsDir = path.join(__dirname, '../../tools');
 
   beforeAll(async () => {
-    matimoInstance = await matimo.init(fixturesDir);
+    matimoInstance = await matimo.init(coreToolsDir);
   });
 
   describe('Initialization', () => {
@@ -60,7 +60,8 @@ describe('Matimo Factory Pattern', () => {
       })) as Record<string, unknown>;
 
       expect(result).toBeDefined();
-      expect(result.stdout).toBeDefined();
+      expect(result.result).toBe(8);
+      expect(result.operation).toBe('add');
     });
 
     it('should throw error for non-existent tool', async () => {
@@ -75,7 +76,7 @@ describe('Matimo Factory Pattern', () => {
     });
 
     it('should create instance via matimo.init', async () => {
-      const instance = await matimo.init(fixturesDir);
+      const instance = await matimo.init(coreToolsDir);
       expect(instance).toBeDefined();
       expect(instance.listTools()).toHaveLength(matimoInstance.listTools().length);
     });

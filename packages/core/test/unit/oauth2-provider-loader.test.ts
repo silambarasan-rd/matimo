@@ -602,4 +602,44 @@ describe('OAuth2ProviderLoader', () => {
       }).not.toThrow();
     });
   });
+
+  describe('Provider Loading Edge Cases', () => {
+    it('should list all loaded providers', async () => {
+      const providers = await loader.loadProviders();
+      const providerList = loader.listProviders();
+
+      expect(Array.isArray(providerList)).toBe(true);
+      expect(providerList.length).toBeGreaterThan(0);
+      providerList.forEach((p) => {
+        expect(providers.has(p)).toBe(true);
+      });
+    });
+
+    it('should skip non-provider definitions', async () => {
+      // This should skip any tool definitions with type !== 'provider'
+      const providers = await loader.loadProviders();
+      expect(providers).toBeInstanceOf(Map);
+      // Verify all loaded providers have the correct structure
+      providers.forEach((endpoints) => {
+        expect(endpoints.authorizationUrl).toBeDefined();
+        expect(endpoints.tokenUrl).toBeDefined();
+      });
+    });
+
+    it('should skip directories without definition.yaml', async () => {
+      // The fixtures include a 'database' directory without a provider definition
+      const providers = await loader.loadProviders();
+      // Should still successfully load other providers
+      expect(providers.size).toBeGreaterThan(0);
+    });
+
+    it('should handle missing revokeUrl gracefully', async () => {
+      const providers = await loader.loadProviders();
+      // GitHub provider definition has optional revokeUrl
+      const github = providers.get('github');
+      // Should still be loaded even without revokeUrl (it's optional)
+      expect(github).toBeDefined();
+      expect(github?.tokenUrl).toBeDefined();
+    });
+  });
 });

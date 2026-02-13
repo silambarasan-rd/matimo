@@ -98,34 +98,40 @@ export const RateLimitingSchema = z.object({
 export type RateLimiting = z.infer<typeof RateLimitingSchema>;
 
 // Complete tool definition
-export const ToolDefinitionSchema = z
-  .object({
-    name: z.string(),
-    description: z.string(),
-    version: z.string(),
-    parameters: z.record(z.string(), ParameterSchema).optional(),
-    execution: ExecutionConfigSchema,
-    authentication: AuthConfigSchema.optional(),
-    output_schema: OutputSchemaSchema.optional(),
-    error_handling: ErrorHandlingSchema.optional(),
-    rate_limiting: RateLimitingSchema.optional(),
-    examples: z
-      .array(
-        z.object({
-          name: z.string(),
-          params: z.record(z.string(), z.unknown()),
-          description: z.string().optional(),
-        })
-      )
-      .optional(),
-    deprecated: z.boolean().optional(),
-    tags: z.array(z.string()).optional(),
-    deprecation_message: z.string().optional(),
-    _definitionPath: z.string().optional(),
-  })
-  .passthrough(); // Allow additional properties like _definitionPath
+export const ToolDefinitionSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  version: z.string(),
+  parameters: z.record(z.string(), ParameterSchema).optional(),
+  execution: ExecutionConfigSchema,
+  authentication: AuthConfigSchema.optional(),
+  output_schema: OutputSchemaSchema.optional(),
+  error_handling: ErrorHandlingSchema.optional(),
+  rate_limiting: RateLimitingSchema.optional(),
+  examples: z
+    .array(
+      z.object({
+        name: z.string(),
+        params: z.record(z.string(), z.unknown()),
+        description: z.string().optional(),
+      })
+    )
+    .optional(),
+  deprecated: z.boolean().optional(),
+  tags: z.array(z.string()).optional(),
+  deprecation_message: z.string().optional(),
+  // _definitionPath: z.string().optional(), // Internal use for tracking source file path
+});
 
-export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>;
+export type ToolDefinition = z.infer<typeof ToolDefinitionSchema> & {
+  /**
+   * Internal metadata indicating where this tool definition was loaded from.
+   * Not part of the external schema; added programmatically after validation.
+   */
+  _definitionPath?: string;
+};
+
+// export type ToolDefinition = z.infer<typeof ToolDefinitionSchema>;
 
 // OAuth2 provider endpoints schema
 export const OAuth2EndpointsSchema = z.object({

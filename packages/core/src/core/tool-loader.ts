@@ -7,9 +7,41 @@ import { MatimoError, ErrorCode } from '../errors/matimo-error';
 /**
  * Tool Loader - Loads and validates YAML/JSON tool definitions
  * Implements TDD pattern: test failures guide implementation
+ * Features caching for efficient discovery with thousands of tools
  */
 
 export class ToolLoader {
+  /**
+   * Static cache for discovered paths - populated on first autoDiscover call
+   * Subsequent calls return cached result (O(1) instead of O(n))
+   */
+  private static discoveredPathsCache: string[] | null = null;
+  /**
+   * Discover packages using only fs and path (no createRequire needed)
+   * Searches for tools in node_modules/@matimo/* and workspace packages
+   */
+  private getNodeModulesPath(): string | null {
+    try {
+      // Start from current working directory and search upwards
+      let currentPath = process.cwd();
+      for (let i = 0; i < 15; i++) {
+        const nodeModules = path.join(currentPath, 'node_modules');
+        if (fs.existsSync(nodeModules)) {
+          // Verify @matimo scope exists
+          const matimoScope = path.join(nodeModules, '@matimo');
+          if (fs.existsSync(matimoScope)) {
+            return nodeModules;
+          }
+        }
+        currentPath = path.dirname(currentPath);
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Load a single tool from a YAML or JSON file
    * @param filePath - Path to tool definition file
@@ -130,82 +162,98 @@ export class ToolLoader {
   }
 
   /**
-   * Auto-discover tool packages in node_modules/@matimo/*
+   * Auto-discover tool packages in node_modules/@matimo/* and core tools
+   * Features efficient caching: first call discovers, subsequent calls return cached result
    * @returns Array of paths to tool directories
    */
   autoDiscoverPackages(): string[] {
+    // Return cached paths if already discovered (O(1) lookup)
+    if (ToolLoader.discoveredPathsCache !== null) {
+      return ToolLoader.discoveredPathsCache;
+    }
+
+    const discoveredPaths: string[] = [];
+
+    // 1. Discover core tools from workspace (packages/core/tools) or @matimo/core in node_modules
     try {
-      // Get the node_modules path (handle both workspace and normal installations)
+      // Try node_modules first (@matimo/core)
+      const nodeModulesPath = this.getNodeModulesPath();
+      if (nodeModulesPath) {
+        const coreToolsPath = path.join(nodeModulesPath, '@matimo', 'core', 'tools');
+        if (fs.existsSync(coreToolsPath)) {
+          discoveredPaths.push(coreToolsPath);
+        }
+      }
+
+      // If not found in node_modules, try workspace
+      if (discoveredPaths.length === 0) {
+        let currentPath = process.cwd();
+        for (let i = 0; i < 20; i++) {
+          const coreToolsPath = path.join(currentPath, 'packages', 'core', 'tools');
+          if (fs.existsSync(coreToolsPath)) {
+            discoveredPaths.push(coreToolsPath);
+            break;
+          }
+          currentPath = path.dirname(currentPath);
+        }
+      }
+    } catch {
+      // Continue if core tools discovery fails
+    }
+
+    // 2. Discover @matimo/* packages from node_modules (installed providers like slack, gmail)
+    try {
       const nodeModulesPath = this.getNodeModulesPath();
 
-      if (!nodeModulesPath || !fs.existsSync(nodeModulesPath)) {
-        return [];
-      }
+      if (nodeModulesPath && fs.existsSync(nodeModulesPath)) {
+        const matimoScopePath = path.join(nodeModulesPath, '@matimo');
 
-      const matimoScopePath = path.join(nodeModulesPath, '@matimo');
+        if (fs.existsSync(matimoScopePath)) {
+          // Scan @matimo/* directories for tools/
+          const entries = fs.readdirSync(matimoScopePath, { withFileTypes: true });
 
-      if (!fs.existsSync(matimoScopePath)) {
-        return [];
-      }
+          for (const entry of entries) {
+            // Skip core if already discovered
+            if (entry.name === 'core') {
+              continue;
+            }
 
-      // Scan @matimo/* directories for tools/
-      const discoveredPaths: string[] = [];
-      const entries = fs.readdirSync(matimoScopePath, { withFileTypes: true });
+            // Handle both real directories and symlinks
+            let isDir = entry.isDirectory();
+            if (!isDir && !entry.name.startsWith('.')) {
+              try {
+                // Use statSync to follow symlinks
+                isDir = fs.statSync(path.join(matimoScopePath, entry.name)).isDirectory();
+              } catch {
+                continue;
+              }
+            }
 
-      for (const entry of entries) {
-        // Handle both real directories and symlinks
-        // isDirectory() returns false for symlinks, so we need to check the actual target
-        let isDir = entry.isDirectory();
-        if (!isDir && !entry.name.startsWith('.')) {
-          try {
-            // Use statSync to follow symlinks
-            isDir = fs.statSync(path.join(matimoScopePath, entry.name)).isDirectory();
-          } catch {
-            // If statSync fails, skip this entry
-            continue;
-          }
-        }
-
-        if (isDir && !entry.name.startsWith('.')) {
-          const toolsPath = path.join(matimoScopePath, entry.name, 'tools');
-
-          if (fs.existsSync(toolsPath)) {
-            discoveredPaths.push(toolsPath);
+            if (isDir && !entry.name.startsWith('.')) {
+              const toolsPath = path.join(matimoScopePath, entry.name, 'tools');
+              if (fs.existsSync(toolsPath)) {
+                discoveredPaths.push(toolsPath);
+              }
+            }
           }
         }
       }
-
-      return discoveredPaths;
     } catch {
-      // If auto-discovery fails (e.g., in development), return empty array
-      return [];
+      // Continue even if @matimo discovery fails
     }
+
+    // Cache the results for future calls - this makes subsequent autoDiscoverPackages() calls O(1)
+    ToolLoader.discoveredPathsCache = discoveredPaths;
+
+    return discoveredPaths;
   }
 
   /**
-   * Get node_modules path intelligently
-   * Works in both normal and monorepo installations
+   * Clear the discovery cache (useful for testing or dynamic tool loading scenarios)
+   * @internal Used for testing only
    */
-  private getNodeModulesPath(): string | null {
-    try {
-      // Start from current working directory and search upwards
-      let currentPath = process.cwd();
-      for (let i = 0; i < 15; i++) {
-        const nodeModules = path.join(currentPath, 'node_modules');
-        if (fs.existsSync(nodeModules)) {
-          // Verify @matimo scope exists
-          const matimoScope = path.join(nodeModules, '@matimo');
-          if (fs.existsSync(matimoScope)) {
-            return nodeModules;
-          }
-        }
-        currentPath = path.dirname(currentPath);
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
+  static clearDiscoveryCache(): void {
+    ToolLoader.discoveredPathsCache = null;
   }
 
   /**

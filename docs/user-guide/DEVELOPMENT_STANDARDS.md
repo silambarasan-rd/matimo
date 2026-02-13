@@ -102,10 +102,10 @@ class ToolLoader {}
 
 ```typescript
 // kebab-case for files
-tool-loader.ts
-command-executor.ts
-error-codes.ts
-matimo-error.ts
+tool - loader.ts;
+command - executor.ts;
+error - codes.ts;
+matimo - error.ts;
 
 // Descriptive names
 // ✓ command-executor.ts
@@ -692,3 +692,4 @@ const validated = schema.parse(userInput);
 - [COMMIT_GUIDELINES.md](../community/COMMIT_GUIDELINES.md) — Commit standards
 - [QUICK_START.md](../getting-started/QUICK_START.md) — Get started
 - [API_REFERENCE.md](../api-reference/SDK.md) — SDK documentation
+````

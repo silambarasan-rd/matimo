@@ -8,7 +8,7 @@
  * ─────────────────────────────────────────────────────────────────────────
  * This is a REAL AI agent that:
  * 1. Takes natural language user requests
- * 2. Uses OpenAI LLM (GPT-4o-mini) to decide which Gmail tools to use
+ * 2. Uses OpenAI LLM (GPT-4o-mini) to decide which Gmail tools to use from matimo
  * 3. Generates appropriate parameters based on context
  * 4. Executes tools autonomously
  * 5. Processes results and responds naturally
@@ -33,7 +33,7 @@
  * ─────────────────────────────────────────────────────────────────────────
  *   export GMAIL_ACCESS_TOKEN=your_token_here
  *   export OPENAI_API_KEY=your_openai_key_here
- *   npm run gmail:langchain
+ *   pnpm gmail:langchain
  *
  * WHAT IT DOES:
  * ─────────────────────────────────────────────────────────────────────────
@@ -57,7 +57,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
-import { MatimoInstance, convertToolsToLangChain } from 'matimo';
+import { MatimoInstance, convertToolsToLangChain, ToolDefinition } from 'matimo';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -113,7 +113,7 @@ async function runGmailAIAgent() {
     console.info(`✅ Loaded ${gmailTools.length} Gmail tools\n`);
 
     // Convert to LangChain tools
-    const langchainTools = await convertToolsToLangChain(gmailTools, matimo, {
+    const langchainTools = await convertToolsToLangChain(gmailTools as ToolDefinition[], matimo, {
       GMAIL_ACCESS_TOKEN: accessToken,
     });
 
@@ -128,7 +128,7 @@ async function runGmailAIAgent() {
     console.info('🔧 Creating agent...\n');
     const agent = await createAgent({
       model,
-      tools: langchainTools,
+      tools: langchainTools as any[], // Type casting for LangChain tools
     });
 
     // Define agent tasks (natural language requests)
