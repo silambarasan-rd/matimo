@@ -1,0 +1,147 @@
+name: search
+version: '1.0.0'
+description: Search file system and file contents using native search. Supports regex, case-insensitive matching, and directory traversal.
+
+parameters:
+  query:
+    type: string
+    description: Search query - plain text or regex pattern (case-insensitive by default)
+    required: true
+    example: 'function defineProperty'
+
+  directory:
+    type: string
+    description: Directory to search in (relative or absolute path). Defaults to current working directory.
+    required: false
+    example: './src'
+
+  filePattern:
+    type: string
+    description: File pattern to match (glob pattern, e.g. '*.ts', '**/*.test.ts', 'src/**'). Defaults to all files.
+    required: false
+    example: '*.ts'
+
+  isRegex:
+    type: boolean
+    description: Treat query as regular expression (default false for literal text search)
+    required: false
+    default: false
+
+  caseSensitive:
+    type: boolean
+    description: Case-sensitive search (default false for case-insensitive)
+    required: false
+    default: false
+
+  excludePatterns:
+    type: array
+    description: Glob patterns to exclude from search (e.g. ['node_modules/**', '*.backup'])
+    required: false
+    example: ['node_modules/**', '.git/**', 'dist/**']
+
+  maxResults:
+    type: number
+    description: Maximum number of results to return (default 50, max 1000)
+    required: false
+    default: 50
+
+  contextLines:
+    type: number
+    description: Number of context lines to show around match (default 2)
+    required: false
+    default: 2
+
+execution:
+  type: function
+  code: './search.ts'
+
+output_schema:
+  type: object
+  properties:
+    success:
+      type: boolean
+      description: Whether search completed successfully
+    query:
+      type: string
+      description: Search query that was used
+    directory:
+      type: string
+      description: Directory that was searched
+    pattern:
+      type: string
+      description: File pattern used for filtering
+    matches:
+      type: array
+      description: Array of matching files and content
+      items:
+        type: object
+        properties:
+          filePath:
+            type: string
+            description: Path to file containing match
+          lineNumber:
+            type: number
+            description: Line number of match (1-based)
+          lineContent:
+            type: string
+            description: Content of matched line
+          matchIndex:
+            type: number
+            description: Character position of match in line
+          context:
+            type: array
+            description: Context lines before and after match
+            items:
+              type: string
+    totalMatches:
+      type: number
+      description: Total number of matches found
+    filesSearched:
+      type: number
+      description: Number of files searched
+    duration:
+      type: number
+      description: Search duration in milliseconds
+    truncated:
+      type: boolean
+      description: Whether results were truncated due to maxResults
+  required: [success, query, matches, totalMatches, filesSearched, duration]
+
+error_handling:
+  retry: 1
+  backoff_type: exponential
+  initial_delay_ms: 300
+
+examples:
+  - name: 'Search for function definition'
+    description: 'Search for function definitions in TypeScript files'
+    params:
+      query: 'function'
+      directory: './src'
+      filePattern: '*.ts'
+      maxResults: 20
+  - name: 'Regex search in codebase'
+    description: 'Search using regex pattern'
+    params:
+      query: 'const\s+[a-zA-Z_]\w*\s*=\s*{' 
+      directory: '.'
+      filePattern: '**/*.ts'
+      isRegex: true
+      excludePatterns: ['node_modules/**', 'dist/**']
+  - name: 'Case-sensitive search'
+    description: 'Find exact case matches'
+    params:
+      query: 'MatimoInstance'
+      directory: './src'
+      caseSensitive: true
+      maxResults: 100
+  - name: 'Search with context'
+    description: 'Search with surrounding context lines'
+    params:
+      query: 'export class'
+      directory: './src/core'
+      filePattern: '*.ts'
+      contextLines: 3
+      maxResults: 30
+
+tags: [search, filesystem, grep, pattern-matching, text-search]

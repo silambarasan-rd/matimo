@@ -17,9 +17,8 @@ parameters:
     required: true
 
 execution:
-  type: command
-  command: 'tsx'
-  args: ['tools/calculator/calculator.ts', '{operation}', '{a}', '{b}']
+  type: function
+  code: './calculator.ts'
 
 output_schema:
   type: object
