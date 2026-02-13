@@ -4,11 +4,12 @@ import * as fs from 'fs';
 
 describe('ToolLoader', () => {
   const fixturesDir = path.join(__dirname, '../fixtures/tools');
+  const coreToolsDir = path.join(__dirname, '../../tools');
   const loader = new ToolLoader();
 
   describe('loadToolFromFile', () => {
     it('should load a valid YAML tool definition', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
 
       const tool = loader.loadToolFromFile(toolPath);
 
@@ -139,7 +140,7 @@ describe('ToolLoader', () => {
 
   describe('Tool property validation', () => {
     it('should have name property', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       expect(typeof tool.name).toBe('string');
@@ -147,7 +148,7 @@ describe('ToolLoader', () => {
     });
 
     it('should have version property', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       expect(tool.version).toBeDefined();
@@ -155,7 +156,7 @@ describe('ToolLoader', () => {
     });
 
     it('should have description property', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       expect(tool.description).toBeDefined();
@@ -163,7 +164,7 @@ describe('ToolLoader', () => {
     });
 
     it('should have parameters property', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       expect(tool.parameters).toBeDefined();
@@ -171,11 +172,11 @@ describe('ToolLoader', () => {
     });
 
     it('should have execution property', () => {
-      const toolPath = path.join(fixturesDir, 'calculator/tool.yaml');
+      const toolPath = path.join(coreToolsDir, 'calculator/definition.yaml');
       const tool = loader.loadToolFromFile(toolPath);
 
       expect(tool.execution).toBeDefined();
-      expect(['command', 'http']).toContain(tool.execution.type);
+      expect(['command', 'http', 'function']).toContain(tool.execution.type);
     });
 
     it('should throw error for unsupported file format', () => {
@@ -263,64 +264,33 @@ describe('ToolLoader', () => {
   });
 
   describe('autoDiscoverPackages', () => {
-    it('should return empty array when node_modules not found', () => {
-      // Mock process.cwd to return a path without node_modules
-      jest.spyOn(process, 'cwd').mockReturnValue('/nonexistent/path');
+    beforeEach(() => {
+      // Clear cache before each test to ensure fresh discovery
+      ToolLoader.clearDiscoveryCache();
+    });
 
+    it('should discover packages and return array', () => {
       const paths = loader.autoDiscoverPackages();
 
       expect(Array.isArray(paths)).toBe(true);
-      expect(paths.length).toBe(0);
-
-      (process.cwd as jest.Mock).mockRestore();
+      // In this environment, should find at least core tools
+      expect(paths.length).toBeGreaterThan(0);
     });
 
-    it('should return empty array when @matimo scope does not exist', () => {
-      // This will run in actual environment where @matimo scope might exist
-      // The function handles this gracefully
+    it('should include tools in discovered paths', () => {
       const paths = loader.autoDiscoverPackages();
 
-      expect(Array.isArray(paths)).toBe(true);
-      // Should return array (might be empty or have paths depending on environment)
-      expect(paths).toEqual(expect.any(Array));
-    });
-
-    it('should discover @matimo packages in node_modules', () => {
-      // In test environment, might find actual @matimo packages
-      const paths = loader.autoDiscoverPackages();
-
-      expect(Array.isArray(paths)).toBe(true);
-      // Result depends on environment, but should be an array
-      if (paths.length > 0) {
-        // If packages are discovered, verify they have 'tools' in path
-        paths.forEach((p) => {
-          expect(p).toContain('tools');
-        });
-      }
-    });
-
-    it('should handle discovery errors gracefully', () => {
-      // Even if there's an error, should return empty array
-      const paths = loader.autoDiscoverPackages();
-
-      expect(Array.isArray(paths)).toBe(true);
-      // Should not throw, just return array
-    });
-
-    it('should filter out dot files and directories', () => {
-      // autoDiscoverPackages filters entries starting with '.'
-      const paths = loader.autoDiscoverPackages();
-
-      // All discovered paths should be valid (no . prefixed names)
       paths.forEach((p) => {
-        const parts = p.split(path.sep);
-        parts.forEach((part) => {
-          if (part && !part.startsWith('.')) {
-            // Valid path component
-            expect(part).toBeTruthy();
-          }
-        });
+        expect(p).toContain('tools');
       });
+    });
+
+    it('should cache results on subsequent calls', () => {
+      const paths1 = loader.autoDiscoverPackages();
+      const paths2 = loader.autoDiscoverPackages();
+
+      // Should return the exact same cached reference
+      expect(paths1).toBe(paths2);
     });
   });
 

@@ -11,8 +11,8 @@ describe('Tool Decorator', () => {
   let matimo: MatimoInstance;
 
   beforeEach(async () => {
-    // Load real tools from test fixtures
-    const toolsPath = `${__dirname}/../fixtures/tools`;
+    // Load real tools from core tools directory
+    const toolsPath = `${__dirname}/../../tools`;
     matimo = await MatimoInstance.init(toolsPath);
     setGlobalMatimoInstance(matimo);
   });
@@ -27,7 +27,7 @@ describe('Tool Decorator', () => {
   });
 
   it('should set and get global Matimo instance', async () => {
-    const testInstance = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+    const testInstance = await MatimoInstance.init(`${__dirname}/../../tools`);
     setGlobalMatimoInstance(testInstance);
 
     const retrieved = getGlobalMatimoInstance();
@@ -219,7 +219,7 @@ describe('Tool Decorator', () => {
     const executeSpy = jest.spyOn(matimo, 'execute');
 
     // Create a different instance
-    const otherMatimo = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+    const otherMatimo = await MatimoInstance.init(`${__dirname}/../../tools`);
     const otherSpy = jest.spyOn(otherMatimo, 'execute');
 
     class Agent {
@@ -293,7 +293,7 @@ describe('Tool Decorator', () => {
       const executeSpy = jest.spyOn(matimo, 'execute');
 
       // Create a different instance
-      const otherMatimo = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+      const otherMatimo = await MatimoInstance.init(`${__dirname}/../../tools`);
       const otherSpy = jest.spyOn(otherMatimo, 'execute');
 
       class DecoratedAgent {
@@ -397,7 +397,7 @@ describe('Decorator Helper Functions', () => {
   let matimo: MatimoInstance;
 
   beforeEach(async () => {
-    const toolsPath = `${__dirname}/../fixtures/tools`;
+    const toolsPath = `${__dirname}/../../tools`;
     matimo = await MatimoInstance.init(toolsPath);
     setGlobalMatimoInstance(matimo);
   });
@@ -534,7 +534,7 @@ describe('Decorator Helper Functions', () => {
 
     it('should prefer class instance property over global', async () => {
       const globalSpy = jest.spyOn(matimo, 'execute');
-      const otherMatimo = await MatimoInstance.init(`${__dirname}/../fixtures/tools`);
+      const otherMatimo = await MatimoInstance.init(`${__dirname}/../../tools`);
       const otherSpy = jest.spyOn(otherMatimo, 'execute');
 
       const thisArg = { matimo: otherMatimo };

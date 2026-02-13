@@ -372,4 +372,64 @@ describe('List Command', () => {
     const readCalls = fs.readFileSync.mock.calls.length;
     expect(readCalls).toBe(2);
   });
+
+  it('should handle when getNodeModulesPath returns null with proper exit', () => {
+    // Make fs.existsSync always return false to simulate no node_modules found
+    fs.existsSync.mockReturnValue(false);
+    path.dirname.mockImplementation((p: string) => {
+      // Simulate reaching filesystem root by returning same path
+      return p;
+    });
+
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    try {
+      listCommand();
+    } catch {
+      // Ignore
+    }
+
+    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Error'));
+    expect(exitSpy).toHaveBeenCalledWith(1);
+
+    exitSpy.mockRestore();
+  });
+
+  it('should traverse up directory tree to find node_modules', () => {
+    let callCount = 0;
+    fs.existsSync.mockImplementation((dir: string) => {
+      // Simulate node_modules found after 2 levels up
+      callCount++;
+      return callCount >= 2;
+    });
+    fs.statSync.mockReturnValue({ isDirectory: () => true });
+    fs.readdirSync.mockReturnValue(['slack']);
+    fs.readFileSync.mockReturnValue(JSON.stringify({ name: '@matimo/slack' }));
+
+    listCommand();
+
+    expect(fs.existsSync).toHaveBeenCalled();
+  });
+
+  it('should handle filesystem root detection in getNodeModulesPath', () => {
+    // Setup to simulate reaching filesystem root
+    path.dirname.mockImplementation((p: string) => {
+      // After reaching root, dirname returns the same path
+      // This simulates: parent === currentPath which breaks the loop
+      if (p === '/') return '/';
+      return '/'; // Quick path to root
+    });
+    fs.existsSync.mockReturnValue(false);
+
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+    try {
+      listCommand();
+    } catch {
+      // Ignore
+    }
+
+    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining('Error'));
+    exitSpy.mockRestore();
+  });
 });

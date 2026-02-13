@@ -3,7 +3,7 @@ import path from 'path';
 
 describe('MatimoInstance - Advanced Coverage', () => {
   let instance: MatimoInstance;
-  const toolsPath = path.join(__dirname, '../fixtures/tools');
+  const toolsPath = path.join(__dirname, '../../tools');
 
   beforeAll(async () => {
     instance = await MatimoInstance.init(toolsPath);

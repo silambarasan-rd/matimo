@@ -3,6 +3,7 @@ import {
   AuthConfigSchema,
   ExecutionConfigSchema,
   validateToolDefinition,
+  validateProviderDefinition,
 } from '../../src/core/schema';
 
 describe('Schema Validation', () => {
@@ -263,6 +264,118 @@ describe('Schema Validation', () => {
       expect(() => validateToolDefinition(invalidTool as any)).toThrow(
         /Tool schema validation failed/
       );
+    });
+  });
+
+  describe('validateProviderDefinition', () => {
+    it('should validate a valid provider definition', () => {
+      const validProvider = {
+        name: 'github-provider',
+        type: 'provider',
+        version: '1.0.0',
+        description: 'GitHub OAuth2 provider',
+        provider: {
+          name: 'github',
+          displayName: 'GitHub',
+          endpoints: {
+            authorizationUrl: 'https://github.com/login/oauth/authorize',
+            tokenUrl: 'https://github.com/login/oauth/access_token',
+            revokeUrl: 'https://api.github.com/applications/{client_id}/grants/{token_id}',
+          },
+          defaultScopes: ['user:email', 'repo'],
+          documentation: 'https://docs.github.com/en/developers/apps',
+          learnMore: 'https://github.com',
+        },
+      };
+
+      const result = validateProviderDefinition(validProvider);
+      expect(result.name).toBe('github-provider');
+      expect(result.provider.name).toBe('github');
+    });
+
+    it('should reject provider definition missing required fields', () => {
+      const invalidProvider = {
+        // Missing 'name', 'type', 'version', 'provider'
+      };
+
+      expect(() => validateProviderDefinition(invalidProvider)).toThrow(
+        /Provider schema validation failed/
+      );
+    });
+
+    it('should reject provider with invalid type', () => {
+      const invalidProvider = {
+        name: 'test-provider',
+        type: 'tool',
+        version: '1.0.0',
+        provider: {
+          name: 'test',
+          endpoints: {
+            authorizationUrl: 'https://example.com/auth',
+            tokenUrl: 'https://example.com/token',
+          },
+        },
+      };
+
+      expect(() => validateProviderDefinition(invalidProvider)).toThrow(
+        /Provider schema validation failed/
+      );
+    });
+
+    it('should reject provider with missing endpoints', () => {
+      const invalidProvider = {
+        name: 'test-provider',
+        type: 'provider',
+        version: '1.0.0',
+        provider: {
+          name: 'test',
+          // Missing endpoints
+        },
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => validateProviderDefinition(invalidProvider as any)).toThrow(
+        /Provider schema validation failed/
+      );
+    });
+
+    it('should reject provider with invalid URL in endpoints', () => {
+      const invalidProvider = {
+        name: 'test-provider',
+        type: 'provider',
+        version: '1.0.0',
+        provider: {
+          name: 'test',
+          endpoints: {
+            authorizationUrl: 'not-a-valid-url',
+            tokenUrl: 'https://example.com/token',
+          },
+        },
+      };
+
+      expect(() => validateProviderDefinition(invalidProvider)).toThrow(
+        /Provider schema validation failed/
+      );
+    });
+
+    it('should allow optional provider fields', () => {
+      const minimalProvider = {
+        name: 'minimal-provider',
+        type: 'provider',
+        version: '1.0.0',
+        provider: {
+          name: 'minimal',
+          endpoints: {
+            authorizationUrl: 'https://example.com/auth',
+            tokenUrl: 'https://example.com/token',
+          },
+        },
+      };
+
+      const result = validateProviderDefinition(minimalProvider);
+      expect(result.name).toBe('minimal-provider');
+      expect(result.provider.displayName).toBeUndefined();
+      expect(result.provider.defaultScopes).toBeUndefined();
     });
   });
 });

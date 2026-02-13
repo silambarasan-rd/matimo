@@ -124,8 +124,9 @@ describe('MatimoInstance - Uncovered Lines Coverage', () => {
       // Verify tools are loaded and have various execution types
       const httpTools = tools.filter((t) => t.execution.type === 'http');
       const commandTools = tools.filter((t) => t.execution.type === 'command');
+      const functionTools = tools.filter((t) => t.execution.type === 'function');
 
-      expect(httpTools.length + commandTools.length).toBe(tools.length);
+      expect(httpTools.length + commandTools.length + functionTools.length).toBe(tools.length);
     });
 
     it('should have URL, headers, and query parameters in HTTP tools', () => {
@@ -313,7 +314,7 @@ describe('MatimoInstance - Uncovered Lines Coverage', () => {
 
       // Verify each tool has a valid execution type
       tools.forEach((tool) => {
-        expect(['command', 'http']).toContain(tool.execution.type);
+        expect(['command', 'http', 'function']).toContain(tool.execution.type);
       });
     });
 
