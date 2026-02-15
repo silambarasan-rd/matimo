@@ -72,15 +72,14 @@ jobs:
     needs: publish
     if: success()
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup tools
-        run: |
-          # Install yq and jq for JSON/YAML processing
-          sudo apt-get update && sudo apt-get install -y yq jq
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Notify Discord
         run: |
@@ -107,7 +106,7 @@ jobs:
           fi
           
           # Dynamically extract publishable packages from pnpm-workspace.yaml
-          PACKAGES=$(yq eval '.packages[]' pnpm-workspace.yaml | while read dir; do
+          PACKAGES=$(grep -A 100 "^packages:" pnpm-workspace.yaml | grep '  - "' | sed 's/.*"\(.*\)".*/\1/' | while read dir; do
             if [ -f "$dir/package.json" ]; then
               NAME=$(jq -r '.name' "$dir/package.json")
               PRIVATE=$(jq -r '.private // false' "$dir/package.json")
