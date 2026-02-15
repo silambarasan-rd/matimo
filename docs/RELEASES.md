@@ -1,3 +1,32 @@
+## v0.1.0-alpha.7.1
+
+> Patch: Discord release notifications + workflow improvements
+
+**Released**: February 15, 2026
+
+### 🔧 Updates
+
+#### CI/CD Improvements
+- **Fixed Discord webhook notifications** — Proper JSON escaping for release notes with special characters
+- **Dynamic package discovery** — Automatically extracts publishable packages from `pnpm-workspace.yaml` instead of hardcoding
+- **Improved error handling** — Better escaping of quotes, backslashes, and newlines in release notes payload
+
+#### Security & Robustness
+- All special characters (quotes, newlines, backslashes) in release notes are now safely escaped via jq
+- Webhook URL passed securely via GitHub Actions secrets
+- No hardcoded package lists — future packages auto-discovered
+
+### 📊 Changes
+- npm-release.yml workflow improvements
+- All 7 packages bumped to v0.1.0-alpha.7.1
+
+### 🐛 Bug Fixes
+- Discord notification JSON escaping
+- Date formatting in Discord footer
+- Package list generation from workspace configuration
+
+---
+
 ## v0.1.0-alpha.7
 
 > Postgres tools suite + SQL approval workflows: Execute database queries safely with interactive approval, LangChain integration, and comprehensive examples
