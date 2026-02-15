@@ -13,6 +13,10 @@
     "slack:factory": "tsx slack/slack-factory.ts",
     "slack:decorator": "tsx slack/slack-decorator.ts",
     "slack:langchain": "tsx slack/slack-langchain.ts",
+    "postgres:factory": "tsx postgres/postgres-factory.ts",
+    "postgres:decorator": "tsx postgres/postgres-decorator.ts",
+    "postgres:langchain": "tsx postgres/postgres-langchain.ts",
+    "postgres:approval": "tsx postgres/postgres-with-approval.ts",
     "execute:factory": "tsx execute/execute-factory.ts",
     "execute:decorator": "tsx execute/execute-decorator.ts",
     "execute:langchain": "tsx execute/execute-langchain.ts",
@@ -38,6 +42,7 @@
     "matimo": "workspace:*",
     "@matimo/slack": "workspace:*",
     "@matimo/gmail": "workspace:*",
+    "@matimo/postgres": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },

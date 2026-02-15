@@ -73,3 +73,11 @@ export {
   setPathApprovalManager,
 } from './approval/path-approval';
 export type { ApprovalCallback } from './approval/path-approval';
+
+// SQL Approval System
+export {
+  SQLApprovalManager,
+  getSQLApprovalManager,
+  setSQLApprovalManager,
+} from './approval/sql-approval';
+export type { SQLApprovalCallback } from './approval/sql-approval';

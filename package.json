@@ -72,8 +72,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@matimo/core": "workspace:*",
-    "@matimo/cli": "workspace:*"
+    "@matimo/cli": "workspace:*",
+    "@matimo/core": "workspace:*"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
