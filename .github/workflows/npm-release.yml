@@ -67,3 +67,63 @@ jobs:
             See the [changelog](https://github.com/tallclub/matimo/blob/main/docs/RELEASES.md) for detailed release notes.
           draft: false
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+
+      - name: Notify Discord
+        if: success()
+        run: |
+          # Extract release notes from RELEASES.md for the current version
+          VERSION="${{ github.ref_name }}"
+          RELEASE_NOTES=$(awk "
+            /^## $VERSION/ {
+              found=1
+              next
+            }
+            found && /^## / {
+              exit
+            }
+            found && NF {
+              print \$0
+            }
+          " docs/RELEASES.md | head -20 | sed 's/^//' | tr '\n' ' ')
+          
+          # Truncate if too long for Discord (2048 char limit for field value)
+          if [ ${#RELEASE_NOTES} -gt 1900 ]; then
+            RELEASE_NOTES="${RELEASE_NOTES:0:1897}..."
+          fi
+          
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"username\": \"Matimo Release Bot\",
+              \"content\": \"🎉 **New Release Available!**\",
+              \"embeds\": [
+                {
+                  \"title\": \"v${{ github.ref_name }}\",
+                  \"description\": \"Matimo has been released on npm!\",
+                  \"url\": \"https://github.com/tallclub/matimo/releases/tag/${{ github.ref_name }}\",
+                  \"color\": 5814783,
+                  \"fields\": [
+                    {
+                      \"name\": \"📝 Release Notes\",
+                      \"value\": \"$RELEASE_NOTES\",
+                      \"inline\": false
+                    },
+                    {
+                      \"name\": \"📦 npm Packages\",
+                      \"value\": \"\`@matimo/core\` \`@matimo/cli\` \`@matimo/slack\` \`@matimo/gmail\` \`@matimo/postgres\`\",
+                      \"inline\": false
+                    },
+                    {
+                      \"name\": \"🔗 Links\",
+                      \"value\": \"[GitHub Release](https://github.com/tallclub/matimo/releases/tag/${{ github.ref_name }}) • [Full Changelog](https://github.com/tallclub/matimo/blob/main/docs/RELEASES.md) • [npm Registry](https://www.npmjs.com/org/matimo)\",
+                      \"inline\": false
+                    }
+                  ],
+                  \"footer\": {
+                    \"text\": \"Matimo v${{ github.ref_name }} • Released on $(date '+%Y-%m-%d')\",
+                    \"icon_url\": \"https://github.com/tallclub.png\"
+                  }
+                }
+              ]
+            }" \
+            '${{ secrets.DISCORD_WEBHOOK }}'
