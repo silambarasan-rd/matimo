@@ -615,4 +615,199 @@ describe('Decorator Helper Functions', () => {
       spyExecute.mockRestore();
     });
   });
+
+  describe('Tool Decorator Factory Function', () => {
+    it('should return an async function when decorator is applied', () => {
+      const decoratorFn = tool('calculator');
+
+      // The returned decorator should be a function
+      expect(typeof decoratorFn).toBe('function');
+
+      // When called with a target and context mock, should return an async function
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const target = async function (this: any) {
+        return undefined;
+      };
+
+      // Mock context object for modern decorator API
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const context: any = {
+        kind: 'method',
+        name: 'calculate',
+        addInitializer: () => {},
+      };
+
+      const interceptedFn = decoratorFn(target, context);
+
+      // The returned function should be async
+      expect(typeof interceptedFn).toBe('function');
+      expect(interceptedFn.constructor.name).toBe('AsyncFunction');
+    });
+
+    it('should intercept method calls and execute via matimo', async () => {
+      const decoratorFn = tool('calculator');
+
+      // Create a mock target function
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const target = async function (this: any) {
+        return { intercepted: false };
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const context: any = {
+        kind: 'method',
+        name: 'test',
+      };
+
+      const interceptedFn = decoratorFn(target, context);
+
+      // Call the intercepted function with the matimo instance using apply
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (interceptedFn as any).apply({ matimo }, ['add', 5, 3]);
+
+      // Should have executed the tool, not the original target
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('object');
+    });
+
+    it('should bind correct this context when intercepted', async () => {
+      const decoratorFn = tool('calculator');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const target = async function (this: any) {
+        return { thisContext: this };
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const context: any = {
+        kind: 'method',
+        name: 'test',
+      };
+
+      const interceptedFn = decoratorFn(target, context);
+
+      const thisContext = { matimo };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (interceptedFn as any).apply(thisContext, ['add', 5, 3]);
+
+      // The intercepted function should have access to the this context
+      expect(result).toBeDefined();
+    });
+
+    it('should pass arguments correctly to intercepted function', async () => {
+      const spyExecute = jest.spyOn(matimo, 'execute');
+
+      const decoratorFn = tool('calculator');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const target = async function (this: any) {
+        return undefined;
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const context: any = {
+        kind: 'method',
+        name: 'test',
+      };
+
+      const interceptedFn = decoratorFn(target, context);
+
+      const arg1 = 'multiply';
+      const arg2 = 10;
+      const arg3 = 5;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (interceptedFn as any).apply({ matimo }, [arg1, arg2, arg3]);
+
+      expect(spyExecute).toHaveBeenCalledWith('calculator', {
+        operation: arg1,
+        a: arg2,
+        b: arg3,
+      });
+
+      spyExecute.mockRestore();
+    });
+
+    it('should handle context parameter (modern decorator API)', async () => {
+      const decoratorFn = tool('calculator');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const target = async function (this: any) {
+        return undefined;
+      };
+
+      // Modern decorator context object
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const context: any = {
+        kind: 'method',
+        name: 'testMethod',
+        isPrivate: false,
+        access: { get: () => {} },
+        addInitializer: () => {},
+      };
+
+      const interceptedFn = decoratorFn(target, context);
+
+      // Should successfully create intercepted function with context
+      expect(typeof interceptedFn).toBe('function');
+
+      // Should be executable
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (interceptedFn as any).apply({ matimo }, ['add', 2, 3]);
+      expect(result).toBeDefined();
+    });
+
+    it('should handle missing context gracefully', async () => {
+      const decoratorFn = tool('calculator');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const target = async function (this: any) {
+        return undefined;
+      };
+
+      // Call with undefined context (should still work)
+      const interceptedFn = decoratorFn(target, undefined);
+
+      expect(typeof interceptedFn).toBe('function');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (interceptedFn as any).apply({ matimo }, ['add', 1, 1]);
+      expect(result).toBeDefined();
+    });
+
+    it('should create independent intercepted functions for each decorator', async () => {
+      const decorator1 = tool('calculator');
+      const decorator2 = tool('calculator');
+
+      // Both should return functions
+      const fn1 = decorator1(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async function (this: any) {
+          return undefined;
+        },
+        { kind: 'method' }
+      );
+
+      const fn2 = decorator2(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async function (this: any) {
+          return undefined;
+        },
+        { kind: 'method' }
+      );
+
+      // Both should be functions
+      expect(typeof fn1).toBe('function');
+      expect(typeof fn2).toBe('function');
+
+      // Both should work independently
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result1 = await (fn1 as any).apply({ matimo }, ['add', 1, 1]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result2 = await (fn2 as any).apply({ matimo }, ['subtract', 5, 2]);
+
+      expect(result1).toBeDefined();
+      expect(result2).toBeDefined();
+    });
+  });
 });

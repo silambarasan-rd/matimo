@@ -4,6 +4,10 @@
 <img src="./assets/logo.png" alt="Matimo Logo" width="300" style="border-radius: 8px; margin: 20px 0;" />
 </p>
 
+<p align="center">
+  <a href="https://discord.gg/3JPt4mxWDV"><img src="https://img.shields.io/badge/Discord-Join%20Chat-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+</p>
+
 **Matimo** (Maximum AI Tools in Modular Objects) — Define tools once in YAML, use them everywhere.
 
 > Built to solve the universal tool orchestration problem for AI agents.

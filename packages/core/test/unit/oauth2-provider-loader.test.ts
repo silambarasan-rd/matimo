@@ -641,5 +641,97 @@ describe('OAuth2ProviderLoader', () => {
       expect(github).toBeDefined();
       expect(github?.tokenUrl).toBeDefined();
     });
+
+    it('should handle validation error for invalid provider definition', async () => {
+      // Test the validation function with invalid definition
+      const testLoader = new TestOAuth2ProviderLoader(toolsPath);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invalidDef: any = {
+        name: 'invalid-provider',
+        type: 'provider',
+        // Missing required provider field
+      };
+
+      expect(() => {
+        testLoader.testValidateProviderDefinition(invalidDef);
+      }).toThrow(MatimoError);
+    });
+
+    it('should continue loading when encountering invalid definitions', async () => {
+      // Even if some definitions are invalid, valid ones should still load
+      const providers = await loader.loadProviders();
+
+      // Should have loaded the valid providers (google, github, slack, etc)
+      expect(providers.size).toBeGreaterThan(0);
+      expect(providers.has('google')).toBe(true);
+    });
+
+    it('should handle definition with missing endpoints', async () => {
+      const testLoader = new TestOAuth2ProviderLoader(toolsPath);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invalidDef: any = {
+        name: 'invalid-provider',
+        type: 'provider',
+        provider: {
+          name: 'invalid',
+          displayName: 'Invalid',
+          // Missing endpoints
+        },
+      };
+
+      expect(() => {
+        testLoader.testValidateProviderDefinition(invalidDef);
+      }).toThrow(MatimoError);
+    });
+
+    it('should handle definition with incomplete endpoints', async () => {
+      const testLoader = new TestOAuth2ProviderLoader(toolsPath);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invalidDef: any = {
+        name: 'incomplete-provider',
+        type: 'provider',
+        version: '1.0.0',
+        provider: {
+          name: 'incomplete',
+          displayName: 'Incomplete',
+          endpoints: {
+            // Missing tokenUrl
+            authorizationUrl: 'https://example.com/auth',
+          },
+        },
+      };
+
+      expect(() => {
+        testLoader.testValidateProviderDefinition(invalidDef);
+      }).toThrow(MatimoError);
+    });
+
+    it('should accept valid minimal provider definition', async () => {
+      const testLoader = new TestOAuth2ProviderLoader(toolsPath);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const validDef: any = {
+        name: 'valid-provider',
+        type: 'provider',
+        version: '1.0.0',
+        provider: {
+          name: 'valid',
+          displayName: 'Valid Provider',
+          endpoints: {
+            authorizationUrl: 'https://example.com/auth',
+            tokenUrl: 'https://example.com/token',
+          },
+          defaultScopes: ['read'],
+          documentation: 'https://example.com/docs',
+        },
+      };
+
+      expect(() => {
+        testLoader.testValidateProviderDefinition(validDef);
+      }).not.toThrow();
+    });
   });
 });

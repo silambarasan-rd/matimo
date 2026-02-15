@@ -1,5 +1,9 @@
 # Matimo Examples
 
+<p align="center">
+  <a href="https://discord.gg/3JPt4mxWDV"><img src="https://img.shields.io/badge/Discord-Join%20Chat-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+</p>
+
 Complete, production-ready examples showcasing **three core patterns**:
 
 > **"Define tools ONCE in YAML, use them EVERYWHERE"**
@@ -21,6 +25,10 @@ pnpm slack:langchain    # LangChain integration
 pnpm gmail:factory      # Gmail factory
 pnpm gmail:decorator    # Gmail decorator
 pnpm gmail:langchain    # Gmail LangChain
+pnpm postgres:factory   # Postgres factory
+pnpm postgres:decorator # Postgres decorator
+pnpm postgres:langchain # Postgres LangChain
+pnpm postgres:approval  # Postgres with approval flow (interactive)
 pnpm agent:factory      # Generic agent (factory)
 pnpm agent:decorator    # Generic agent (decorator)
 pnpm agent:langchain    # AI agent with LangChain
@@ -201,11 +209,111 @@ Shows:
 | **Type Safety**    | Good          | Excellent | Excellent          |
 | **Framework**      | Any           | Any       | LangChain required |
 | **Async/Await**    | Required      | Required  | Built-in           |
-| **Error Handling** | Manual        | Manual    | LLM-driven         |
 
 ---
 
-## Tool Categories
+## Postgres Integration Deep Dive
+
+The Postgres examples demonstrate three patterns **with a critical safety feature**: **Sequential Discovery** and **SQL Approval Workflow**.
+
+### Sequential Discovery Pattern
+
+Postgres examples follow a recommended safe workflow for database exploration:
+
+```
+Step 1: Discover Tables
+  └─ Query information_schema.tables (SELECT - no approval)
+  
+Step 2: Analyze Structure
+  └─ Get table counts and columns (SELECT - no approval)
+  
+Step 3: Execute Destructive Operations
+  └─ DELETE/UPDATE/CREATE (Requires approval)
+```
+
+This pattern prevents accidental data loss by requiring **explicit approval** before running destructive SQL.
+
+### SQL Approval Workflow
+
+All destructive SQL operations are protected:
+
+| SQL Operation | Status | Requires Approval? |
+|---------------|--------|-------------------|
+| SELECT | ✅ Safe | No |
+| INSERT | ⚠️ Modifies | No |
+| UPDATE | ⚠️ Modifies | Yes |
+| DELETE | 🔴 Dangerous | Yes |
+| CREATE | 🔴 Dangerous | Yes |
+| DROP | 🔴 Dangerous | Yes |
+| ALTER | 🔴 Dangerous | Yes |
+| TRUNCATE | 🔴 Dangerous | Yes |
+
+#### Interactive Approval (Postgres Approval Example)
+
+```bash
+pnpm postgres:approval
+```
+
+Output:
+```
+3️⃣  DESTRUCTIVE OPERATION (Step 3/3 - Requires approval)
+────────────────────────────────────────────────────────
+
+SQL: DELETE FROM matimo WHERE 1=0;
+
+⚠️  Approval Required for WRITE operation:
+Do you approve? (yes/no): yes
+Result: ✅ APPROVED
+
+✅ DELETE approved and executed successfully
+```
+
+#### Automatic Approval (CI/CD)
+
+```bash
+# For automated/CI environments
+export MATIMO_SQL_AUTO_APPROVE=true
+pnpm postgres:factory
+```
+
+### Example Comparison
+
+| Example | Pattern | Discovery | Approval | Use Case |
+|---------|---------|-----------|----------|----------|
+| `postgres-factory.ts` | Factory | ✅ Sequential | 🔒 Callback | Simple scripts |
+| `postgres-decorator.ts` | Decorator | ✅ Sequential | 🔒 Callback | Class-based apps |
+| `postgres-langchain.ts` | LangChain | ✅ Sequential | 🔒 Callback | AI-powered agents |
+| `postgres-with-approval.ts` | Factory | ✅ Sequential | 🔒 Interactive | Demo approval flow |
+
+### Real-World Scenarios
+
+**Scenario 1: Data Analysis Agent (LangChain)**
+```typescript
+// Agent discovers tables, analyzes data volume, then LLM decides what to do
+pnpm postgres:langchain
+```
+✨ Output: AI agent discovers the `matimo` table and provides insights
+
+**Scenario 2: Administrative Tool (Decorator)**
+```typescript
+// Class with methods for common DB operations
+class DatabaseAdmin {
+  @tool('postgres-execute-sql')
+  async backupTable(tableName: string) { /* ... */ }
+  
+  @tool('postgres-execute-sql')
+  async archiveOldRecords(days: number) { /* ... */ }
+}
+```
+
+**Scenario 3: Automated Pipeline (Factory)**
+```bash
+# In CI/CD with auto-approval
+export MATIMO_SQL_AUTO_APPROVE=true
+pnpm postgres:factory
+```
+
+---
 
 All examples use these tools (real implementations):
 
@@ -224,6 +332,13 @@ All examples use these tools (real implementations):
 - `gmail-list-messages` — List messages
 - `gmail-get-message` — Get message details
 - `gmail-create-draft` — Create drafts
+
+### Postgres Tools
+
+- `postgres-execute-sql` — Execute arbitrary SQL queries with approval for destructive operations
+  - ✅ SELECT(read-only), Insert — Auto-allowed
+  - 🔒 CREATE, DROP, ALTER, TRUNCATE, DELETE, UPDATE — Requires approval
+  - 📝 Interactive approval callback or auto-approval mode
 
 ### Utilities
 
@@ -293,9 +408,22 @@ pnpm slack:langchain
 # Gmail AI agent - Let GPT handle Gmail
 pnpm gmail:langchain
 
+# Postgres AI agent - Let GPT execute SQL queries
+pnpm postgres:langchain
+
 # General AI agent - Full tool access via natural language
 pnpm agent:langchain
 ```
+
+### Postgres with Approval Flow (Interactive)
+
+```bash
+# Run interactive Postgres example with approval flow
+# Demonstrates destructive SQL detection and approval workflow
+pnpm postgres:approval
+```
+
+This example requires a running Postgres instance. See [packages/postgres/README.md](../packages/postgres/README.md) for setup instructions.
 
 ---
 
@@ -312,7 +440,43 @@ GMAIL_ACCESS_TOKEN=ya29.your-token-here
 
 # OpenAI (for LangChain examples, from platform.openai.com)
 OPENAI_API_KEY=sk-your-key-here
+
+# Postgres (connection to local or remote database)
+# Option 1: Full connection string
+MATIMO_POSTGRES_URL=postgresql://user:password@localhost:5432/dbname
+
+# Option 2: Individual parameters (used if URL not set)
+MATIMO_POSTGRES_HOST=localhost
+MATIMO_POSTGRES_PORT=5432
+MATIMO_POSTGRES_USER=user_name
+MATIMO_POSTGRES_PASSWORD=password
+MATIMO_POSTGRES_DB=matimo-test
+
+# Postgres Approval (for non-interactive environments)
+# Set to 'true' to auto-approve all destructive SQL operations
+# MATIMO_SQL_AUTO_APPROVE=true
 ```
+
+### Postgres Setup
+
+For Postgres examples, you can either:
+
+**A) Use Docker (Recommended)**
+```bash
+# Start local Postgres with pgvector support
+docker run -d \
+  --name postgres-matimo \
+  -e POSTGRES_USER=username \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=dbname \
+  -p 5432:5432 \
+  pgvector/pgvector:pg15
+```
+
+**B) Use Existing Postgres Instance**
+- Ensure your database is running
+- Update `.env` with connection details
+- Create the database if needed: `createdb matimo-test`
 
 ---
 
@@ -332,6 +496,12 @@ examples/tools/
 │   ├── gmail-factory.ts              # Gmail factory example
 │   ├── gmail-decorator.ts            # Gmail decorator example
 │   └── gmail-langchain.ts            # Gmail + LangChain
+├── postgres/
+│   ├── postgres-factory.ts           # Postgres factory example
+│   ├── postgres-decorator.ts         # Postgres decorator example
+│   ├── postgres-langchain.ts         # Postgres + LangChain
+│   ├── postgres-with-approval.ts     # Postgres with approval flow (interactive)
+│   └── README.md                     # Setup guide for Postgres examples
 ├── .env.example
 ├── package.json
 └── tsconfig.json

@@ -15,6 +15,10 @@
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge" alt="Node.js"></a>
 </p>
 
+<p align="center">
+  <a href="https://discord.gg/3JPt4mxWDV"><img src="https://img.shields.io/badge/Discord-Join%20Chat-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+</p>
+
 **Matimo** is a universal, configuration-driven AI tools ecosystem. Define tools **once in YAML** and use them everywhere — SDK, MCP server, CLI, REST API, or any AI framework (LangChain, CrewAI, Claude, etc.).
 
 **Define once → Plug into any agent ecosystem.**
@@ -137,22 +141,22 @@ cd examples/tools && pnpm install && pnpm agent:factory
 
 **Now:**
 
-- ✅ Factory & Decorator patterns (SDK)
-- ✅ LangChain integration
-- ✅ YAML tool definitions with Zod validation
-- ✅ Slack & Gmail tools (20+ operations)
-- ✅ Auto-discovery from npm packages
-- ✅ Matimo CLI (install, list, search)
-- ✅ OAuth2 support
-- ✅ 100% test coverage, TypeScript strict mode
+- YAML tool definitions with Zod validation
+- Core tools - File I/O , Cmd Execute and web (fetch)
+- Slack, Gmail , Postgres tools (20+ operations)
+- Auto-discovery from npm packages
+- Matimo CLI (install, list, search)
+- OAuth2 support
+- Examples: Factory & Decorator patterns (SDK) and LangChain integrated agents.
+- TypeScript strict mode
 
 **Coming Soon:**
 
-- 🔜 MCP Server (Claude integration)
-- 🔜 REST API
-- 🔜 More tool providers (GitHub, Stripe, Twilio, etc.)
-- 🔜 Tool Marketplace
-- 🔜 Python SDK
+- MCP Server (Claude integration)
+- REST API
+- More tool providers (GitHub, Stripe, Twilio, etc.)
+- Tool Marketplace
+- Python SDK
 
 ---
 

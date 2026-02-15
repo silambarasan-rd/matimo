@@ -4,3 +4,4 @@ packages:
   - "packages/gmail"
   - "packages/cli"
   - "examples/tools"
+  - "packages/postgres"
