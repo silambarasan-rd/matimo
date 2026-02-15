@@ -228,7 +228,7 @@ Step 2: Analyze Structure
   └─ Get table counts and columns (SELECT - no approval)
   
 Step 3: Execute Destructive Operations
-  └─ DELETE/UPDATE/INSERT/CREATE (Requires approval)
+  └─ DELETE/UPDATE/CREATE (Requires approval)
 ```
 
 This pattern prevents accidental data loss by requiring **explicit approval** before running destructive SQL.
@@ -240,7 +240,7 @@ All destructive SQL operations are protected:
 | SQL Operation | Status | Requires Approval? |
 |---------------|--------|-------------------|
 | SELECT | ✅ Safe | No |
-| INSERT | ⚠️ Modifies | Yes |
+| INSERT | ⚠️ Modifies | No |
 | UPDATE | ⚠️ Modifies | Yes |
 | DELETE | 🔴 Dangerous | Yes |
 | CREATE | 🔴 Dangerous | Yes |
@@ -336,7 +336,7 @@ All examples use these tools (real implementations):
 ### Postgres Tools
 
 - `postgres-execute-sql` — Execute arbitrary SQL queries with approval for destructive operations
-  - ✅ SELECT, INSERT (read-only) — Auto-allowed
+  - ✅ SELECT(read-only), Insert — Auto-allowed
   - 🔒 CREATE, DROP, ALTER, TRUNCATE, DELETE, UPDATE — Requires approval
   - 📝 Interactive approval callback or auto-approval mode
 

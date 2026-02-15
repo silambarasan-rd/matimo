@@ -71,8 +71,9 @@ jobs:
       - name: Notify Discord
         if: success()
         run: |
-          # Extract release notes from RELEASES.md for the current version
           VERSION="${{ github.ref_name }}"
+          
+          # Extract release notes from RELEASES.md for the current version
           RELEASE_NOTES=$(awk "
             /^## $VERSION/ {
               found=1
@@ -84,46 +85,71 @@ jobs:
             found && NF {
               print \$0
             }
-          " docs/RELEASES.md | head -20 | sed 's/^//' | tr '\n' ' ')
+          " docs/RELEASES.md | head -20 | sed 's/^//')
           
           # Truncate if too long for Discord (2048 char limit for field value)
           if [ ${#RELEASE_NOTES} -gt 1900 ]; then
             RELEASE_NOTES="${RELEASE_NOTES:0:1897}..."
           fi
           
-          curl -X POST \
-            -H 'Content-Type: application/json' \
-            -d "{
-              \"username\": \"Matimo Release Bot\",
-              \"content\": \"🎉 **New Release Available!**\",
-              \"embeds\": [
+          # Dynamically extract publishable packages from pnpm-workspace.yaml
+          PACKAGES=$(yq eval '.packages[]' pnpm-workspace.yaml | while read dir; do
+            if [ -f "$dir/package.json" ]; then
+              NAME=$(jq -r '.name' "$dir/package.json")
+              PRIVATE=$(jq -r '.private // false' "$dir/package.json")
+              if [ "$PRIVATE" = "false" ]; then
+                echo "\`$NAME\`"
+              fi
+            fi
+          done | tr '\n' ' ')
+          
+          # Build Discord payload with proper JSON escaping using jq
+          PAYLOAD=$(jq -n \
+            --arg username "Matimo Release Bot" \
+            --arg content "🎉 **New Release Available!**" \
+            --arg title "v$VERSION" \
+            --arg description "Matimo has been released on npm!" \
+            --arg url "https://github.com/tallclub/matimo/releases/tag/$VERSION" \
+            --arg release_notes "$RELEASE_NOTES" \
+            --arg packages "$PACKAGES" \
+            --arg release_link "https://github.com/tallclub/matimo/releases/tag/$VERSION" \
+            --arg changelog_link "https://github.com/tallclub/matimo/blob/main/docs/RELEASES.md" \
+            --arg npm_link "https://www.npmjs.com/org/matimo" \
+            '{
+              "username": $username,
+              "content": $content,
+              "embeds": [
                 {
-                  \"title\": \"v${{ github.ref_name }}\",
-                  \"description\": \"Matimo has been released on npm!\",
-                  \"url\": \"https://github.com/tallclub/matimo/releases/tag/${{ github.ref_name }}\",
-                  \"color\": 5814783,
-                  \"fields\": [
+                  "title": $title,
+                  "description": $description,
+                  "url": $url,
+                  "color": 5814783,
+                  "fields": [
                     {
-                      \"name\": \"📝 Release Notes\",
-                      \"value\": \"$RELEASE_NOTES\",
-                      \"inline\": false
+                      "name": "📝 Release Notes",
+                      "value": $release_notes,
+                      "inline": false
                     },
                     {
-                      \"name\": \"📦 npm Packages\",
-                      \"value\": \"\`@matimo/core\` \`@matimo/cli\` \`@matimo/slack\` \`@matimo/gmail\` \`@matimo/postgres\`\",
-                      \"inline\": false
+                      "name": "📦 Published Packages",
+                      "value": $packages,
+                      "inline": false
                     },
                     {
-                      \"name\": \"🔗 Links\",
-                      \"value\": \"[GitHub Release](https://github.com/tallclub/matimo/releases/tag/${{ github.ref_name }}) • [Full Changelog](https://github.com/tallclub/matimo/blob/main/docs/RELEASES.md) • [npm Registry](https://www.npmjs.com/org/matimo)\",
-                      \"inline\": false
+                      "name": "🔗 Learn More",
+                      "value": "[GitHub Release](\($release_link)) • [Full Changelog](\($changelog_link)) • [npm Registry](\($npm_link))",
+                      "inline": false
                     }
                   ],
-                  \"footer\": {
-                    \"text\": \"Matimo v${{ github.ref_name }} • Released on $(date '+%Y-%m-%d')\",
-                    \"icon_url\": \"https://github.com/tallclub.png\"
+                  "footer": {
+                    "text": ("Matimo " + $title + " • " + (now | strftime "%Y-%m-%d")),
+                    "icon_url": "https://github.com/tallclub.png"
                   }
                 }
               ]
-            }" \
-            '${{ secrets.DISCORD_WEBHOOK }}'
+            }')
+          
+          # Send to Discord with properly escaped JSON
+          curl -X POST \
+            -H 'Content-Type: application/json' \
+            -d "$PAYLOAD" '${{ secrets.DISCORD_WEBHOOK }}'

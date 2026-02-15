@@ -130,7 +130,7 @@ The tool automatically detects destructive operations:
 | Operation | Detected | Auto-Approved | Requires Approval |
 |-----------|----------|---------------|-------------------|
 | SELECT | ✅ | ✅ Yes | ❌ No |
-| INSERT | ✅ | ❌ No | ✅ Yes |
+| INSERT | ✅ | ✅ Yes| ❌ No|
 | UPDATE | ✅ | ❌ No | ✅ Yes |
 | DELETE | ✅ | ❌ No | ✅ Yes |
 | CREATE | ✅ | ❌ No | ✅ Yes |

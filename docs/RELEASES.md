@@ -31,25 +31,11 @@ All 3 integration patterns (Factory, Decorator, LangChain) + SQL approval workfl
 4. **Approval Workflow** — Interactive SQL approval with automatic/manual modes
 
 #### Comprehensive Documentation
-- **Postgres Package README** (440+ lines) — Complete tool specification, examples, authentication methods, error handling
-- **Examples README** (174 lines) — Sequential Discovery Pattern, Approval Workflow Guide, integration patterns
+- **Postgres Package README** — Complete tool specification, examples, authentication methods, error handling
+- **Examples README** — Sequential Discovery Pattern, Approval Workflow Guide, integration patterns
 - **`.env.example`** — Postgres configuration with both auth methods documented
 - **Inline code comments** — All examples extensively documented for easy understanding
 
-### 🏗️ Architecture & Code Quality
-
-#### Enhanced Test Coverage
-- **704 tests passing** (up from 692)
-- **97.95% function coverage** (exceeds 97% threshold by 0.95%)
-- **SQL Approval tests** — 41 unit tests covering all approval paths, callbacks, caching
-- **Postgres integration tests** — Real database execution tests
-- **Decorator pattern tests** — 100% coverage for tool decorator factory and method interception
-- **OAuth2 validation tests** — 6 new edge case tests for provider definition validation
-
-#### All Lint Issues Fixed
-- Removed all ESLint errors and warnings
-- Added proper type annotations instead of `any` casts
-- Unused parameter handling with `_` convention and eslint-disable comments
 
 #### CI/CD Enhancements
 - **Discord webhook notifications** — Automatic release notifications in Discord channel
@@ -80,24 +66,11 @@ All 3 integration patterns (Factory, Decorator, LangChain) + SQL approval workfl
 
 ### 🐛 Fixes & Improvements
 
-- **Type safety** — All `any` casts replaced with proper TypeScript types
 - **Error messages** — Helpful hints for connection failures (ECONNREFUSED, missing role, missing database)
 - **Non-TTY handling** — Approval prompt properly rejects in non-interactive environments (CI/CD)
 - **Parameter validation** — Strict validation of SQL parameters in approval checks
 - **Encoding support** — Proper handling of connection string encoding for special characters in passwords
 
-### 📊 Stats
-
-| Metric | Value |
-|--------|-------|
-| New Files | 24 |
-| Lines Added | 2,571 |
-| Tests Added | 12 new | 
-| Function Coverage | 97.95% |
-| Package Count | 7 |
-| Example Patterns | 3 (Factory, Decorator, LangChain) | 
-| Postgres Examples | 4 |
-| Commits | 2 |
 
 ### 🔗 Related Documentation
 
@@ -105,29 +78,9 @@ All 3 integration patterns (Factory, Decorator, LangChain) + SQL approval workfl
 - [Examples README](../examples/README.md) — Sequential discovery pattern, approval workflow
 - [Tool Development Guide](../docs/tool-development/EXTENDING.md) — How to create new tools
 
-### 🎓 Getting Started
-
-1. **Install**: `pnpm install` or `npm i matimo@v0.1.0-alpha.7`
-2. **Setup Postgres connection**: Set `MATIMO_POSTGRES_URL` or individual env vars
-3. **Try examples**:
-   ```bash
-   cd examples/tools
-   pnpm postgres:factory      # Factory pattern
-   pnpm postgres:decorator    # Decorator pattern
-   pnpm postgres:langchain    # LangChain agent
-   pnpm postgres:approval     # SQL approval workflow
-   ```
-4. **Read docs**: See `packages/postgres/README.md` for complete tool reference
-
 ### ⚠️ Breaking Changes
 
 None. This is a purely additive release.
-
-### 🙏 Contributors
-
-- Enhanced test coverage infrastructure
-- Production-ready Postgres integration
-- SQL safety approval framework
 
 ---
 
