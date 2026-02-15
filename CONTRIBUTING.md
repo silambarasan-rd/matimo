@@ -8,6 +8,8 @@ Welcome to Matimo! We're building a universal, configuration-driven AI tools eco
 - **Issues:** https://github.com/tallclub/matimo/issues
 - **Discussions:** https://github.com/tallclub/matimo/discussions
 
+- **Discord:** https://discord.gg/3JPt4mxWDV
+
 ## How to Contribute
 
 1. **Bugs & small fixes** → Open a PR!
