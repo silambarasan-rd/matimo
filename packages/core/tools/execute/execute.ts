@@ -7,6 +7,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { MatimoError, ErrorCode } from '../../src/errors/matimo-error';
+import { getGlobalMatimoLogger } from '../../src/logging/logger';
 
 const execAsync = promisify(exec);
 
@@ -74,10 +75,20 @@ interface ExecuteResult {
 export default async function executeCommand(
   params: ExecuteParams
 ): Promise<ExecuteResult> {
+  const logger = getGlobalMatimoLogger();
   const { command, cwd, timeout = 30000 } = params;
   const startTime = Date.now();
 
+  logger.debug('Execute tool: Command received', {
+    command: command.substring(0, 100),
+    cwd,
+    timeout,
+  });
+
   if (!command || command.trim().length === 0) {
+    logger.error('Execute tool: Empty command provided', {
+      reason: 'No command provided',
+    });
     throw new MatimoError('Command required', ErrorCode.INVALID_PARAMETER, {
       reason: 'No command provided',
     });
@@ -85,9 +96,13 @@ export default async function executeCommand(
 
   // Check for potential command injection
   if (detectCommandInjection(command)) {
+    logger.warn('Execute tool: Command injection detected', {
+      command: command.substring(0, 100),
+      reason: 'Contains potentially dangerous shell metacharacters',
+    });
     throw new MatimoError('Command injection detected', ErrorCode.INVALID_PARAMETER, {
       reason: 'Command contains potentially dangerous shell metacharacters',
-      command: command, // Log for debugging, but be careful in production
+      command: command,
     });
   }
 
@@ -110,6 +125,13 @@ export default async function executeCommand(
     const stdoutStr = typeof stdout === 'string' ? stdout : (stdout as unknown ? String(stdout) : '');
     const stderrStr = typeof stderr === 'string' ? stderr : (stderr as unknown ? String(stderr) : '');
 
+    logger.info('Execute tool: Command completed successfully', {
+      command: command.substring(0, 100),
+      duration,
+      stdoutLength: stdoutStr.length,
+      stderrLength: stderrStr.length,
+    });
+
     return {
       success: true,
       exitCode: 0,
@@ -128,6 +150,7 @@ export default async function executeCommand(
       code?: number;
       stdout?: string;
       stderr?: string;
+      message?: string;
     };
     
     const isTimeout = errorObj.killed || errorObj.signal === 'SIGTERM';
@@ -140,6 +163,15 @@ export default async function executeCommand(
     // Convert Buffer to string if needed
     const stdoutStr = typeof errorObj.stdout === 'string' ? errorObj.stdout : (errorObj.stdout ? String(errorObj.stdout) : '');
     const stderrStr = typeof errorObj.stderr === 'string' ? errorObj.stderr : (errorObj.stderr ? String(errorObj.stderr) : '');
+
+    logger.warn('Execute tool: Command execution failed', {
+      command: command.substring(0, 100),
+      duration,
+      exitCode: isTimeout ? -1 : (errorObj.code || 1),
+      isTimeout,
+      errorMessage: errorObj.message ? errorObj.message.substring(0, 100) : 'Unknown error',
+      stderrLength: stderrStr.length,
+    });
 
     // For command execution failures, return structured result (not throw)
     // This allows the agent to see what went wrong

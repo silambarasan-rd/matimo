@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import axios from 'axios';
 import { ToolDefinition } from '../core/schema';
 import { MatimoError, ErrorCode } from '../errors/matimo-error';
+import { getGlobalMatimoLogger } from '../logging/logger';
 
 /**
  * FunctionExecutor - Executes async functions
@@ -36,7 +37,6 @@ export class FunctionExecutor {
     }
 
     const { code, timeout = 30000 } = tool.execution;
-    const startTime = Date.now();
 
     if (!code || code.trim().length === 0) {
       throw new MatimoError('Function code is empty', ErrorCode.EXECUTION_FAILED, {
@@ -48,7 +48,7 @@ export class FunctionExecutor {
       let timedOut = false;
       let settled = false;
 
-      // Set up timeout that properly rejects
+      // Set up timeout that resolves with error
       const timer = setTimeout(() => {
         timedOut = true;
         if (!settled) {
@@ -56,7 +56,7 @@ export class FunctionExecutor {
           resolve({
             success: false,
             error: 'Function execution timeout',
-            duration: Date.now() - startTime,
+            code: ErrorCode.EXECUTION_FAILED,
           });
         }
       }, timeout);
@@ -69,11 +69,25 @@ export class FunctionExecutor {
         cleanup();
         if (!settled) {
           settled = true;
-          resolve({
-            success: false,
-            error: error instanceof Error ? error.message : String(error),
-            duration: Date.now() - startTime,
-          });
+          // Resolve with error object for tools to handle
+          if (error instanceof MatimoError) {
+            resolve({
+              success: false,
+              error: error.message,
+              code: error.code,
+              details: error.details,
+            });
+          } else if (error instanceof Error) {
+            resolve({
+              success: false,
+              error: error.message,
+            });
+          } else {
+            resolve({
+              success: false,
+              error: String(error),
+            });
+          }
         }
       };
 
@@ -85,7 +99,7 @@ export class FunctionExecutor {
             resolve({
               success: false,
               error: 'Function execution timeout',
-              duration: Date.now() - startTime,
+              code: ErrorCode.EXECUTION_FAILED,
             });
           } else {
             resolve(data);
@@ -160,8 +174,10 @@ export class FunctionExecutor {
           }
 
           // Log warning when embedded code is executed
-          console.info(
-            `⚠️  Warning: Executing embedded code from tool '${tool.name}'. This carries security risks if tool YAML is from untrusted sources.`
+          const logger = getGlobalMatimoLogger();
+          logger.warn(
+            `⚠️  Warning: Executing embedded code from tool '${tool.name}'. This carries security risks if tool YAML is from untrusted sources.`,
+            { toolName: tool.name }
           );
 
           // In ESM modules, require is not available by default

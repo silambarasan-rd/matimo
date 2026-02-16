@@ -4,6 +4,7 @@
  */
 
 import { MatimoError, ErrorCode } from '../../src/errors/matimo-error';
+import { getGlobalMatimoLogger } from '../../src/logging/logger';
 
 interface CalculatorParams {
   operation: string;
@@ -68,9 +69,21 @@ function normalizeOperation(op: string): string {
 export default async function calculator(
   params: CalculatorParams
 ): Promise<CalculatorResult> {
+  const logger = getGlobalMatimoLogger();
   const { operation, a, b } = params;
 
+  logger.debug('Calculator tool invoked', {
+    operation,
+    a,
+    b,
+  });
+
   if (typeof a !== 'number' || typeof b !== 'number') {
+    logger.error('Invalid calculator parameters', {
+      a,
+      b,
+      expectedTypes: 'numbers',
+    });
     throw new MatimoError('Parameters a and b must be numbers', ErrorCode.INVALID_PARAMETER, {
       a,
       b,
@@ -92,6 +105,10 @@ export default async function calculator(
       break;
     case 'divide':
       if (b === 0) {
+        logger.error('Division by zero attempted', {
+          a,
+          b,
+        });
         throw new MatimoError('Division by zero', ErrorCode.EXECUTION_FAILED, {
           a,
           b,
@@ -100,6 +117,10 @@ export default async function calculator(
       result = a / b;
       break;
     default:
+      logger.error('Unsupported calculator operation', {
+        operation: normalizedOp,
+        requested: operation,
+      });
       throw new MatimoError('Invalid operation', ErrorCode.INVALID_PARAMETER, {
         operation,
         normalizedOperation: normalizedOp,
@@ -113,6 +134,12 @@ export default async function calculator(
     original_operation: operation,
     operands: { a, b },
   };
+
+  logger.info('Calculator operation completed', {
+    operation: normalizedOp,
+    operands: { a, b },
+    result,
+  });
 
   return returnValue;
 }
