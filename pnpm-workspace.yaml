@@ -2,6 +2,7 @@ packages:
   - "packages/core"
   - "packages/slack"
   - "packages/gmail"
+  - "packages/github"
   - "packages/cli"
   - "examples/tools"
   - "packages/postgres"
