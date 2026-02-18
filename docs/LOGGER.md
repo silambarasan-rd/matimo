@@ -46,7 +46,10 @@ const matimo = await MatimoInstance.init('./tools');
 ### Accessing the Logger
 
 ```typescript
-const matimo = await MatimoInstance.init('./tools', { logLevel: 'debug' });
+const matimo = await MatimoInstance.init({
+  toolPaths: ['./tools'],
+  logLevel: 'debug'
+});
 const logger = matimo.getLogger();
 
 // Log messages with metadata
@@ -165,7 +168,7 @@ const logger = getGlobalMatimoLogger();
 logger.info('Custom log from anywhere', { context: 'global_access' });
 
 // Override the logger (advanced)
-custom Logger.setGlobalMatimoLogger(myNewLogger);
+setGlobalMatimoLogger(myNewLogger);
 ```
 
 ## Integration with Decorator Pattern

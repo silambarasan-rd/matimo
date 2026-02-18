@@ -58,8 +58,6 @@ export default async function readTool(params: ReadParams): Promise<ReadResult> 
     });
   }
 
-  // No approval needed for read-only operations
-
   // Get file stats
   const stats = fs.statSync(resolvedPath);
   if (!stats.isFile()) {

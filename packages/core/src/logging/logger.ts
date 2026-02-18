@@ -6,11 +6,17 @@
  * @example
  * ```typescript
  * // Use default Winston logger
- * const matimo = await MatimoInstance.init('./tools', { logLevel: 'debug' });
+ * const matimo = await MatimoInstance.init({
+ *   toolPaths: ['./tools'],
+ *   logLevel: 'debug'
+ * });
  *
  * // Use custom logger
  * const customLogger = { info: (...) => {}, warn: (...) => {}, ... };
- * const matimo = await MatimoInstance.init('./tools', { logger: customLogger });
+ * const matimo = await MatimoInstance.init({
+ *   toolPaths: ['./tools'],
+ *   logger: customLogger
+ * });
  * ```
  */
 export interface MatimoLogger {
