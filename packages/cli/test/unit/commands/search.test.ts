@@ -219,17 +219,95 @@ describe('Search Command', () => {
     fsExistsSyncSpy.mockRestore();
   });
 
-  it('should skip internal packages (core, cli) in repository context', async () => {
+  it('should handle error when discovering packages fails in installed context', async () => {
     const fsExistsSyncSpy = jest.spyOn(fs, 'existsSync').mockImplementation((p) => {
-      if (String(p).includes('pnpm-workspace.yaml')) return true;
-      return true;
+      // Return false for pnpm-workspace.yaml to enter installed context
+      if (String(p).includes('pnpm-workspace.yaml')) return false;
+      // Return false for @matimo packages to trigger error
+      if (String(p).includes('node_modules/@matimo')) return false;
+      return false;
     });
 
-    await searchCommand('slack');
+    try {
+      await searchCommand('test');
+    } catch {
+      // Expected exit
+    }
 
-    // Verify result is shown (core and cli should be skipped)
-    expect(consoleInfoSpy).toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Error'));
+    expect(processExitSpy).toHaveBeenCalledWith(1);
 
     fsExistsSyncSpy.mockRestore();
+  });
+
+  it('should handle error when discovering packages fails in repository context', async () => {
+    const fsExistsSyncSpy = jest.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      // Return true for pnpm-workspace.yaml to stay in repository context
+      if (String(p).includes('pnpm-workspace.yaml')) return true;
+      // But return false for packages directory
+      if (String(p).includes('packages')) return false;
+      return false;
+    });
+    const readdirSyncSpy = jest.spyOn(fs, 'readdirSync').mockReturnValue([]);
+
+    try {
+      await searchCommand('test');
+    } catch {
+      // Expected exit
+    }
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Error'));
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    fsExistsSyncSpy.mockRestore();
+    readdirSyncSpy.mockRestore();
+  });
+
+  it('should handle no packages found in installed context', async () => {
+    const fsExistsSyncSpy = jest.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      // Return false for pnpm-workspace.yaml to stay in installed context
+      if (String(p).includes('pnpm-workspace.yaml')) return false;
+      // Return true for @matimo path to enter that branch
+      if (String(p).includes('node_modules/@matimo')) return true;
+      return false;
+    });
+    const readdirSyncSpy = jest.spyOn(fs, 'readdirSync').mockReturnValue([]);
+
+    try {
+      await searchCommand('test');
+    } catch {
+      // Expected exit
+    }
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('No packages found in node_modules/@matimo')
+    );
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    fsExistsSyncSpy.mockRestore();
+    readdirSyncSpy.mockRestore();
+  });
+
+  it('should handle no packages found in repository context', async () => {
+    const fsExistsSyncSpy = jest.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      // Return true for pnpm-workspace.yaml to stay in repository context
+      if (String(p).includes('pnpm-workspace.yaml')) return true;
+      return false;
+    });
+    const readdirSyncSpy = jest.spyOn(fs, 'readdirSync').mockReturnValue([]);
+
+    try {
+      await searchCommand('test');
+    } catch {
+      // Expected exit
+    }
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('No packages found in repository')
+    );
+    expect(processExitSpy).toHaveBeenCalledWith(1);
+
+    fsExistsSyncSpy.mockRestore();
+    readdirSyncSpy.mockRestore();
   });
 });
