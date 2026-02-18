@@ -8,6 +8,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { MatimoError, ErrorCode } from '../../src/errors/matimo-error';
 import { getGlobalMatimoLogger } from '../../src/logging/logger';
+import { getGlobalApprovalHandler } from '../../src/approval/approval-handler';
 
 const execAsync = promisify(exec);
 
@@ -104,6 +105,25 @@ export default async function executeCommand(
       reason: 'Command contains potentially dangerous shell metacharacters',
       command: command,
     });
+  }
+
+  // Check if command appears to be destructive and request approval if needed
+  // ApprovalHandler checks against centralized destructive keywords from YAML
+  const approvalHandler = getGlobalApprovalHandler();
+  
+  if (approvalHandler.requiresApproval(false, command)) {
+    logger.info('Execute tool: Destructive command detected - requesting approval', {
+      command: command.substring(0, 100),
+    });
+
+    // Request user approval before executing destructive command
+    if (!approvalHandler.isPreApproved('execute')) {
+      await approvalHandler.requestApproval({
+        toolName: 'execute',
+        description: `Execute shell command: ${command.substring(0, 100)}${command.length > 100 ? '...' : ''}`,
+        params: { command, cwd },
+      });
+    }
   }
 
   try {

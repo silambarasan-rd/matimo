@@ -6,7 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { MatimoError, ErrorCode, getPathApprovalManager } from '@matimo/core';
+import { MatimoError, ErrorCode } from '@matimo/core';
 
 interface EditParams {
   filePath: string;
@@ -69,15 +69,7 @@ export default async function editTool(params: EditParams): Promise<EditResult> 
     });
   }
 
-  // Check approval for file modification
-  const approvalManager = getPathApprovalManager();
-  const isApproved = await approvalManager.isApproved(resolvedPath, 'write');
-  if (!isApproved) {
-    throw new MatimoError('File modification not approved', ErrorCode.AUTH_FAILED, {
-      filePath: resolvedPath,
-      reason: 'User approval required for file modifications',
-    });
-  }
+  // Approval is handled by MatimoInstance based on 'requires_approval' in YAML
 
   // Read original content
   const originalContent = fs.readFileSync(resolvedPath, 'utf8');

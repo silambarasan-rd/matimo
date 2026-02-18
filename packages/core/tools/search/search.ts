@@ -7,7 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
-import { MatimoError, ErrorCode, getPathApprovalManager, getGlobalMatimoLogger } from '@matimo/core';
+import { MatimoError, ErrorCode, getGlobalMatimoLogger } from '@matimo/core';
 
 interface SearchMatch {
   filePath: string;
@@ -130,19 +130,12 @@ export default async function searchTool(params: SearchParams): Promise<SearchRe
 
   const matches: SearchMatch[] = [];
   let filesSearched = 0;
-  const approvalManager = getPathApprovalManager();
 
   // Search each file
   for (const filePath of files) {
     if (matches.length >= safeMaxResults) break;
 
     try {
-      // Check approval for file search
-      const isApproved = await approvalManager.isApproved(filePath, 'search');
-      if (!isApproved) {
-        // Skip files user hasn't approved for search
-        continue;
-      }
 
       // Skip binary files
       const stats = fs.statSync(filePath);
