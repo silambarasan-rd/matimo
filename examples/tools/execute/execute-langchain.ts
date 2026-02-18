@@ -30,12 +30,77 @@
  */
 
 import 'dotenv/config';
+import * as readline from 'readline';
 import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
-import { MatimoInstance, convertToolsToLangChain, ToolDefinition } from '@matimo/core';
+import {
+  MatimoInstance,
+  convertToolsToLangChain,
+  ToolDefinition,
+  getGlobalApprovalHandler,
+  type ApprovalRequest,
+} from '@matimo/core';
 
 /**
- * Run AI Agent with Execute tool
+ * Create an interactive approval callback for command execution
+ */
+function createApprovalCallback() {
+  return async (request: ApprovalRequest): Promise<boolean> => {
+    // Check both process.stdin.isTTY and if stdin is readable
+    const isInteractive = process.stdin.isTTY && process.stdin.readable;
+
+    console.info('\n' + '='.repeat(70));
+    console.info('🔒 APPROVAL REQUIRED FOR COMMAND EXECUTION');
+    console.info('='.repeat(70));
+    console.info(`\n📋 Tool: ${request.toolName}`);
+    console.info(`📝 Description: ${request.description || '(no description provided)'}`);
+    console.info(`\n💻 Command Operation:`);
+    console.info(`   Command: ${request.params.command}`);
+    if (request.params.cwd) {
+      console.info(`   Working Dir: ${request.params.cwd}`);
+    }
+
+    if (!isInteractive) {
+      console.info('\n❌ REJECTED - Non-interactive environment (stdin not available)');
+      console.info('\n💡 To auto-approve in non-interactive environments:');
+      console.info('   export MATIMO_AUTO_APPROVE=true');
+      console.info('\n💡 Or pre-approve specific patterns:');
+      console.info('   export MATIMO_APPROVED_PATTERNS="execute"');
+      console.info('\n💡 To test interactively, run from command line:');
+      console.info('   npm run execute:langchain');
+      console.info('\n' + '='.repeat(70) + '\n');
+      return false;
+    }
+
+    // Interactive mode: prompt user
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: true,
+    });
+
+    return new Promise((resolve) => {
+      console.info('\n❓ User Action Required');
+      const question = '   Type "yes" to approve or "no" to reject: ';
+
+      rl.question(question, (answer) => {
+        const approved = answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y';
+
+        if (approved) {
+          console.info('   ✅ Operation APPROVED by user');
+        } else {
+          console.info('   ❌ Operation REJECTED by user');
+        }
+        console.info('='.repeat(70) + '\n');
+
+        rl.close();
+        resolve(approved);
+      });
+    });
+  };
+}
+
+/**
  * The agent receives natural language requests and decides which commands to execute
  */
 async function runExecuteAIAgent() {
@@ -73,6 +138,10 @@ async function runExecuteAIAgent() {
 
     // Convert to LangChain tools using the built-in converter
     const langchainTools = await convertToolsToLangChain(executeTools as ToolDefinition[], matimo);
+
+    // Set up approval callback for destructive commands
+    const approvalHandler = getGlobalApprovalHandler();
+    approvalHandler.setApprovalCallback(createApprovalCallback());
 
     // Initialize OpenAI LLM
     console.info('🤖 Initializing OpenAI (GPT-4o-mini) LLM...');

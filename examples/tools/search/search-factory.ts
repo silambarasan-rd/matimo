@@ -1,44 +1,66 @@
-import { MatimoInstance } from '@matimo/core';
-import { getPathApprovalManager } from '@matimo/core';
+import { MatimoInstance, getGlobalApprovalHandler, type ApprovalRequest } from '@matimo/core';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import readline from 'readline';
+import * as readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Create readline interface once for reuse across multiple prompts
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-let isReadlineClosed = false;
-
-// Track when readline closes (e.g., piped input ends)
-rl.on('close', () => {
-  isReadlineClosed = true;
-});
-
 /**
- * Prompt user for approval decision
+ * Create an interactive approval callback for file operations
  */
-async function promptForApproval(
-  filePath: string,
-  mode: 'read' | 'write' | 'search'
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    // If readline is closed (e.g., non-TTY/piped input), auto-approve
-    if (isReadlineClosed) {
-      console.info(
-        `[${mode.toUpperCase()}] Access to ${filePath} auto-approved (non-interactive mode)`
-      );
-      resolve(true);
-      return;
+function createApprovalCallback() {
+  return async (request: ApprovalRequest): Promise<boolean> => {
+    const isInteractive = process.stdin.isTTY;
+
+    console.info('\n' + '='.repeat(70));
+    console.info('🔒 APPROVAL REQUIRED FOR FILE OPERATION');
+    console.info('='.repeat(70));
+    console.info(`\n📋 Tool: ${request.toolName}`);
+    console.info(`📝 Description: ${request.description || '(no description provided)'}`);
+    console.info(`\n📄 File Operation:`);
+    console.info(`   Path: ${request.params.filePath}`);
+    if (request.params.startLine) {
+      console.info(`   Start Line: ${request.params.startLine}`);
     }
-    rl.question(`[${mode.toUpperCase()}] Approve access to ${filePath}? (y/n): `, (answer) => {
-      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    if (request.params.endLine) {
+      console.info(`   End Line: ${request.params.endLine}`);
+    }
+
+    if (!isInteractive) {
+      console.info('\n❌ REJECTED - Non-interactive environment (no terminal)');
+      console.info('\n💡 To enable auto-approval in CI/scripts:');
+      console.info('   export MATIMO_AUTO_APPROVE=true');
+      console.info('\n💡 Or approve specific patterns:');
+      console.info('   export MATIMO_APPROVED_PATTERNS="search"');
+      console.info('\n' + '='.repeat(70) + '\n');
+      return false;
+    }
+
+    // Interactive mode: prompt user
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
     });
-  });
+
+    return new Promise((resolve) => {
+      console.info('\n❓ User Action Required');
+      const question = '   Type "yes" to approve or "no" to reject: ';
+
+      rl.question(question, (answer) => {
+        const approved = answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y';
+
+        if (approved) {
+          console.info('   ✅ Operation APPROVED by user');
+        } else {
+          console.info('   ❌ Operation REJECTED by user');
+        }
+        console.info('='.repeat(70) + '\n');
+
+        rl.close();
+        resolve(approved);
+      });
+    });
+  };
 }
 
 /**
@@ -49,9 +71,9 @@ async function searchExample() {
   // Initialize Matimo with autoDiscover to find all tools (core + providers)
   const matimo = await MatimoInstance.init({ autoDiscover: true });
 
-  // Set up approval callback for examples with INTERACTIVE PROMPTS
-  const approvalManager = getPathApprovalManager();
-  approvalManager.setApprovalCallback(promptForApproval);
+  // Configure centralized approval handler
+  const approvalHandler = getGlobalApprovalHandler();
+  approvalHandler.setApprovalCallback(createApprovalCallback());
 
   console.info('=== Search Tool - Factory Pattern (Interactive Approval) ===\n');
 
@@ -118,11 +140,6 @@ async function searchExample() {
     console.info('---\n');
   } catch (error: any) {
     console.error('Error searching files:', error.message);
-  } finally {
-    if (!isReadlineClosed) {
-      rl.close();
-      isReadlineClosed = true;
-    }
   }
 }
 

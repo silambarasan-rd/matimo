@@ -2,47 +2,71 @@ import {
   MatimoInstance,
   setGlobalMatimoInstance,
   tool,
-  getPathApprovalManager,
+  getGlobalApprovalHandler,
+  type ApprovalRequest,
 } from '@matimo/core';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import readline from 'readline';
+import * as readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Create readline interface for interactive approval prompts
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-let isReadlineClosed = false;
-
-// Track when readline closes (e.g., piped input ends)
-rl.on('close', () => {
-  isReadlineClosed = true;
-});
-
 /**
- * Prompt user for approval decision
+ * Create an interactive approval callback
  */
-async function promptForApproval(
-  filePath: string,
-  mode: 'read' | 'write' | 'search'
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    // If readline is closed (e.g., non-TTY/piped input), auto-approve
-    if (isReadlineClosed) {
-      console.info(
-        `[${mode.toUpperCase()}] Access to ${filePath} auto-approved (non-interactive mode)`
-      );
-      resolve(true);
-      return;
+function createApprovalCallback() {
+  return async (request: ApprovalRequest): Promise<boolean> => {
+    const isInteractive = process.stdin.isTTY;
+
+    console.info('\n' + '='.repeat(70));
+    console.info('🔒 APPROVAL REQUIRED FOR FILE OPERATION');
+    console.info('='.repeat(70));
+    console.info(`\n📋 Tool: ${request.toolName}`);
+    console.info(`📝 Description: ${request.description || '(no description provided)'}`);
+    console.info(`\n📄 File Operation:`);
+    console.info(`   Path: ${request.params.filePath}`);
+    if (request.params.startLine) {
+      console.info(`   Start Line: ${request.params.startLine}`);
     }
-    rl.question(`[${mode.toUpperCase()}] Approve access to ${filePath}? (y/n): `, (answer) => {
-      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    if (request.params.endLine) {
+      console.info(`   End Line: ${request.params.endLine}`);
+    }
+
+    if (!isInteractive) {
+      console.info('\n❌ REJECTED - Non-interactive environment (no terminal)');
+      console.info('\n💡 To enable auto-approval in CI/scripts:');
+      console.info('   export MATIMO_AUTO_APPROVE=true');
+      console.info('\n💡 Or approve specific patterns:');
+      console.info('   export MATIMO_APPROVED_PATTERNS="read"');
+      console.info('\n' + '='.repeat(70) + '\n');
+      return false;
+    }
+
+    // Interactive mode: prompt user
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
     });
-  });
+
+    return new Promise((resolve) => {
+      console.info('\n❓ User Action Required');
+      const question = '   Type "yes" to approve or "no" to reject: ';
+
+      rl.question(question, (answer) => {
+        const approved = answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y';
+
+        if (approved) {
+          console.info('   ✅ Operation APPROVED by user');
+        } else {
+          console.info('   ❌ Operation REJECTED by user');
+        }
+        console.info('='.repeat(70) + '\n');
+
+        rl.close();
+        resolve(approved);
+      });
+    });
+  };
 }
 
 /**
@@ -68,39 +92,62 @@ async function decoratorExample() {
   const matimo = await MatimoInstance.init({ autoDiscover: true });
   setGlobalMatimoInstance(matimo);
 
-  // Set up approval callback for interactive approval
-  const approvalManager = getPathApprovalManager();
-  approvalManager.setApprovalCallback(promptForApproval);
+  // Configure centralized approval handler
+  const approvalHandler = getGlobalApprovalHandler();
+  approvalHandler.setApprovalCallback(createApprovalCallback());
 
-  console.info('=== Read Tool - Decorator Pattern (Interactive Approval) ===\n');
+  console.info('\n' + '='.repeat(70));
+  console.info('🚀 Read Tool - Decorator Pattern Example');
+  console.info('='.repeat(70));
+
+  // Show current approval mode
+  const autoApproveEnabled = process.env.MATIMO_AUTO_APPROVE === 'true';
+  const approvedPatterns = process.env.MATIMO_APPROVED_PATTERNS;
+
+  console.info('\n🔐 APPROVAL CONFIGURATION:');
+  if (autoApproveEnabled) {
+    console.info('   ✅ MATIMO_AUTO_APPROVE=true');
+    console.info('   → All file read operations will be AUTO-APPROVED');
+  } else if (approvedPatterns) {
+    console.info(`   ✅ MATIMO_APPROVED_PATTERNS="${approvedPatterns}"`);
+    console.info('   → Matching operations will be auto-approved');
+  } else {
+    console.info('   ⚠️  INTERACTIVE MODE ENABLED');
+    console.info('   → You will be prompted to approve file operations');
+  }
 
   const reader = new FileReader();
 
   try {
     // Example 1: Read file through decorated method
-    console.info('1. Reading file: read-factory.ts (lines 1-15)\n');
+    console.info('\n1️⃣  READING FILE WITH LINE RANGE');
+    console.info('-'.repeat(70));
+    console.info('Reading read-factory.ts (lines 1-15)\n');
     const result1 = await reader.readFile(path.join(__dirname, './read-factory.ts'), 1, 15);
-    console.info('File:', (result1 as any).filePath);
-    console.info('Lines read:', (result1 as any).readLines);
-    console.info('Content preview:');
-    console.info((result1 as any).content?.substring(0, 200));
+    if (result1) {
+      console.info('✅ File:', (result1 as any).filePath);
+      console.info('📊 Lines read:', (result1 as any).readLines);
+      console.info('📝 Content preview:');
+      console.info((result1 as any).content?.substring(0, 150) + '...');
+    }
     console.info('---\n');
 
     // Example 2: Read another file
-    console.info('2. Reading file: package.json (lines 1-10)\n');
+    console.info('2️⃣  READING ENTIRE FILE');
+    console.info('-'.repeat(70));
+    console.info('Reading package.json (all lines)\n');
     const result2 = await reader.getFileMetadata(path.join(__dirname, '../../../package.json'));
-    console.info('File:', (result2 as any).filePath);
-    console.info('Lines read:', (result2 as any).readLines);
-    console.info('Content preview:');
-    console.info((result2 as any).content?.substring(0, 200));
-    console.info('---\n');
-  } catch (error: any) {
-    console.error('Error:', error.message);
-  } finally {
-    if (!isReadlineClosed) {
-      rl.close();
-      isReadlineClosed = true;
+    if (result2) {
+      console.info('✅ File:', (result2 as any).filePath);
+      console.info('📊 Lines read:', (result2 as any).readLines);
+      console.info('📝 Content preview:');
+      console.info((result2 as any).content?.substring(0, 150) + '...');
     }
+    console.info('---\n');
+
+    console.info('✅ Decorator example completed successfully');
+  } catch (error: any) {
+    console.error('❌ Error:', error.message);
   }
 }
 

@@ -58,57 +58,81 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import readline from 'readline';
+import * as readline from 'readline';
 import { createAgent } from 'langchain';
 import { ChatOpenAI } from '@langchain/openai';
 import {
   MatimoInstance,
   convertToolsToLangChain,
   type ToolDefinition,
-  getPathApprovalManager,
+  getGlobalApprovalHandler,
+  type ApprovalRequest,
 } from '@matimo/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
+ * Create an interactive approval callback for file operations
+ */
+function createApprovalCallback() {
+  return async (request: ApprovalRequest): Promise<boolean> => {
+    const isInteractive = process.stdin.isTTY;
+
+    console.info('\n' + '='.repeat(70));
+    console.info('🔒 APPROVAL REQUIRED FOR FILE OPERATION');
+    console.info('='.repeat(70));
+    console.info(`\n📋 Tool: ${request.toolName}`);
+    console.info(`📝 Description: ${request.description || '(no description provided)'}`);
+    console.info(`\n📄 File Operation:`);
+    console.info(`   Path: ${request.params.filePath}`);
+    if (request.params.startLine) {
+      console.info(`   Start Line: ${request.params.startLine}`);
+    }
+    if (request.params.endLine) {
+      console.info(`   End Line: ${request.params.endLine}`);
+    }
+
+    if (!isInteractive) {
+      console.info('\n❌ REJECTED - Non-interactive environment (no terminal)');
+      console.info('\n💡 To enable auto-approval in CI/scripts:');
+      console.info('   export MATIMO_AUTO_APPROVE=true');
+      console.info('\n💡 Or approve specific patterns:');
+      console.info('   export MATIMO_APPROVED_PATTERNS="edit"');
+      console.info('\n' + '='.repeat(70) + '\n');
+      return false;
+    }
+
+    // Interactive mode: prompt user
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    return new Promise((resolve) => {
+      console.info('\n❓ User Action Required');
+      const question = '   Type "yes" to approve or "no" to reject: ';
+
+      rl.question(question, (answer) => {
+        const approved = answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y';
+
+        if (approved) {
+          console.info('   ✅ Operation APPROVED by user');
+        } else {
+          console.info('   ❌ Operation REJECTED by user');
+        }
+        console.info('='.repeat(70) + '\n');
+
+        rl.close();
+        resolve(approved);
+      });
+    });
+  };
+}
+
+/**
  * Run AI Agent with Edit tools
  * The agent receives natural language requests and decides which edit operations to use
  */
-// Create readline interface for interactive approval prompts
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-let isReadlineClosed = false;
-
-// Track when readline closes (e.g., piped input ends)
-rl.on('close', () => {
-  isReadlineClosed = true;
-});
-
-/**
- * Prompt user for approval decision
- */
-async function promptForApproval(
-  filePath: string,
-  mode: 'read' | 'write' | 'search'
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    // If readline is closed (e.g., non-TTY/piped input), auto-approve
-    if (isReadlineClosed) {
-      console.info(
-        `[${mode.toUpperCase()}] Access to ${filePath} auto-approved (non-interactive mode)`
-      );
-      resolve(true);
-      return;
-    }
-    rl.question(`[${mode.toUpperCase()}] Approve access to ${filePath}? (y/n): `, (answer) => {
-      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
-    });
-  });
-}
-
 async function runEditAIAgent() {
   console.info('\n╔════════════════════════════════════════════════════════╗');
   console.info('║     Edit Tool AI Agent - LangChain + OpenAI            ║');
@@ -144,9 +168,9 @@ async function runEditAIAgent() {
     console.info('🚀 Initializing Matimo...');
     const matimo = await MatimoInstance.init({ autoDiscover: true });
 
-    // Set up approval callback for interactive approval
-    const approvalManager = getPathApprovalManager();
-    approvalManager.setApprovalCallback(promptForApproval);
+    // Configure centralized approval handler
+    const approvalHandler = getGlobalApprovalHandler();
+    approvalHandler.setApprovalCallback(createApprovalCallback());
 
     // Get edit tool
     console.info('💬 Loading edit tool...');
@@ -260,10 +284,6 @@ async function runEditAIAgent() {
     // Clean up
     if (fs.existsSync(tempFile)) {
       fs.unlinkSync(tempFile);
-    }
-    if (!isReadlineClosed) {
-      rl.close();
-      isReadlineClosed = true;
     }
   }
 }
