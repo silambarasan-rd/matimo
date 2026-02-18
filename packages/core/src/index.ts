@@ -45,6 +45,17 @@ export {
   createExecutionError,
 } from './errors/matimo-error';
 
+// Logging
+export {
+  MatimoLogger,
+  LogLevel,
+  LoggerConfig,
+  getLoggerConfig,
+  setGlobalMatimoLogger,
+  getGlobalMatimoLogger,
+} from './logging';
+export { WinstonMatimoLogger, createLogger } from './logging/winston-logger';
+
 // Matimo instance and namespace
 export { MatimoInstance, matimo } from './matimo-instance';
 export type { InitOptions } from './matimo-instance';
@@ -66,18 +77,8 @@ export { OAuth2Handler } from './auth/oauth2-handler';
 export { convertToolsToLangChain } from './integrations/langchain';
 export type { LangChainTool } from './integrations/langchain';
 
-// Path Approval System
-export {
-  PathApprovalManager,
-  getPathApprovalManager,
-  setPathApprovalManager,
-} from './approval/path-approval';
-export type { ApprovalCallback } from './approval/path-approval';
-
-// SQL Approval System
-export {
-  SQLApprovalManager,
-  getSQLApprovalManager,
-  setSQLApprovalManager,
-} from './approval/sql-approval';
-export type { SQLApprovalCallback } from './approval/sql-approval';
+// Generic Approval System - Simple, scalable flow for any tool
+// Tools declare requires_approval in YAML, or system detects destructive keywords
+// Single approval callback handles all tools - no per-provider logic needed
+export { ApprovalHandler, getGlobalApprovalHandler } from './approval/approval-handler';
+export type { ApprovalRequest, ApprovalCallback } from './approval/approval-handler';

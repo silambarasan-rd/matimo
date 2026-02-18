@@ -108,6 +108,7 @@ export const ToolDefinitionSchema = z.object({
   output_schema: OutputSchemaSchema.optional(),
   error_handling: ErrorHandlingSchema.optional(),
   rate_limiting: RateLimitingSchema.optional(),
+  requires_approval: z.boolean().optional(),
   examples: z
     .array(
       z.object({

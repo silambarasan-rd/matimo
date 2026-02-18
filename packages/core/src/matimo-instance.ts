@@ -13,6 +13,7 @@ import {
   createLogger,
   setGlobalMatimoLogger,
 } from './logging';
+import { ApprovalHandler, getGlobalApprovalHandler } from './approval/approval-handler';
 
 /**
  * Options for MatimoInstance initialization
@@ -35,6 +36,7 @@ export class MatimoInstance {
   private httpExecutor: HttpExecutor;
   private functionExecutor: FunctionExecutor;
   private logger: MatimoLogger;
+  private approvalHandler: ApprovalHandler;
 
   private constructor(toolPaths: string[], logger: MatimoLogger) {
     this.toolPaths = toolPaths;
@@ -46,6 +48,7 @@ export class MatimoInstance {
     this.commandExecutor = new CommandExecutor(workingDir);
     this.httpExecutor = new HttpExecutor();
     this.functionExecutor = new FunctionExecutor(toolPaths[0] || '');
+    this.approvalHandler = getGlobalApprovalHandler();
   }
 
   /**
@@ -184,6 +187,27 @@ export class MatimoInstance {
     });
 
     try {
+      // Simple approval flow:
+      // 1. Check if tool requires approval (from YAML or keyword detection)
+      // 2. Check if pre-approved via env vars
+      // 3. Call approval callback if not pre-approved
+
+      const requiresApproval = this.approvalHandler.requiresApproval(
+        tool.requires_approval,
+        // For SQL tools, check the SQL content
+        typeof params.sql === 'string' ? params.sql : undefined
+      );
+
+      if (requiresApproval && !this.approvalHandler.isPreApproved(toolName)) {
+        this.logger.debug(`Approval required for: ${toolName}`, { toolName });
+        await this.approvalHandler.requestApproval({
+          toolName,
+          description: tool.description,
+          params,
+        });
+        this.logger.info(`Destructive operation approved: ${toolName}`, { toolName });
+      }
+
       // Auto-inject authentication parameters from environment variables
       const finalParams = this.injectAuthParameters(tool, params);
 
