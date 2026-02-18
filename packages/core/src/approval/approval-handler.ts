@@ -226,8 +226,11 @@ export class ApprovalHandler {
       return true;
     }
 
-    // Convert glob pattern to regex
-    const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+    // Convert glob pattern to regex:
+    // 1. Escape all regex metacharacters, including backslashes.
+    // 2. Turn escaped '*' back into a wildcard '.*'.
+    const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regexPattern = escapedPattern.replace(/\\\*/g, '.*');
     const regex = new RegExp(`^${regexPattern}$`, 'i');
     return regex.test(toolName);
   }
