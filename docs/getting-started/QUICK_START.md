@@ -1,6 +1,60 @@
 # Quick Start — 5 Minutes
 
-Get Matimo up and running in 5 minutes with the factory pattern.
+Get Matimo up and running in 5 minutes.
+
+---
+
+## Choose Your Path
+
+Not sure where to start? Pick one:
+
+### 🚀 **Path A: Use Pre-Built Tools** (Fastest — 2 mins)
+You want to execute existing tools (Slack, Gmail, GitHub, etc.) without building your own.
+
+**Install:**
+```bash
+npm install matimo @matimo/slack @matimo/gmail
+```
+
+**Use immediately:**
+```typescript
+import { MatimoInstance } from 'matimo';
+
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+
+// Execute a Slack tool
+const result = await matimo.execute('slack-send-message', {
+  channel: '#general',
+  text: 'Hello from Matimo!',
+});
+
+console.log('Message sent!', result);
+```
+
+✅ Great for: Using existing integrations in your app
+📖 **[See All Available Tools →](../user-guide/AVAILABLE_TOOLS.md)**
+
+---
+
+### 🛠️ **Path B: Build Your Own Tool** (Educational — 5 mins)
+You want to understand how to create and execute custom tools.
+
+**[Continue below to create a calculator tool →](#1-installation-1-min)**
+
+✅ Great for: Learning how Matimo works
+📖 **[Build Your First Tool →](./YOUR_FIRST_TOOL.md)**
+
+---
+
+### 🤖 **Path C: Integrate with LangChain** (Advanced — 10 mins)
+You want to use Matimo tools with an AI agent (LangChain, CrewAI, etc.).
+
+**[See LangChain Integration →](../framework-integrations/LANGCHAIN.md)**
+
+✅ Great for: Building intelligent agents
+📖 **[Examples →](../../examples/README.md)**
+
+---
 
 ## 1. Installation (1 min)
 
