@@ -1,0 +1,71 @@
+# GitHub OAuth2 Provider Definition
+#
+# This file defines the OAuth2 configuration for GitHub.
+# All GitHub tools reference this provider definition.
+#
+# Users can override these endpoints via:
+# 1. Runtime config (highest priority)
+# 2. Environment variables: OAUTH_GITHUB_AUTH_URL, OAUTH_GITHUB_TOKEN_URL, etc.
+# 3. This YAML definition (lowest priority)
+#
+# Pattern: Define once, use everywhere
+
+name: github-provider
+type: provider
+version: '1.0.0'
+
+description: |
+  GitHub OAuth2 Provider Configuration
+  
+  All GitHub tools use these endpoints for OAuth2 authorization.
+  
+  Setup:
+  1. Create GitHub OAuth App at https://github.com/settings/developers
+  2. Set Client ID and Client Secret
+  3. Set Authorization callback URL
+  4. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables
+  5. Set GITHUB_REDIRECT_URI to your callback URL
+  
+  For GitHub Enterprise Server (GHES), override the endpoints with your instance.
+
+provider:
+  name: github
+  displayName: GitHub
+
+  # OAuth2 Endpoints
+  # Standard GitHub.com endpoints - change for GitHub Enterprise Server
+  endpoints:
+    authorizationUrl: https://github.com/login/oauth/authorize
+    tokenUrl: https://github.com/login/oauth/access_token
+    revokeUrl: https://api.github.com/applications/{client_id}/grants/{grant_id}
+
+  # Standard scopes for common GitHub operations
+  # Tools can override with their own scopes
+  defaultScopes:
+    - repo:status
+    - repo_deployment
+    - public_repo
+    - repo
+    - gist
+    - notifications
+    - user
+    - delete_repo
+    - write:packages
+    - read:packages
+    - admin:org_hook
+    - write:org
+    - read:org
+    - admin:public_key
+    - write:public_key
+    - read:public_key
+    - admin:repo_hook
+    - write:repo_hook
+    - read:repo_hook
+    - admin:org
+    - admin:gpg_key
+    - write:gpg_key
+    - read:gpg_key
+
+  # Additional metadata
+  documentation: https://docs.github.com/en/rest
+  learnMore: https://docs.github.com/en/apps/creating-github-apps

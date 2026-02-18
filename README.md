@@ -19,7 +19,7 @@
   <a href="https://discord.gg/3JPt4mxWDV"><img src="https://img.shields.io/badge/Discord-Join%20Chat-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
-**Matimo** is a universal, configuration-driven AI tools ecosystem. Define tools **once in YAML** and use them everywhere — SDK, MCP server, CLI, REST API, or any AI framework (LangChain, CrewAI, Claude, etc.).
+**Matimo** is a universal, configuration‑driven AI tools ecosystem. Define tools **once in YAML** and reuse them across the SDK, LangChain, custom agents, and a single MCP server, without re‑implementing schemas or fragmenting integration logic.
 
 **Define once → Plug into any agent ecosystem.**
 
@@ -29,18 +29,22 @@
 
 ## Quick Start
 
+### Installation
+
 ```bash
 npm install matimo
-
 # OR auto-discover tools from node_modules/@matimo/*
 npm install matimo @matimo/slack @matimo/gmail
 ```
 
-```typescript
-import { MatimoInstance } from 'matimo';
+### Minimal Example (TypeScript)
 
-// Factory pattern: Simple and direct
-const matimo = await MatimoInstance.init({ autoDiscover: true });
+```typescript
+import { MatimoInstance } from '@matimo/core';
+
+const matimo = await MatimoInstance.init({
+  autoDiscover: true,
+});
 
 const result = await matimo.execute('slack-send-message', {
   channel: '#general',
@@ -50,7 +54,20 @@ const result = await matimo.execute('slack-send-message', {
 
 See [Three Integration Patterns](#three-integration-patterns) and [examples/](./examples) for more.
 
----
+## What's Included
+
+Matimo ships with built-in support for:
+
+- **Core Tools**: File I/O, Web fetch, Command execution, Code search
+- **Slack Integration**: Send messages, manage channels, read threads
+- **Gmail Integration**: Send/read email, manage threads
+- **GitHub Integration**: Issues, pull requests, releases
+- **Postgres Tools**: Query/modify data with safety checks
+- **Auto-Discovery**: Automatic detection of @matimo/\* providers from npm
+- **Matimo CLI**: Tool discovery, installation, and management
+- **OAuth2 Support**: Provider-agnostic authorization for Slack, Gmail, GitHub, etc.
+- **Framework Support**: Factory pattern, Decorator pattern, LangChain, CrewAI
+- **TypeScript SDK**: Full type safety and IDE support
 
 ## Why Matimo?
 
@@ -64,7 +81,7 @@ See [Three Integration Patterns](#three-integration-patterns) and [examples/](./
 - Auto-discovery from npm packages
 - OAuth2 support + parameter validation
 
-See [Contributing](./CONTRIBUTING.md) or [Why Matimo?](./docs/index.md#why-matimo) for the full story.
+See [Contributing](./CONTRIBUTING.md) for details.
 
 ---
 
@@ -137,30 +154,19 @@ cd examples/tools && pnpm install && pnpm agent:factory
 
 ---
 
-## Features
+## Features **Coming Soon:**
 
-**Now:**
 
-- YAML tool definitions with Zod validation
-- Core tools - File I/O , Cmd Execute and web (fetch)
-- Slack, Gmail , Postgres tools (20+ operations)
-- Auto-discovery from npm packages
-- Matimo CLI (install, list, search)
-- OAuth2 support
-- Examples: Factory & Decorator patterns (SDK) and LangChain integrated agents.
-- TypeScript strict mode
-
-**Coming Soon:**
-
-- MCP Server (Claude integration)
-- REST API
-- More tool providers (GitHub, Stripe, Twilio, etc.)
-- Tool Marketplace
+- More tool providers (Stripe, Twilio, Notion, etc.)
 - Python SDK
+- Custom Tool Marketplace
+- MCP Server support
 
 ---
 
 ## Adding Tools to Matimo
+
+If you build @matimo/<provider> following this pattern, we’ll list it in the official docs and README with you as maintainer.
 
 Create tool providers as independent npm packages:
 
@@ -219,6 +225,7 @@ MIT © 2026 Matimo Contributors
 - ⭐ Star the repo
 - 🐛 Open issues for bugs or features
 - 🔀 Submit PRs (see [Contributing](./CONTRIBUTING.md))
+  Best way to help: add a new provider (Notion, Jira, Stripe, Twilio…) or expand existing toolsets.
 - 📢 Share on Twitter, Reddit, Discord
 
 ---

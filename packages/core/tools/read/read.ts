@@ -6,7 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { MatimoError, ErrorCode, getPathApprovalManager } from '@matimo/core';
+import { MatimoError, ErrorCode } from '@matimo/core';
 
 interface ReadParams {
   filePath: string;
@@ -55,16 +55,6 @@ export default async function readTool(params: ReadParams): Promise<ReadResult> 
   if (!fs.existsSync(resolvedPath)) {
     throw new MatimoError('File not found', ErrorCode.FILE_NOT_FOUND, {
       filePath: resolvedPath,
-    });
-  }
-
-  // Check approval for file read
-  const approvalManager = getPathApprovalManager();
-  const isApproved = await approvalManager.isApproved(resolvedPath, 'read');
-  if (!isApproved) {
-    throw new MatimoError('File read not approved', ErrorCode.AUTH_FAILED, {
-      filePath: resolvedPath,
-      reason: 'User approval required for file read operations',
     });
   }
 

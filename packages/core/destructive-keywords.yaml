@@ -1,0 +1,70 @@
+# Destructive keywords used by ApprovalHandler and execution tools to auto-detect operations requiring approval
+# These are checked against SQL content, command parameters, and shell commands to determine if approval is needed
+
+sql:
+  - CREATE
+  - DELETE
+  - DROP
+  - ALTER
+  - TRUNCATE
+  - UPDATE
+  - INSERT
+  - UPSERT
+  - REPLACE
+  - MERGE
+  - GRANT
+  - REVOKE
+
+file:
+  - EDIT
+  - WRITE
+  - APPEND
+  - REMOVE
+  - RENAME
+
+system:
+  - SHUTDOWN
+  - EXECUTE
+  - EXEC
+  - system
+  - cmd
+  - shell
+  - bash
+  - powershell
+  - "rm -rf"
+  - "del /f"
+
+shell_commands:
+  # File deletion/removal
+  - rm
+  - rmdir
+  - del
+  - "del /f"
+  - "rd /s"
+  # File/directory creation (modifies filesystem)
+  - mkdir
+  - mkfile
+  - touch
+  # File operations (modify destination)
+  - cp
+  - mv
+  - copy
+  - move
+  # Version control modifications
+  - "git push"
+  - "git merge"
+  - "git commit"
+  - "git reset"
+  - "git rebase"
+  # Database CLIs
+  - isql
+  - sqlcmd
+  - psql
+  - mysql
+  # Disk/system modifications
+  - format
+  - fastboot
+  - "adb shell su"
+  - "adb shell rm"
+  - "adb shell mount"
+  - "adb shell reboot"

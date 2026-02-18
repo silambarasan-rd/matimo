@@ -16,6 +16,119 @@ Welcome to Matimo! We're building a universal, configuration-driven AI tools eco
 2. **New features / architecture** → Start a [GitHub Discussion](https://github.com/tallclub/matimo/discussions) first
 3. **Questions** → Open a GitHub Discussion
 
+---
+
+## 🌟 Good First Contributions (Start Here!)
+
+New to Matimo? Here are tasks perfect for first-time contributors:
+
+### Level 1: Documentation (15-30 mins)
+
+**Improve clarity in existing docs**
+
+- Fix typos or unclear explanations in `/docs/**/*.md`
+- Add missing examples to existing tool documentation
+- Improve error message clarity in code comments
+- Link related documentation pages
+
+**Example PR:**
+
+```
+feat(docs): clarify QUICK_START OAuth examples with real Slack credentials flow
+```
+
+### Level 2: Add a Simple Tool (30-60 mins)
+
+**Create a new core tool with no external dependencies**
+
+- See: [packages/core/tools/calculator/](./packages/core/tools/) for template
+- Examples: `timestamp`, `uuid-generator`, `hash`, `base64-encode`
+
+**Steps:**
+
+1. Create `packages/core/tools/{tool-name}/definition.yaml`
+2. Implement the tool logic
+3. Add test fixture: `packages/core/test/fixtures/{tool-name}-fixture.yaml`
+4. Run `pnpm validate-tools && pnpm test`
+
+**Example PR:**
+
+```
+feat(core): add uuid-generator tool for random ID creation
+```
+
+### Level 3: Fix a Bug (1-2 hours)
+
+**Look for issues labeled `bug` or `good-first-issue`**
+
+- Check [Open Issues](https://github.com/tallclub/matimo/issues?q=label%3A%22good-first-issue%22)
+- Pick one, fix locally, test with `pnpm test`
+- Submit PR with reproduction steps in description
+
+**Example PR:**
+
+```
+fix(core): handle empty input in calculator division operation
+```
+
+### Level 4: Expand Tool Tests (1-2 hours)
+
+**Add test coverage for existing tools**
+
+- Look for tools with low coverage in `pnpm test:coverage`
+- Add edge cases, error scenarios, validation tests
+- See test patterns: [packages/core/test/unit/](./packages/core/test/unit/)
+
+**Example PR:**
+
+```
+test(gmail): add tests for invalid email address validation
+```
+
+### Level 5: Create a Simple Provider (2-4 hours)
+
+**Build a new tool provider package** (e.g., `@matimo/weather`, `@matimo/dictionary`)
+
+- Follow: [Adding Tools to Matimo](./docs/tool-development/ADDING_TOOLS.md)
+- Include 3-5 simple tools (no complex auth needed)
+- Add examples and tests
+
+**Example PR:**
+
+```
+feat(weather): add OpenWeatherMap tools (get-forecast, get-current-temp)
+```
+
+---
+
+## How to Submit Your First PR
+
+1. **Pick a task** from above
+2. **Create a branch:** `git checkout -b {type}/{short-desc}`
+   - Example: `docs/quick-start-clarity`, `feat/uuid-tool`, `fix/calc-division`
+3. **Make changes** and test locally:
+   ```bash
+   pnpm build
+   pnpm lint:fix && pnpm format
+   pnpm test
+   ```
+4. **Write clear PR title:**
+   - ✅ `feat(core): add timestamp tool`
+   - ✅ `docs(quickstart): clarify OAuth setup`
+   - ❌ `Update stuff`, `Fix thing`, `Changes`
+5. **Describe WHAT and WHY** in PR description (see template)
+6. **Expect feedback** — don't be discouraged! Maintainers will help guide you.
+
+---
+
+## Need Help?
+
+- 🐦 Ask in [GitHub Discussions](https://github.com/tallclub/matimo/discussions)
+- 💬 Join [Discord](https://discord.gg/3JPt4mxWDV) for real-time chat
+- 📖 Read [docs/](/docs/) for detailed guides
+
+---
+
 ## Before You PR
 
 - Test locally with `pnpm test`
@@ -80,6 +193,9 @@ pnpm format:check # Prettier formatting check (no modifications)
 
 ```bash
 pnpm test:coverage  # Run all tests with coverage report
+
+# Optional faster local check before pushing (runs unit + integration quickly)
+# pnpm test
 ```
 
 **Note:** The pre-commit hook uses `format:check` to validate formatting without modifying files. If formatting issues are found, run `pnpm format` to fix them and then commit again.

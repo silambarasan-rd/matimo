@@ -1,53 +1,54 @@
 name: search
 version: '1.0.0'
-description: Search file system and file contents using native search. Supports regex, case-insensitive matching, and directory traversal.
+description: Search files by name or content using patterns and regex
+requires_approval: true
 
 parameters:
   query:
     type: string
-    description: Search query - plain text or regex pattern (case-insensitive by default)
+    description: Search query (file pattern or text to find)
     required: true
-    example: 'function defineProperty'
+    example: 'MatimoInstance'
 
   directory:
     type: string
-    description: Directory to search in (relative or absolute path). Defaults to current working directory.
+    description: Directory to search (default current directory)
     required: false
     example: './src'
 
   filePattern:
     type: string
-    description: File pattern to match (glob pattern, e.g. '*.ts', '**/*.test.ts', 'src/**'). Defaults to all files.
+    description: File glob pattern (e.g. '*.ts', '**/*.test.ts')
     required: false
     example: '*.ts'
 
   isRegex:
     type: boolean
-    description: Treat query as regular expression (default false for literal text search)
+    description: Treat query as regex (default false)
     required: false
     default: false
 
   caseSensitive:
     type: boolean
-    description: Case-sensitive search (default false for case-insensitive)
+    description: Case-sensitive search (default false)
     required: false
     default: false
 
   excludePatterns:
     type: array
-    description: Glob patterns to exclude from search (e.g. ['node_modules/**', '*.backup'])
+    description: Glob patterns to exclude
     required: false
-    example: ['node_modules/**', '.git/**', 'dist/**']
+    example: ['node_modules/**', 'dist/**']
 
   maxResults:
     type: number
-    description: Maximum number of results to return (default 50, max 1000)
+    description: Maximum results to return (default 50)
     required: false
     default: 50
 
   contextLines:
     type: number
-    description: Number of context lines to show around match (default 2)
+    description: Context lines around matches (default 2)
     required: false
     default: 2
 

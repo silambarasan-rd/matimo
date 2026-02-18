@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { MatimoError, ErrorCode, getSQLApprovalManager } from '@matimo/core';
+import { MatimoError, ErrorCode } from '@matimo/core';
 
 export default async function (input: Record<string, unknown>) {
   const sql = (input.sql as string) || '';
@@ -14,31 +14,6 @@ export default async function (input: Record<string, unknown>) {
   // Build connection string from either MATIMO_POSTGRES_URL or separate env vars
   const envUrl = process.env.MATIMO_POSTGRES_URL;
   let connectionString: string | undefined = envUrl;
-
-  // Detect destructive SQL and require approval
-  const destructiveRegex = /^\s*(CREATE|DROP|ALTER|TRUNCATE|DELETE|UPDATE)\b/i;
-  const isDestructive = destructiveRegex.test(sql);
-  if (isDestructive) {
-    const manager = getSQLApprovalManager();
-    try {
-      const ok = await manager.isApproved(sql, 'write');
-      if (!ok) {
-        throw new MatimoError('Destructive SQL not approved', ErrorCode.EXECUTION_FAILED, {
-          toolName: 'postgres-execute-sql',
-          hint:
-            'Destructive SQL requires approval. Use getSQLApprovalManager().setApprovalCallback() or set MATIMO_SQL_APPROVED_PATTERNS / MATIMO_SQL_AUTO_APPROVE=true',
-        });
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      // Re-throw MatimoError or wrap
-      if (e instanceof MatimoError) throw e;
-      throw new MatimoError('SQL approval check failed', ErrorCode.EXECUTION_FAILED, {
-        toolName: 'postgres-execute-sql',
-        details: { message: e?.message || String(e) },
-      });
-    }
-  }
 
   if (!connectionString) {
     const host = process.env.MATIMO_POSTGRES_HOST;
@@ -66,13 +41,11 @@ export default async function (input: Record<string, unknown>) {
   const client = new Client({ connectionString });
   try {
     await client.connect();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await client.query(sql, (params ?? []) as any);
+    const result = await client.query(sql, (params ?? []) as unknown[]);
     return { rows: result.rows, rowCount: result.rowCount };
   } catch (err) {
     // Extract meaningful error message
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalError = (err as any)?.message || String(err);
+    const originalError = String((err as Record<string, unknown>).message || err);
     const details: Record<string, unknown> = {
       originalMessage: originalError,
     };
@@ -90,11 +63,8 @@ export default async function (input: Record<string, unknown>) {
       details,
     });
   } finally {
-    try {
-      await client.end();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_e) {
-      // ignore
-    }
+    await client.end().catch(() => {
+      // Ignore connection close errors
+    });
   }
 }

@@ -6,11 +6,19 @@ import { HttpExecutor } from './executors/http-executor';
 import { FunctionExecutor } from './executors/function-executor';
 import { ToolDefinition } from './core/schema';
 import { MatimoError, ErrorCode } from './errors/matimo-error';
+import {
+  MatimoLogger,
+  LoggerConfig,
+  getLoggerConfig,
+  createLogger,
+  setGlobalMatimoLogger,
+} from './logging';
+import { ApprovalHandler, getGlobalApprovalHandler } from './approval/approval-handler';
 
 /**
  * Options for MatimoInstance initialization
  */
-export interface InitOptions {
+export interface InitOptions extends LoggerConfig {
   toolPaths?: string[];
   autoDiscover?: boolean;
   includeCore?: boolean;
@@ -27,9 +35,12 @@ export class MatimoInstance {
   private commandExecutor: CommandExecutor;
   private httpExecutor: HttpExecutor;
   private functionExecutor: FunctionExecutor;
+  private logger: MatimoLogger;
+  private approvalHandler: ApprovalHandler;
 
-  private constructor(toolPaths: string[]) {
+  private constructor(toolPaths: string[], logger: MatimoLogger) {
     this.toolPaths = toolPaths;
+    this.logger = logger;
     this.loader = new ToolLoader();
     this.registry = new ToolRegistry();
     // Use the first path (primary) as working directory for command executor
@@ -37,6 +48,7 @@ export class MatimoInstance {
     this.commandExecutor = new CommandExecutor(workingDir);
     this.httpExecutor = new HttpExecutor();
     this.functionExecutor = new FunctionExecutor(toolPaths[0] || '');
+    this.approvalHandler = getGlobalApprovalHandler();
   }
 
   /**
@@ -51,9 +63,17 @@ export class MatimoInstance {
    * // New - auto-discovery
    * const matimo = await MatimoInstance.init({ autoDiscover: true });
    *
-   * // Explicit paths
+   * // Explicit paths with logging config
    * const matimo = await MatimoInstance.init({
-   *   toolPaths: ['./tools', require.resolve('@matimo/slack/tools')]
+   *   toolPaths: ['./tools'],
+   *   logLevel: 'debug',
+   *   logFormat: 'json'
+   * });
+   *
+   * // Custom logger
+   * const matimo = await MatimoInstance.init({
+   *   toolPaths: ['./tools'],
+   *   logger: myCustomLogger
    * });
    */
   static async init(options?: InitOptions | string): Promise<MatimoInstance> {
@@ -74,6 +94,24 @@ export class MatimoInstance {
       };
     }
 
+    // Initialize logger from config and environment variables
+    const loggerConfig = getLoggerConfig({
+      logLevel: finalOptions.logLevel,
+      logFormat: finalOptions.logFormat,
+      logger: finalOptions.logger,
+    });
+    const logger = createLogger(loggerConfig);
+
+    // Set global logger for use by modules
+    setGlobalMatimoLogger(logger);
+
+    logger.debug('Matimo SDK initializing', {
+      logLevel: loggerConfig.logLevel,
+      logFormat: loggerConfig.logFormat,
+      hasPaths: !!finalOptions.toolPaths?.length,
+      autoDiscover: finalOptions.autoDiscover,
+    });
+
     const toolPaths: string[] = [];
 
     // Include core tools (calculator, etc.) - currently not used in monorepo
@@ -83,19 +121,26 @@ export class MatimoInstance {
     // Add explicit paths
     if (finalOptions.toolPaths) {
       toolPaths.push(...finalOptions.toolPaths);
+      logger.debug(`Adding explicit tool paths`, { count: finalOptions.toolPaths.length });
     }
 
     // Auto-discover @matimo/* packages
     if (finalOptions.autoDiscover) {
       const discoveredPaths = new ToolLoader().autoDiscoverPackages();
       toolPaths.push(...discoveredPaths);
+      logger.debug(`Auto-discovered tool paths`, { count: discoveredPaths.length });
     }
 
-    const instance = new MatimoInstance(toolPaths);
+    const instance = new MatimoInstance(toolPaths, logger);
 
     // Load tools from all paths
     const allTools = instance.loader.loadToolsFromMultiplePaths(toolPaths);
     instance.registry.registerAll(Array.from(allTools.values()));
+
+    logger.info(`Matimo SDK initialized successfully`, {
+      toolCount: allTools.size,
+      paths: toolPaths.length,
+    });
 
     return instance;
   }
@@ -109,6 +154,14 @@ export class MatimoInstance {
   }
 
   /**
+   * Get the logger instance
+   * @returns MatimoLogger instance
+   */
+  getLogger(): MatimoLogger {
+    return this.logger;
+  }
+
+  /**
    * Execute a tool by name with parameters
    * @param toolName - Name of the tool to execute
    * @param params - Tool parameters
@@ -117,17 +170,82 @@ export class MatimoInstance {
   async execute(toolName: string, params: Record<string, unknown>): Promise<unknown> {
     const tool = this.registry.get(toolName);
     if (!tool) {
+      const availableTools = this.registry.getAll().map((t) => t.name);
+      this.logger.error(`Tool not found: ${toolName}`, {
+        toolName,
+        availableTools,
+      });
       throw new MatimoError(`Tool '${toolName}' not found in registry`, ErrorCode.TOOL_NOT_FOUND, {
         toolName,
-        availableTools: this.registry.getAll().map((t) => t.name),
+        availableTools,
       });
     }
 
-    // Auto-inject authentication parameters from environment variables
-    const finalParams = this.injectAuthParameters(tool, params);
+    this.logger.debug(`Executing tool: ${toolName}`, {
+      toolName,
+      paramCount: Object.keys(params).length,
+    });
 
-    const executor = this.getExecutor(tool);
-    return executor.execute(tool, finalParams);
+    try {
+      // Simple approval flow:
+      // 1. Check if tool requires approval (from YAML or keyword detection)
+      // 2. Check if pre-approved via env vars
+      // 3. Call approval callback if not pre-approved
+
+      // Prefer execution-type-specific checks to reduce false positives.
+      // - `command` tools: scan `params.command`
+      // - SQL tools (convention): scan `params.sql`
+      // If configured via `MATIMO_APPROVAL_SCAN_ALL_PARAMS=true`, fall back
+      // to scanning all string-valued params.
+      const executionType = (tool.execution.type || '') as string;
+      let scanContent: string | undefined;
+
+      if (executionType === 'command' && typeof params.command === 'string') {
+        scanContent = params.command;
+      } else if (typeof params.sql === 'string') {
+        scanContent = params.sql;
+      } else if (process.env.MATIMO_APPROVAL_SCAN_ALL_PARAMS === 'true') {
+        const parts: string[] = [];
+        for (const val of Object.values(params)) {
+          if (typeof val === 'string') parts.push(val);
+        }
+        if (parts.length > 0) scanContent = parts.join(' ');
+      }
+
+      const requiresApproval = this.approvalHandler.requiresApproval(
+        tool.requires_approval,
+        scanContent
+      );
+
+      if (requiresApproval && !this.approvalHandler.isPreApproved(toolName)) {
+        this.logger.debug(`Approval required for: ${toolName}`, { toolName });
+        await this.approvalHandler.requestApproval({
+          toolName,
+          description: tool.description,
+          params,
+        });
+        this.logger.info(`Destructive operation approved: ${toolName}`, { toolName });
+      }
+
+      // Auto-inject authentication parameters from environment variables
+      const finalParams = this.injectAuthParameters(tool, params);
+
+      const executor = this.getExecutor(tool);
+      const result = await executor.execute(tool, finalParams);
+
+      this.logger.debug(`Tool executed successfully: ${toolName}`, {
+        toolName,
+        hasResult: !!result,
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error(`Tool execution failed: ${toolName}`, {
+        toolName,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   }
 
   /**
@@ -199,7 +317,6 @@ export class MatimoInstance {
 
     // Collect all parameter names referenced in the execution config
     const referencedParams = this.extractParameterPlaceholders(tool);
-
     // Auth-related parameter name patterns (case-insensitive)
     const authPatterns = [
       'token',

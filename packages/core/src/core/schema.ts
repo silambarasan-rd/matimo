@@ -108,6 +108,7 @@ export const ToolDefinitionSchema = z.object({
   output_schema: OutputSchemaSchema.optional(),
   error_handling: ErrorHandlingSchema.optional(),
   rate_limiting: RateLimitingSchema.optional(),
+  requires_approval: z.boolean().optional(),
   examples: z
     .array(
       z.object({
@@ -170,11 +171,16 @@ export type ProviderDefinition = z.infer<typeof ProviderDefinitionSchema>;
  *
  * @example
  * ```typescript
+ * import { getGlobalMatimoLogger } from '../logging';
+ *
  * try {
  *   const tool = validateToolDefinition(parsedYAML);
  * } catch (error) {
- *   console.error('Invalid tool:', error.message);
- *   // Error message includes specific field and validation issue
+ *   const logger = getGlobalMatimoLogger();
+ *   logger.error('Invalid tool definition', {
+ *     details: error.message
+ *   });
+ *   throw error;
  * }
  * ```
  */

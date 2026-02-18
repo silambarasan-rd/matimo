@@ -7,7 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
-import { MatimoError, ErrorCode, getPathApprovalManager } from '@matimo/core';
+import { MatimoError, ErrorCode, getGlobalMatimoLogger } from '@matimo/core';
 
 interface SearchMatch {
   filePath: string;
@@ -44,6 +44,7 @@ interface SearchResult {
  * Search files for pattern matches
  */
 export default async function searchTool(params: SearchParams): Promise<SearchResult> {
+  const logger = getGlobalMatimoLogger();
   const {
     query,
     directory = '.',
@@ -57,8 +58,19 @@ export default async function searchTool(params: SearchParams): Promise<SearchRe
 
   const startTime = Date.now();
 
+  logger.debug('Search tool invoked', {
+    query: query.substring(0, 100),
+    directory,
+    isRegex,
+    caseSensitive,
+    maxResults,
+  });
+
   // Validate required parameter
   if (!query) {
+    logger.error('Search tool: Missing required parameter', {
+      reason: 'query is required',
+    });
     throw new MatimoError('Missing required parameter', ErrorCode.INVALID_PARAMETER, {
       reason: 'query is required',
     });
@@ -72,6 +84,9 @@ export default async function searchTool(params: SearchParams): Promise<SearchRe
     : path.resolve(process.cwd(), directory);
 
   if (!fs.existsSync(resolvedDir)) {
+    logger.error('Search tool: Directory not found', {
+      directory: resolvedDir,
+    });
     throw new MatimoError('Directory not found', ErrorCode.FILE_NOT_FOUND, {
       directory: resolvedDir,
     });
@@ -115,19 +130,12 @@ export default async function searchTool(params: SearchParams): Promise<SearchRe
 
   const matches: SearchMatch[] = [];
   let filesSearched = 0;
-  const approvalManager = getPathApprovalManager();
 
   // Search each file
   for (const filePath of files) {
     if (matches.length >= safeMaxResults) break;
 
     try {
-      // Check approval for file search
-      const isApproved = await approvalManager.isApproved(filePath, 'search');
-      if (!isApproved) {
-        // Skip files user hasn't approved for search
-        continue;
-      }
 
       // Skip binary files
       const stats = fs.statSync(filePath);

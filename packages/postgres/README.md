@@ -144,24 +144,33 @@ The tool automatically detects destructive operations:
 For interactive terminal environments:
 
 ```typescript
-import { getSQLApprovalManager } from '@matimo/core';
+import { MatimoInstance, getGlobalApprovalHandler } from '@matimo/core';
 import * as readline from 'readline';
 
-const manager = getSQLApprovalManager();
+const matimo = await MatimoInstance.init({ autoDiscover: true });
+const handler = getGlobalApprovalHandler();
 
 // Set interactive callback
-manager.setApprovalCallback(async (sql: string, mode: string) => {
+handler.setApprovalCallback(async (request) => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
   
   return new Promise(resolve => {
-    rl.question(`Approve ${mode} operation: ${sql}? (yes/no): `, answer => {
-      rl.close();
-      resolve(answer.toLowerCase() === 'yes');
-    });
+    rl.question(
+      `\nApprove ${request.toolName}?\nSQL: ${request.params.sql}\n(yes/no): `,
+      answer => {
+        rl.close();
+        resolve(answer.toLowerCase() === 'yes');
+      }
+    );
   });
+});
+
+// Approve write operations
+await matimo.execute('postgres-execute-sql', {
+  sql: 'UPDATE users SET active = true'
 });
 ```
 
@@ -169,16 +178,16 @@ manager.setApprovalCallback(async (sql: string, mode: string) => {
 For automated environments:
 
 ```bash
-# Enable auto-approval for all destructive operations
-export MATIMO_SQL_AUTO_APPROVE=true
+# Enable auto-approval for all operations requiring approval
+export MATIMO_AUTO_APPROVE=true
 ```
 
 #### 3. **Pattern-Based Approval**
 Pre-approve specific patterns:
 
 ```bash
-# Approve all DELETE queries and UPDATE queries on users table
-export MATIMO_SQL_APPROVED_PATTERNS="DELETE.*,UPDATE users.*"
+# Approve only postgres-execute-sql tool
+export MATIMO_APPROVED_PATTERNS="postgres-*"
 ```
 
 ---

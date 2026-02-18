@@ -122,6 +122,11 @@ export interface ToolDefinition {
   deprecation_message?: string;
   tags?: string[];
   /**
+   * Whether this tool requires approval before execution
+   * Set to true for destructive operations (CREATE, DELETE, DROP, etc.)
+   */
+  requires_approval?: boolean;
+  /**
    * Internal: Path to the tool definition file (set by ToolLoader)
    * Used to resolve relative paths for function executors
    */

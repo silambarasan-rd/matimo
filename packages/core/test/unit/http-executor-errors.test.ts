@@ -395,3 +395,262 @@ describe('HttpExecutor - Extended Coverage', () => {
     expect(result.success).toBe(true);
   });
 });
+
+describe('HttpExecutor - GitHub Approval Flows', () => {
+  let executor: HttpExecutor;
+
+  beforeEach(() => {
+    executor = new HttpExecutor();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should skip approval for non-github tools', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
+    const tool: ToolDefinition = {
+      name: 'slack-send-message',
+      description: 'Send a message to Slack',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'POST',
+        url: 'https://slack.com/api/chat.postMessage',
+      },
+      parameters: {},
+    };
+
+    const result = (await executor.execute(tool, {})) as ExecutionResult;
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
+  });
+
+  it('should throw error when wrong execution type', async () => {
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'command' as const,
+        command: 'echo test',
+      },
+      parameters: {},
+    };
+
+    await expect(executor.execute(tool, {})).rejects.toThrow('Tool execution type is not http');
+  });
+
+  it('should handle axios request errors with error response', async () => {
+    const error = new Error('Request failed');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (error as any).response = {
+      status: 500,
+      data: { error: 'Internal Server Error' },
+    };
+
+    mockedAxios.request.mockRejectedValueOnce(error);
+
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'GET',
+        url: 'https://api.example.com/error',
+      },
+      parameters: {},
+    };
+
+    const result = (await executor.execute(tool, {})) as ExecutionResult;
+    expect(result).toBeDefined();
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(500);
+  });
+
+  it('should handle axios request errors without error response', async () => {
+    const error = new Error('Network error');
+
+    mockedAxios.request.mockRejectedValueOnce(error);
+
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'GET',
+        url: 'https://api.example.com/network-error',
+      },
+      parameters: {},
+    };
+
+    const result = (await executor.execute(tool, {})) as ExecutionResult;
+    expect(result).toBeDefined();
+    expect(result.success).toBe(false);
+    expect(result.statusCode).toBe(500);
+  });
+
+  it('should preserve query params structure when building query string', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'GET',
+        url: 'https://api.example.com/search',
+        query_params: {
+          q: '{query}',
+          limit: '{limit}',
+          offset: '{offset}',
+        },
+      },
+      parameters: {
+        query: { type: 'string', description: 'Search query' },
+        limit: { type: 'string', description: 'Limit' },
+        offset: { type: 'string', description: 'Offset' },
+      },
+    };
+
+    const result = (await executor.execute(tool, {
+      query: 'test search',
+      limit: '10',
+      offset: '0',
+    })) as ExecutionResult;
+
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
+    expect(mockedAxios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expect.stringContaining('?'),
+      })
+    );
+  });
+
+  it('should handle empty query params', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'GET',
+        url: 'https://api.example.com/test',
+        query_params: {},
+      },
+      parameters: {},
+    };
+
+    const result = (await executor.execute(tool, {})) as ExecutionResult;
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
+  });
+
+  it('should skip unfilled query param placeholders', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'GET',
+        url: 'https://api.example.com/test',
+        query_params: {
+          provided: '{query}',
+          missing: '{notProvided}',
+        },
+      },
+      parameters: {
+        query: { type: 'string', description: 'Query' },
+        notProvided: { type: 'string', description: 'Optional' },
+      },
+    };
+
+    const result = (await executor.execute(tool, {
+      query: 'search',
+    })) as ExecutionResult;
+
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
+    // Should have query param for 'provided' but not 'missing'
+    const callUrl = mockedAxios.request.mock.calls[0][0].url;
+    expect(callUrl).toContain('provided=search');
+    expect(callUrl).not.toContain('notProvided');
+  });
+
+  it('should encode query parameters', async () => {
+    mockedAxios.request.mockResolvedValueOnce({
+      data: { success: true },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      config: {} as any,
+    });
+
+    const tool: ToolDefinition = {
+      name: 'test',
+      description: 'test',
+      version: '1.0.0',
+      execution: {
+        type: 'http',
+        method: 'GET',
+        url: 'https://api.example.com/test',
+        query_params: {
+          q: '{query}',
+        },
+      },
+      parameters: {
+        query: { type: 'string', description: 'Query' },
+      },
+    };
+
+    const result = (await executor.execute(tool, {
+      query: 'hello world & special=chars',
+    })) as ExecutionResult;
+
+    expect(result).toBeDefined();
+    expect(result.success).toBe(true);
+    // Should have encoded query parameter
+    const callUrl = mockedAxios.request.mock.calls[0][0].url;
+    expect(callUrl).toContain('q=');
+  });
+});

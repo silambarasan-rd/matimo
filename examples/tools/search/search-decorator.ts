@@ -2,47 +2,69 @@ import {
   MatimoInstance,
   setGlobalMatimoInstance,
   tool,
-  getPathApprovalManager,
+  getGlobalApprovalHandler,
+  type ApprovalRequest,
 } from '@matimo/core';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import readline from 'readline';
+import * as readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Create readline interface for interactive approval prompts
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-let isReadlineClosed = false;
-
-// Track when readline closes (e.g., piped input ends)
-rl.on('close', () => {
-  isReadlineClosed = true;
-});
-
 /**
- * Prompt user for approval decision
+ * Create an interactive approval callback
  */
-async function promptForApproval(
-  filePath: string,
-  mode: 'read' | 'write' | 'search'
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    // If readline is closed (e.g., non-TTY/piped input), auto-approve
-    if (isReadlineClosed) {
-      console.info(
-        `[${mode.toUpperCase()}] Access to ${filePath} auto-approved (non-interactive mode)`
-      );
-      resolve(true);
-      return;
+function createApprovalCallback() {
+  return async (request: ApprovalRequest): Promise<boolean> => {
+    const isInteractive = process.stdin.isTTY;
+
+    console.info('\n' + '='.repeat(70));
+    console.info('🔒 APPROVAL REQUIRED FOR FILE OPERATION');
+    console.info('='.repeat(70));
+    console.info(`\n📋 Tool: ${request.toolName}`);
+    console.info(`📝 Description: ${request.description || '(no description provided)'}`);
+    console.info(`\n📄 Search Operation:`);
+    console.info(`   Query: ${request.params.query}`);
+    console.info(`   Directory: ${request.params.directory}`);
+    if (request.params.filePattern) {
+      console.info(`   File Pattern: ${request.params.filePattern}`);
     }
-    rl.question(`[${mode.toUpperCase()}] Approve access to ${filePath}? (y/n): `, (answer) => {
-      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+
+    if (!isInteractive) {
+      console.info('\n❌ REJECTED - Non-interactive environment (no terminal)');
+      console.info('\n💡 To enable auto-approval in CI/scripts:');
+      console.info('   export MATIMO_AUTO_APPROVE=true');
+      console.info('\n💡 Or approve specific patterns:');
+      console.info('   export MATIMO_APPROVED_PATTERNS="search"');
+      console.info('\n' + '='.repeat(70) + '\n');
+      return false;
+    }
+
+    // Interactive mode: prompt user
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
     });
-  });
+
+    return new Promise((resolve) => {
+      console.info('\n❓ User Action Required');
+      const question = '   Type "yes" to approve or "no" to reject: ';
+
+      rl.question(question, (answer) => {
+        const approved = answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y';
+
+        if (approved) {
+          console.info('   ✅ Operation APPROVED by user');
+        } else {
+          console.info('   ❌ Operation REJECTED by user');
+        }
+        console.info('='.repeat(70) + '\n');
+
+        rl.close();
+        resolve(approved);
+      });
+    });
+  };
 }
 
 /**
@@ -93,11 +115,29 @@ async function decoratorExample() {
   const matimo = await MatimoInstance.init({ autoDiscover: true });
   setGlobalMatimoInstance(matimo);
 
-  // Set up approval callback for interactive approval
-  const approvalManager = getPathApprovalManager();
-  approvalManager.setApprovalCallback(promptForApproval);
+  // Configure centralized approval handler
+  const approvalHandler = getGlobalApprovalHandler();
+  approvalHandler.setApprovalCallback(createApprovalCallback());
 
-  console.info('=== Search Tool - Decorator Pattern (Interactive Approval) ===\n');
+  console.info('\n' + '='.repeat(70));
+  console.info('🚀 Search Tool - Decorator Pattern Example');
+  console.info('='.repeat(70));
+
+  // Show current approval mode
+  const autoApproveEnabled = process.env.MATIMO_AUTO_APPROVE === 'true';
+  const approvedPatterns = process.env.MATIMO_APPROVED_PATTERNS;
+
+  console.info('\n🔐 APPROVAL CONFIGURATION:');
+  if (autoApproveEnabled) {
+    console.info('   ✅ MATIMO_AUTO_APPROVE=true');
+    console.info('   → All search operations will be AUTO-APPROVED');
+  } else if (approvedPatterns) {
+    console.info(`   ✅ MATIMO_APPROVED_PATTERNS="${approvedPatterns}"`);
+    console.info('   → Matching operations will be auto-approved');
+  } else {
+    console.info('   ⚠️  INTERACTIVE MODE ENABLED');
+    console.info('   → You will be prompted to approve search operations');
+  }
 
   // Get the workspace root (parent of examples directory)
   // File is in examples/tools/search/, so go up 3 levels
@@ -107,30 +147,43 @@ async function decoratorExample() {
 
   try {
     // Example 1: Find pattern through decorated method
-    console.info('1. Finding "export" in TypeScript files\n');
+    console.info('\n1️⃣  SEARCHING FOR A PATTERN');
+    console.info('-'.repeat(70));
+    console.info('Finding "export" in TypeScript files (max 5 results)\n');
     const result1 = await searcher.findPattern(
       'export',
       path.join(workspaceRoot, 'packages/core/src'),
       '*.ts',
       5
     );
-    console.info('Total matches:', (result1 as any).totalMatches);
-    console.info('Matches found:', (result1 as any).matches?.length);
+    if (result1) {
+      console.info('✅ Total matches:', (result1 as any).totalMatches);
+      console.info('📊 Matches found:', (result1 as any).matches?.length);
+      if ((result1 as any).matches?.length > 0) {
+        console.info('📝 First match:', (result1 as any).matches[0]);
+      }
+    }
     console.info('---\n');
 
     // Example 2: Search in specific directory
-    console.info('2. Searching in examples directory\n');
+    console.info('2️⃣  SEARCHING IN EXAMPLES DIRECTORY');
+    console.info('-'.repeat(70));
+    console.info('Searching for "async" in TypeScript files\n');
     const result2 = await searcher.searchInDirectory(
       'async',
       path.join(workspaceRoot, 'examples/tools'),
       '*.ts'
     );
-    console.info('Total matches:', (result2 as any).totalMatches);
-    console.info('Matches found:', (result2 as any).matches?.length);
+    if (result2) {
+      console.info('✅ Total matches:', (result2 as any).totalMatches);
+      console.info('📊 Matches found:', (result2 as any).matches?.length);
+    }
     console.info('---\n');
 
     // Example 3: Regex search
-    console.info('3. Using regex to find patterns\n');
+    console.info('3️⃣  USING REGEX PATTERN');
+    console.info('-'.repeat(70));
+    console.info('Finding "console.info" calls (max 5 results)\n');
     const result3 = await searcher.regexSearch(
       'console\\.info',
       path.join(workspaceRoot, 'packages/core/src'),
@@ -138,16 +191,15 @@ async function decoratorExample() {
       true,
       5
     );
-    console.info('Total matches:', (result3 as any).totalMatches);
-    console.info('Matches found:', (result3 as any).matches?.length);
-    console.info('---\n');
-  } catch (error: any) {
-    console.error('Error:', error.message);
-  } finally {
-    if (!isReadlineClosed) {
-      rl.close();
-      isReadlineClosed = true;
+    if (result3) {
+      console.info('✅ Total matches:', (result3 as any).totalMatches);
+      console.info('📊 Matches found:', (result3 as any).matches?.length);
     }
+    console.info('---\n');
+
+    console.info('✅ Decorator example completed successfully');
+  } catch (error: any) {
+    console.error('❌ Error:', error.message);
   }
 }
 

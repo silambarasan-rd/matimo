@@ -1,6 +1,6 @@
 {
   "name": "matimo-examples",
-  "version": "0.1.0-alpha.7.1",
+  "version": "0.1.0-alpha.8",
   "description": "Matimo SDK examples - Factory Pattern, Decorator Pattern, and LangChain integration with Slack and Gmail",
   "type": "module",
   "scripts": {
@@ -32,6 +32,10 @@
     "web:factory": "tsx web/web-factory.ts",
     "web:decorator": "tsx web/web-decorator.ts",
     "web:langchain": "tsx web/web-langchain.ts",
+    "github:factory": "tsx github/github-factory.ts",
+    "github:decorator": "tsx github/github-decorator.ts",
+    "github:langchain": "tsx github/github-langchain.ts",
+    "github:approval": "tsx github/github-with-approval.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -43,6 +47,7 @@
     "@matimo/slack": "workspace:*",
     "@matimo/gmail": "workspace:*",
     "@matimo/postgres": "workspace:*",
+    "@matimo/github": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },
