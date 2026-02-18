@@ -38,7 +38,7 @@ module.exports = {
         experimentalDecorators: true,
         emitDecoratorMetadata: true,
         target: 'ES2020',
-        module: 'commonjs'
+        module: 'ES2020'
       }
     }]
   }

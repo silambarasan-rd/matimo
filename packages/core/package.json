@@ -59,6 +59,7 @@
   "files": [
     "dist",
     "tools",
+    "destructive-keywords.yaml",
     "README.md",
     "LICENSE"
   ],

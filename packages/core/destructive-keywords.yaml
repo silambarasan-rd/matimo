@@ -1,0 +1,35 @@
+# Destructive keywords used by ApprovalHandler to auto-detect operations requiring approval
+# These are checked against SQL content and command parameters to determine if approval is needed
+
+sql:
+  - CREATE
+  - DELETE
+  - DROP
+  - ALTER
+  - TRUNCATE
+  - UPDATE
+  - INSERT
+  - UPSERT
+  - REPLACE
+  - MERGE
+  - GRANT
+  - REVOKE
+
+file:
+  - EDIT
+  - WRITE
+  - APPEND
+  - REMOVE
+  - RENAME
+
+system:
+  - SHUTDOWN
+  - EXECUTE
+  - EXEC
+  - system
+  - cmd
+  - shell
+  - bash
+  - powershell
+  - "rm -rf"
+  - "del /f"
