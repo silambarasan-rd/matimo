@@ -1,3 +1,34 @@
+
+## v0.1.0-alpha.8
+
+> Release: focused on a unified approval system, logging, new GitHub tools, and workflow fixes
+
+**Released**: February 18, 2026
+
+### 🚀 Highlights
+
+- **Unified approval system** — Reworked approvals for destructive operations across core tools (`edit`, `execute`, `read`, `search`) with a single `requires_approval` flow and integration into `MatimoInstance`.
+- **Structured logging** — Integrated Winston for consistent, structured logs across core packages.
+- **New GitHub provider tools** — Added tools to manage repositories, releases, pull requests, and code search.
+- **Examples & tests updated** — Examples refactored to use the new approval flow; test coverage expanded across core modules.
+- **CI / release fixes** — Discord notification payload fixes and release workflow improvements.
+
+### 📦 Packages
+
+- All publishable packages bumped to v0.1.0-alpha.8
+
+### 🔧 Notable Changes
+
+- Removed legacy approval implementations (`PathApprovalManager`, `SQLApprovalManager`) and related tests in favor of the unified system.
+- Improved approval matching: glob -> regex conversion and expanded content-type checks to reduce false positives.
+- All tools updated to rely on the new approval flow; redundant tests removed.
+- Documentation: outdated File Operation Approval docs removed/updated to reflect the new approach.
+
+### 🐛 Fixes
+
+- Fixed redundant Discord notification payload construction and formatting in release workflow.
+---
+
 ## v0.1.0-alpha.7.1
 
 > Patch: Discord release notifications + workflow improvements
