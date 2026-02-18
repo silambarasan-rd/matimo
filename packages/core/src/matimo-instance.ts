@@ -192,10 +192,29 @@ export class MatimoInstance {
       // 2. Check if pre-approved via env vars
       // 3. Call approval callback if not pre-approved
 
+      // Prefer execution-type-specific checks to reduce false positives.
+      // - `command` tools: scan `params.command`
+      // - SQL tools (convention): scan `params.sql`
+      // If configured via `MATIMO_APPROVAL_SCAN_ALL_PARAMS=true`, fall back
+      // to scanning all string-valued params.
+      const executionType = (tool.execution.type || '') as string;
+      let scanContent: string | undefined;
+
+      if (executionType === 'command' && typeof params.command === 'string') {
+        scanContent = params.command;
+      } else if (typeof params.sql === 'string') {
+        scanContent = params.sql;
+      } else if (process.env.MATIMO_APPROVAL_SCAN_ALL_PARAMS === 'true') {
+        const parts: string[] = [];
+        for (const val of Object.values(params)) {
+          if (typeof val === 'string') parts.push(val);
+        }
+        if (parts.length > 0) scanContent = parts.join(' ');
+      }
+
       const requiresApproval = this.approvalHandler.requiresApproval(
         tool.requires_approval,
-        // For SQL tools, check the SQL content
-        typeof params.sql === 'string' ? params.sql : undefined
+        scanContent
       );
 
       if (requiresApproval && !this.approvalHandler.isPreApproved(toolName)) {

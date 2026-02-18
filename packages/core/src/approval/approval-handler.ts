@@ -149,20 +149,24 @@ export class ApprovalHandler {
   }
 
   /**
-   * Check if a tool requires approval based on YAML definition or content
-   * @param requiresApprovalInYaml - From tool definition `requires_approval` field
-   * @param sqlContent - Optional SQL content to check for destructive keywords
+   * Check if a tool requires approval based on YAML definition or supplied content.
+   * @param requiresApproval In Yaml - From tool definition `requires_approval` field
+   * @param content - Optional content (SQL, shell command, etc.) to check for destructive keywords
+   *
+   * Notes:
+   * -  We now accept any textual content so keyword detection also applies to command/shell and sql
+   *   based tools (e.g. `params.command`).
    */
-  requiresApproval(requiresApprovalInYaml: boolean | undefined, sqlContent?: string): boolean {
+  requiresApproval(requiresApprovalInYaml: boolean | undefined, content?: string): boolean {
     // Explicit YAML definition takes precedence
     if (requiresApprovalInYaml === true) {
       return true;
     }
 
-    // Check SQL content for destructive keywords (for SQL tools)
-    if (sqlContent) {
-      const sqlUpper = String(sqlContent).toUpperCase();
-      return this.destructiveKeywords.some((keyword) => sqlUpper.includes(keyword));
+    // Check provided content (SQL, shell command, etc.) for destructive keywords
+    if (content) {
+      const upper = String(content).toUpperCase();
+      return this.destructiveKeywords.some((keyword) => upper.includes(keyword));
     }
 
     return false;
