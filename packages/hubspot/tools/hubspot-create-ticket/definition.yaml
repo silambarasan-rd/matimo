@@ -58,8 +58,7 @@ error_handling:
 examples:
   - name: 'Create ticket with subject and priority'
     params:
-      properties:
-        subject: 'Support Request'
-        priority: 'high'
-        description: 'Customer cannot login'
+      subject: 'Support Request'
+      priority: 'high'
+      description: 'Customer cannot login'
     expected_result: 'Ticket created with id and properties.'

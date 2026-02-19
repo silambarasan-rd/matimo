@@ -58,8 +58,7 @@ requires_approval: false
 examples:
   - name: Create a line item
     params:
-      properties:
-        name: Product A
-        quantity: 10
-        price: 99.99
-    expected_result: Line item created
+      name: Product A
+      quantity: 10
+      price: 99.99
+    expected_result: Line item created with id and properties.

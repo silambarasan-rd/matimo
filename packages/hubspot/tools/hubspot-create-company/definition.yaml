@@ -48,13 +48,10 @@ error_handling:
 examples:
   - name: 'Create company with name'
     params:
-      properties:
-        name: 'Acme Corp'
+      name: 'Acme Corp'
     expected_result: 'Company created with id and properties.'
-  - name: 'Create company with multiple properties'
+  - name: 'Create company with name and domain'
     params:
-      properties:
-        name: 'Tech Startup Inc'
-        domain: 'techstartup.com'
-        industry: 'Software'
-    expected_result: 'Company created with multiple properties.'
+      name: 'Tech Startup Inc'
+      domain: 'techstartup.com'
+    expected_result: 'Company created with name and domain.'

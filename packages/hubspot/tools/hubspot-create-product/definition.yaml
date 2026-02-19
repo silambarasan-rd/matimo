@@ -53,8 +53,6 @@ requires_approval: false
 examples:
   - name: Create a product
     params:
-      properties:
-        name: Product A
-        price: 99.99
-        sku: SKU-001
-    expected_result: Product created
+      name: Product A
+      price: 99.99
+    expected_result: Product created with id and properties.

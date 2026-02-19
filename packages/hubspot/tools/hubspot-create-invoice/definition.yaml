@@ -43,6 +43,5 @@ requires_approval: false
 examples:
   - name: Create an invoice
     params:
-      properties:
-        hs_object_id: deal_id
-    expected_result: Invoice created
+      hs_currency: USD
+    expected_result: Invoice created with id and properties.

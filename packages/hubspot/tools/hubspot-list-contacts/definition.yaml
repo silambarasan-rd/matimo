@@ -19,9 +19,13 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.hubapi.com/crm/v3/objects/contacts?limit={limit}&after={after}&properties={properties}'
+  url: 'https://api.hubapi.com/crm/v3/objects/contacts'
   headers:
     Authorization: 'Bearer {MATIMO_HUBSPOT_API_KEY}'
+  query_params:
+    limit: '{limit}'
+    after: '{after}'
+    properties: '{properties}'
   timeout: 30000
 
 authentication:

@@ -63,8 +63,7 @@ error_handling:
 examples:
   - name: 'Create deal with name and stage'
     params:
-      properties:
-        dealname: 'Enterprise Sale'
-        dealstage: 'negotiation'
-        amount: '50000'
+      dealname: 'Enterprise Sale'
+      dealstage: 'negotiation'
+      amount: 50000
     expected_result: 'Deal created with id and properties.'

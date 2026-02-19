@@ -53,6 +53,5 @@ examples:
   - name: Create a custom object
     params:
       object_type: my_custom_object
-      properties:
-        name: Custom Object 1
-    expected_result: Custom object created
+      name: Custom Object 1
+    expected_result: Custom object created with id and properties.

@@ -58,6 +58,6 @@ requires_approval: false
 examples:
   - name: Create an order
     params:
-      properties:
-        hs_order_amount: 1000
-    expected_result: Order created
+      ordernumber: ORD-001
+      amount: 1000
+    expected_result: Order created with id and properties.

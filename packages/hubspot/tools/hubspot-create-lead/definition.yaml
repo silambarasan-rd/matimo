@@ -67,8 +67,7 @@ requires_approval: false
 examples:
   - name: Create a lead
     params:
-      properties:
-        email: john@example.com
-        firstname: John
-        lastname: Doe
-    expected_result: Lead created with email john@example.com
+      email: john@example.com
+      firstname: John
+      lastname: Doe
+    expected_result: Lead created with id and properties.
