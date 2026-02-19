@@ -1,6 +1,6 @@
 {
   "name": "@matimo/postgres",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "description": "Postgres tools for Matimo",
   "type": "module",
   "files": [
@@ -9,8 +9,10 @@
     "definition.yaml"
   ],
   "dependencies": {
-    "pg": "^8.18.0",
-    "@matimo/core": "workspace:*"
+    "pg": "^8.18.0"
+  },
+  "peerDependencies": {
+    "matimo": "workspace:*"
   },
   "devDependencies": {
     "@types/pg": "^8.6.6"

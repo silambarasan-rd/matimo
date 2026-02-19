@@ -154,7 +154,7 @@ HubSpot tools support three authentication methods:
 1. Go to your HubSpot account → Settings → Integrations → **Service Keys**
 2. Click **Create service key**
 3. Enter a name (e.g., "Matimo Integration") and description
-4. Select required scopes (all 14):
+4. Select required scopes:
    - `crm.objects.contacts.read`
    - `crm.objects.contacts.write`
    - `crm.objects.companies.read`
@@ -209,7 +209,7 @@ For users with existing private apps or if webhooks are required.
 1. Go to your HubSpot account → Settings → Development → Legacy apps
 2. Click **Create legacy app** → select **Private**
 3. Name the app (e.g., "Matimo Integration"), add description and logo
-4. Go to **Scopes** tab and add required scopes (all 14):
+4. Go to **Scopes** tab and add required scopes:
    - `crm.objects.contacts.read`
    - `crm.objects.contacts.write`
    - `crm.objects.companies.read`

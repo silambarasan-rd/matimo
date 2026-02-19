@@ -1,10 +1,12 @@
 {
   "name": "@matimo/hubspot",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.9",
   "description": "HubSpot tools for Matimo - universal CRM, marketing, and automation integration.",
   "type": "module",
   "files": ["tools", "README.md", "definition.yaml"],
-  "peerDependencies": {"matimo": "workspace:*"},
+  "peerDependencies": {
+    "matimo": "workspace:*"
+    },
   "devDependencies": {
     "@matimo/core": "workspace:*"
   }

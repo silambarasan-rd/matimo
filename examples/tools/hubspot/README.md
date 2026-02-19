@@ -15,7 +15,7 @@ All examples are **fully working** and demonstrate real HubSpot operations (cont
 2. Click **Settings** (gear icon) → **Integrations** → **Service Keys**
 3. Click **Create service key**
 4. Enter a name like "Matimo Integration"
-5. Select required scopes (all 14 CRM object read/write scopes)
+5. Select required scopes
 
 ### 2. Configure Required Scopes
 
