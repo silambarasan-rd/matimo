@@ -340,14 +340,25 @@ For detailed API documentation:
 
 ## 🔒 Approval System
 
-Destructive operations (update, delete) require approval before execution. Set `MATIMO_APPROVAL_ENABLED=true` to enforce:
+Destructive operations (update, delete) require approval before execution. Configure approval handling programmatically:
 
-```bash
-export MATIMO_APPROVAL_ENABLED=true
-export MATIMO_APPROVAL_CALLBACK=callback-function
+```typescript
+import { ApprovalHandler } from '@matimo/core';
+
+// Set approval callback
+ApprovalHandler.setApprovalCallback(async (toolName: string, params: Record<string, unknown>) => {
+  console.log(`Approval required for: ${toolName}`);
+  console.log('Parameters:', params);
+  // Return true to approve, false to deny
+  return true;
+});
+
+// Optional: Control auto-approval via environment variables
+// MATIMO_AUTO_APPROVE=true (approve all)
+// MATIMO_APPROVED_PATTERNS=hubspot-update-contact,hubspot-delete-* (approve by pattern)
 ```
 
-Tools marked with 🔒 will prompt for approval.
+Tools marked with 🔒 will request approval before executing.
 
 ## 📊 Tool Status
 

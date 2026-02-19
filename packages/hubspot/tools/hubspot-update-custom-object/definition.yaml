@@ -25,10 +25,6 @@ execution:
     Content-Type: application/json
   body:
     properties: '{properties}'
-  parameter_encoding:
-    - source: [properties]
-      target: body
-      encoding: json
   timeout: 30000
 
 authentication:

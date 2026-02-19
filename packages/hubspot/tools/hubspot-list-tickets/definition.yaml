@@ -15,7 +15,10 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.hubapi.com/crm/v3/objects/tickets?limit={limit}&after={after}'
+  url: 'https://api.hubapi.com/crm/v3/objects/tickets'
+  query_params:
+    limit: '{limit}'
+    after: '{after}'
   headers:
     Authorization: 'Bearer {MATIMO_HUBSPOT_API_KEY}'
   timeout: 30000
