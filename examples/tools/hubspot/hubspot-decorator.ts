@@ -55,7 +55,7 @@ async function runDecoratorPatternExamples() {
     process.exit(1);
   }
 
-  console.info(`🔑 Service Key: ${apiKey.slice(0, 15)}...`);
+  console.info(`🔑 Service Key is set`);
   console.info('🚀 Initializing Matimo...\n');
 
   // Initialize Matimo with auto-discovery

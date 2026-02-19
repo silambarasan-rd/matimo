@@ -88,8 +88,8 @@ async function runHubSpotAIAgent() {
     process.exit(1);
   }
 
-  console.info(`🔑 HubSpot Service Key: ${hubspotKey.slice(0, 15)}...`);
-  console.info(`🔑 OpenAI API Key: ${openaiKey.slice(0, 15)}...`);
+  console.info(`🔑 HubSpot Service Key is set`);
+  console.info(`🔑 OpenAI API Key is set`);
   console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
 
   try {
