@@ -3,6 +3,7 @@ packages:
   - "packages/slack"
   - "packages/gmail"
   - "packages/github"
+  - "packages/hubspot"
   - "packages/cli"
   - "examples/tools"
   - "packages/postgres"

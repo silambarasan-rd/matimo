@@ -1,6 +1,6 @@
 {
   "name": "@matimo/github",
-  "version": "0.1.0-alpha.8",
+  "version": "0.1.0-alpha.9",
   "description": "GitHub API tools for Matimo - Full-featured GitHub integration with OAuth2 and PAT support",
   "type": "module",
   "files": [
@@ -8,10 +8,10 @@
     "README.md",
     "definition.yaml"
   ],
-  "dependencies": {
-    "@matimo/core": "workspace:*"
+   "peerDependencies": {
+    "matimo": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@matimo/core": "workspace:*"
   }
 }

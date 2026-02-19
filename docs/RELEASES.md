@@ -1,3 +1,48 @@
+## v0.1.0-alpha.9
+
+> Release: HubSpot provider, 50+ CRM tools, LLM-powered examples, approval enforcement, and full documentation
+
+**Released**: February 19, 2026
+
+### 🚀 Features
+
+- **HubSpot Provider**
+  - Added full HubSpot CRM integration as a new provider package (`packages/hubspot`).
+  - 50+ tools for Contacts, Companies, Deals, Tickets, Leads, Line Items, Invoices, Orders, Products, and Custom Objects (CRUD + list for each).
+  - All destructive tools (`update`, `delete`) require approval (`requires_approval: true`).
+  - OAuth2 and API key authentication supported.
+  - Comprehensive YAML tool definitions with examples and output schemas.
+- **Examples**
+  - New HubSpot example scripts for Factory, Decorator, and LangChain agent patterns (`examples/tools/hubspot-*`).
+  - Example scripts use real LLM agent pattern (OpenAI GPT-4o-mini via LangChain).
+  - Example and package READMEs for HubSpot, with setup, usage, and troubleshooting.
+- **Testing**
+  - Integration and unit tests for HubSpot tools (Jest, 85%+ coverage).
+  - Approval system tested for all destructive actions.
+- **Documentation**
+  - Full documentation for HubSpot tools in both `packages/hubspot/README.md` and `examples/tools/hubspot/README.md`.
+  - Updated main `README.md` to mention HubSpot support.
+- **CI/CD**
+  - Updated GitHub Actions workflow for npm releases and Discord notifications.
+
+### 🛠 Fixes & Improvements
+
+- Lint: Removed all `any` types from test files, fixed all lint warnings.
+- Tests: Fixed all TypeScript errors in test files, all tests pass.
+- Approval: Confirmed all destructive HubSpot tools have `requires_approval: true`.
+- Package: Added HubSpot scripts to `examples/tools/package.json`.
+- Monorepo: Registered HubSpot in `pnpm-workspace.yaml` and `pnpm-lock.yaml`.
+
+### ⚠️ Breaking Changes
+
+- None.
+
+### 📝 Migration Notes
+
+- To use HubSpot tools, install dependencies and set `MATIMO_HUBSPOT_API_KEY` or configure OAuth2 as described in the package README.
+- Approval system is enforced for all destructive HubSpot actions; set `MATIMO_APPROVAL_ENABLED=true` to require approval.
+
+---
 
 ## v0.1.0-alpha.8
 

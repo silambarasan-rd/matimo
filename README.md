@@ -63,6 +63,7 @@ Matimo ships with built-in support for:
 - **Gmail Integration**: Send/read email, manage threads
 - **GitHub Integration**: Issues, pull requests, releases
 - **Postgres Tools**: Query/modify data with safety checks
+- **HubSpot Tools**: Read/Write data to Hubspot CRM
 - **Auto-Discovery**: Automatic detection of @matimo/\* providers from npm
 - **Matimo CLI**: Tool discovery, installation, and management
 - **OAuth2 Support**: Provider-agnostic authorization for Slack, Gmail, GitHub, etc.
@@ -155,7 +156,6 @@ cd examples/tools && pnpm install && pnpm agent:factory
 ---
 
 ## Features **Coming Soon:**
-
 
 - More tool providers (Stripe, Twilio, Notion, etc.)
 - Python SDK

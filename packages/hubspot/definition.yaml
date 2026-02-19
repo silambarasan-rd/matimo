@@ -1,0 +1,73 @@
+# HubSpot OAuth2 Provider Definition
+#
+# This file defines the OAuth2 configuration for HubSpot.
+# All HubSpot tools reference this provider definition.
+#
+# Users can override these endpoints via:
+# 1. Runtime config (highest priority)
+# 2. Environment variables: OAUTH_HUBSPOT_AUTH_URL, OAUTH_HUBSPOT_TOKEN_URL, etc.
+# 3. This YAML definition (lowest priority)
+#
+# Setup:
+# 1. Create HubSpot app at https://developers.hubspot.com/
+# 2. Set HUBSPOT_CLIENT_ID and HUBSPOT_CLIENT_SECRET environment variables
+# 3. Set HUBSPOT_REDIRECT_URI to your callback URL (e.g., http://localhost:3000/auth/hubspot/callback)
+
+name: hubspot-provider
+type: provider
+version: '1.0.0'
+tags:
+  - CRM
+  - Marketing
+  - Sales
+  - Automation
+
+description: |
+  HubSpot OAuth2 Provider Configuration
+
+  All HubSpot CRM tools use these endpoints for OAuth2 authentication.
+
+  Setup:
+  1. Create HubSpot app in Developer Console
+  2. Enable OAuth2 and configure redirect URIs
+  3. Set HUBSPOT_CLIENT_ID and HUBSPOT_CLIENT_SECRET environment variables
+  4. Set HUBSPOT_REDIRECT_URI to your callback URL
+
+provider:
+  name: hubspot
+  displayName: HubSpot
+
+  # OAuth2 Endpoints
+  # Standard HubSpot OAuth2 endpoints - change only if using custom proxy
+  endpoints:
+    authorizationUrl: https://app.hubspot.com/oauth/authorize
+    tokenUrl: https://api.hubapi.com/crm/v3/oauth
+    revokeUrl: https://api.hubapi.com/crm/v3/oauth/tokens/revoke
+
+  # Standard scopes for HubSpot CRM access
+  # Tools can override with their own scopes
+  defaultScopes:
+    - crm.objects.contacts.read
+    - crm.objects.contacts.write
+    - crm.objects.companies.read
+    - crm.objects.companies.write
+    - crm.objects.deals.read
+    - crm.objects.deals.write
+    - crm.objects.tickets.read
+    - crm.objects.tickets.write
+    - crm.objects.leads.read
+    - crm.objects.leads.write
+    - crm.objects.line_items.read
+    - crm.objects.line_items.write
+    - crm.objects.invoices.read
+    - crm.objects.invoices.write
+    - crm.objects.orders.read
+    - crm.objects.orders.write
+    - crm.objects.products.read
+    - crm.objects.products.write
+    - crm.objects.custom.read
+    - crm.objects.custom.write
+
+  # Additional metadata
+  documentation: https://developers.hubspot.com/docs/api/crm/contacts
+  learnMore: https://developers.hubspot.com/docs/api/oauth-quickstart

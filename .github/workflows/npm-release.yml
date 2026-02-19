@@ -74,12 +74,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Notify Discord
         run: |
@@ -87,7 +86,7 @@ jobs:
           VERSION="${{ github.ref_name }}"
           RELEASE_DATE=$(date '+%Y-%m-%d')
 
-          # Extract release notes from RELEASES.md for the current version
+          # Extract a short release preview from RELEASES.md for the current version (first 20 lines)
           RELEASE_NOTES=$(awk "
             /^## $VERSION/ {
               found=1
@@ -96,15 +95,10 @@ jobs:
             found && /^## / {
               exit
             }
-            found && NF {
+            found {
               print \$0
             }
-          " docs/RELEASES.md | head -40 | sed 's/^//')
-
-          # Truncate to a safe Discord embed field length (<= 1000 chars)
-          if [ ${#RELEASE_NOTES} -gt 980 ]; then
-            RELEASE_NOTES="${RELEASE_NOTES:0:977}..."
-          fi
+          " docs/RELEASES.md | head -c 1000 | sed 's/^//')
 
           # Dynamically extract publishable packages from pnpm-workspace.yaml
           PACKAGES=$(grep -A 100 "^packages:" pnpm-workspace.yaml | grep '  - "' | sed 's/.*"\(.*\)".*/\1/' | while read dir; do
@@ -118,57 +112,17 @@ jobs:
           done | tr '\n' ' ')
 
           # Ensure webhook secret is present
-          if [ -z "${{ secrets.DISCORD_WEBHOOK }}" ]; then
+          if [ -z "$DISCORD_WEBHOOK" ]; then
             echo "DISCORD_WEBHOOK secret is not set; skipping Discord notification."
             exit 0
           fi
 
-          # Build Discord payload with proper JSON escaping using jq
-          PAYLOAD=$(jq -n \
-            --arg username "Matimo Release Bot" \
-            --arg content "🎉 **New Release Available!**" \
-            --arg title "v$VERSION" \
-            --arg description "Matimo has been released on npm!" \
-            --arg url "https://github.com/tallclub/matimo/releases/tag/$VERSION" \
-            --arg release_notes "$RELEASE_NOTES" \
-            --arg packages "$PACKAGES" \
-            --arg release_date "$RELEASE_DATE" \
-            --arg release_link "https://github.com/tallclub/matimo/releases/tag/$VERSION" \
-            --arg changelog_link "https://github.com/tallclub/matimo/blob/main/docs/RELEASES.md" \
-            --arg npm_link "https://www.npmjs.com/org/matimo" \
-            '{
-              "username": $username,
-              "content": $content,
-              "embeds": [
-                {
-                  "title": $title,
-                  "description": $description,
-                  "url": $url,
-                  "color": 5814783,
-                  "fields": [
-                    {
-                      "name": "📝 Release Notes",
-                      "value": $release_notes,
-                      "inline": false
-                    },
-                    {
-                      "name": "📦 Published Packages",
-                      "value": $packages,
-                      "inline": false
-                    },
-                    {
-                      "name": "🔗 Learn More",
-                      "value": "[GitHub Release](\($release_link)) • [Full Changelog](\($changelog_link)) • [npm Registry](\($npm_link))",
-                      "inline": false
-                    }
-                  ],
-                  "footer": {
-                    "text": ("Matimo " + $title + " • Released on " + $release_date),
-                    "icon_url": "https://github.com/tallclub.png"
-                  }
-                }
-              ]
-            }')
+          # Build a simple plain-text payload with a short preview and a link to the release
+          RELEASE_LINK="https://github.com/tallclub/matimo/releases/tag/$VERSION"
+
+          CONTENT="🎉 New release v$VERSION — $RELEASE_DATE\n\nSee full changelog: $RELEASE_LINK"
+
+          PAYLOAD=$(jq -n --arg username "Matimo Release Bot" --arg content "$CONTENT" '{ username: $username, content: $content }')
 
           # Send to Discord with retries on 429, capture response
           TMP_RESPONSE=$(mktemp)
@@ -179,7 +133,7 @@ jobs:
           while :; do
             HTTP_CODE=$(curl -sS -o "$TMP_RESPONSE" -w "%{http_code}" -X POST \
               -H 'Content-Type: application/json' \
-              -d "$PAYLOAD" "${{ secrets.DISCORD_WEBHOOK }}") || true
+              -d "$PAYLOAD" "$DISCORD_WEBHOOK") || true
 
             echo "Discord HTTP status: $HTTP_CODE"
 
@@ -198,31 +152,12 @@ jobs:
               continue
             fi
 
-            # Non-recoverable error - print response and attempt fallback
-            echo "Discord response (first 200 chars):" >&2
-            sed -n '1,200p' "$TMP_RESPONSE" >&2 || true
-
-            echo "Attempting fallback: send plain content message instead of embed."
-
-            FALLBACK_NOTES="$RELEASE_NOTES"
-            if [ ${#FALLBACK_NOTES} -gt 480 ]; then
-              FALLBACK_NOTES="${FALLBACK_NOTES:0:477}..."
-            fi
-
-            FALLBACK_PAYLOAD=$(jq -n \
-              --arg username "Matimo Release Bot" \
-              --arg content "🎉 New release v$VERSION — $RELEASE_DATE\n\n$FALLBACK_NOTES\n\nRelease: https://github.com/tallclub/matimo/releases/tag/$VERSION\nPackages: $PACKAGES" \
-              '{ username: $username, content: $content }')
-
-            HTTP_CODE=$(curl -sS -o "$TMP_RESPONSE" -w "%{http_code}" -X POST \
-              -H 'Content-Type: application/json' \
-              -d "$FALLBACK_PAYLOAD" "${{ secrets.DISCORD_WEBHOOK }}") || true
-
-            echo "Fallback Discord HTTP status: $HTTP_CODE"
-            if [ "$HTTP_CODE" -eq 204 ] || [ "$HTTP_CODE" -eq 200 ]; then
-              rm -f "$TMP_RESPONSE"
-              break
-            fi
+            # Non-recoverable error - print response for debugging
+            echo "Discord response (first 400 chars):" >&2
+            sed -n '1,400p' "$TMP_RESPONSE" >&2 || true
+            rm -f "$TMP_RESPONSE"
+            exit 1
+          done
 
             echo "Fallback failed; response:" >&2
             sed -n '1,400p' "$TMP_RESPONSE" >&2 || true
