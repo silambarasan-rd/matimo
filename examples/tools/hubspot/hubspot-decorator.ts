@@ -70,38 +70,41 @@ async function runDecoratorPatternExamples() {
   const hubspotTools = allTools.filter((t) => t.name.startsWith('hubspot-'));
   console.info(`🔧 Found ${hubspotTools.length} HubSpot tools\n`);
 
-  // Auto-approve destructive operations for examples
-  process.env.MATIMO_AUTO_APPROVE = 'true';
-
   class HubSpotAgent {
     @tool('hubspot-create-contact')
-    async createContact(email: string, firstname?: string, lastname?: string) {
+    async createContact(email: string, firstname?: string, lastname?: string): Promise<unknown> {
       // Decorator auto-executes via matimo
+      return undefined;
     }
 
     @tool('hubspot-get-contact')
-    async getContact(id: string, properties?: string[]) {
+    async getContact(id: string, properties?: string[]): Promise<unknown> {
       // Decorator auto-executes via matimo
+      return undefined;
     }
 
     @tool('hubspot-create-company')
-    async createCompany(name: string, domain?: string) {
+    async createCompany(name: string, domain?: string): Promise<unknown> {
       // Decorator auto-executes via matimo
+      return undefined;
     }
 
     @tool('hubspot-list-contacts')
-    async listContacts(limit?: number, properties?: string[]) {
+    async listContacts(limit?: number, after?: string, properties?: string[]): Promise<unknown> {
       // Decorator auto-executes via matimo
+      return undefined;
     }
 
     @tool('hubspot-create-product')
-    async createProduct(name: string, description?: string, price?: number) {
+    async createProduct(name: string, description?: string, price?: number): Promise<unknown> {
       // Decorator auto-executes via matimo
+      return undefined;
     }
 
     @tool('hubspot-create-invoice')
-    async createInvoice(hs_currency?: string) {
+    async createInvoice(hs_currency?: string): Promise<unknown> {
       // Decorator auto-executes via matimo
+      return undefined;
     }
   }
 
@@ -138,7 +141,7 @@ async function runDecoratorPatternExamples() {
 
     // Example 4: List contacts via decorator
     console.info('4️⃣  Listing contacts via decorator...');
-    const contactsList = await agent.listContacts(5, ['email', 'firstname', 'lastname']);
+    const contactsList = await agent.listContacts(5, undefined, ['email', 'firstname', 'lastname']);
     const count = ((contactsList as any).data?.results || []).length;
     console.info(`   ✅ Found ${count} contacts\n`);
 

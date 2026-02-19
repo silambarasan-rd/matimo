@@ -125,11 +125,9 @@ describe('HubSpot Tools Integration', () => {
       return;
     }
     const result = await matimo.execute('hubspot-create-contact', {
-      properties: {
-        email: 'integration-test@example.com',
-        firstname: 'Integration',
-        lastname: 'Test',
-      },
+      email: 'integration-test@example.com',
+      firstname: 'Integration',
+      lastname: 'Test',
     });
     expect(result).toBeDefined();
     expect(typeof result).toBe('object');
@@ -143,9 +141,7 @@ describe('HubSpot Tools Integration', () => {
       return;
     }
     try {
-      await matimo.execute('hubspot-create-contact', {
-        properties: {},
-      });
+      await matimo.execute('hubspot-create-contact', {});
       fail('Should have thrown MatimoError');
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'name' in error && 'code' in error) {
@@ -159,9 +155,7 @@ describe('HubSpot Tools Integration', () => {
 
   it('should not expose API keys in error messages', async () => {
     try {
-      await matimo.execute('hubspot-create-contact', {
-        properties: { email: 'fail@example.com' },
-      });
+      await matimo.execute('hubspot-create-contact', { email: 'fail@example.com' });
     } catch (error) {
       const errorString = JSON.stringify(error);
       expect(errorString).not.toContain(process.env.MATIMO_HUBSPOT_API_KEY);

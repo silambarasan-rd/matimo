@@ -35,7 +35,11 @@ describe('hubspot-create-contact execution', () => {
 
   it('calls axios with correct method, url and Authorization header', async () => {
     const result = await matimo.execute('hubspot-create-contact', {
-      properties: { email: 'test@example.com', firstname: 'Exec', lastname: 'Test' },
+      email: 'test@example.com',
+      firstname: 'Exec',
+      lastname: 'Test',
+      phone: '123-456-7890',
+      company: 'Test Company',
     });
 
     expect(result).toBeDefined();

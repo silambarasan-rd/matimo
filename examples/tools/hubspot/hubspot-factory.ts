@@ -100,9 +100,6 @@ async function runFactoryPatternExamples() {
   console.info(`   - Products: 5 tools`);
   console.info(`   - Custom Objects: 5 tools\n`);
 
-  // Auto-approve destructive operations for examples
-  process.env.MATIMO_AUTO_APPROVE = 'true';
-
   console.info('════════════════════════════════════════════════════════════\n');
   console.info('Running Examples:');
   console.info('════════════════════════════════════════════════════════════\n');
