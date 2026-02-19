@@ -131,7 +131,7 @@ describe('HubSpot Tools Integration', () => {
     });
     expect(result).toBeDefined();
     expect(typeof result).toBe('object');
-    expect((result as Record<string, unknown>).id).toBeDefined();
+    expect((result as { data?: { id?: unknown } }).data?.id).toBeDefined();
   });
 
   it('should throw MatimoError on invalid parameters', async () => {
