@@ -36,6 +36,9 @@
     "github:decorator": "tsx github/github-decorator.ts",
     "github:langchain": "tsx github/github-langchain.ts",
     "github:approval": "tsx github/github-with-approval.ts",
+    "hubspot:factory": "tsx hubspot/hubspot-factory.ts",
+    "hubspot:decorator": "tsx hubspot/hubspot-decorator.ts",
+    "hubspot:langchain": "tsx hubspot/hubspot-langchain.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -48,6 +51,7 @@
     "@matimo/gmail": "workspace:*",
     "@matimo/postgres": "workspace:*",
     "@matimo/github": "workspace:*",
+    "@matimo/hubspot": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },
