@@ -77,6 +77,9 @@ jobs:
     env:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Notify Discord
         run: |
           set -o pipefail
