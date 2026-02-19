@@ -1,0 +1,24 @@
+name: hubspot
+description: HubSpot CRM integration provider
+version: '1.0.0'
+tags:
+  - CRM
+  - Marketing
+  - Sales
+  - Automation
+provider_url: 'https://www.hubspot.com'
+oauth2:
+  provider: hubspot
+  client_id: '${HUBSPOT_CLIENT_ID}'
+  client_secret: '${HUBSPOT_CLIENT_SECRET}'
+  auth_url: 'https://app.hubspot.com/oauth/authorize'
+  token_url: 'https://api.hubapi.com/crm/v3/oauth'
+  scopes:
+    - 'crm.objects.contacts.read'
+    - 'crm.objects.contacts.write'
+    - 'crm.objects.companies.read'
+    - 'crm.objects.companies.write'
+    - 'crm.objects.deals.read'
+    - 'crm.objects.deals.write'
+    - 'crm.objects.tickets.read'
+    - 'crm.objects.tickets.write'
