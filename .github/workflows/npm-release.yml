@@ -98,7 +98,7 @@ jobs:
             found {
               print \$0
             }
-          " docs/RELEASES.md | head -40 | sed 's/^//')
+          " docs/RELEASES.md | head -c 1000 | sed 's/^//')
 
           # Dynamically extract publishable packages from pnpm-workspace.yaml
           PACKAGES=$(grep -A 100 "^packages:" pnpm-workspace.yaml | grep '  - "' | sed 's/.*"\(.*\)".*/\1/' | while read dir; do
@@ -120,7 +120,7 @@ jobs:
           # Build a simple plain-text payload with a short preview and a link to the release
           RELEASE_LINK="https://github.com/tallclub/matimo/releases/tag/$VERSION"
 
-          CONTENT="🎉 New release v$VERSION — $RELEASE_DATE\n\nRelease: $RELEASE_LINK\n\nPreview:\n$RELEASE_NOTES\n\nPublished packages: $PACKAGES"
+          CONTENT="🎉 New release v$VERSION — $RELEASE_DATE\n\nSee full changelog: $RELEASE_LINK"
 
           PAYLOAD=$(jq -n --arg username "Matimo Release Bot" --arg content "$CONTENT" '{ username: $username, content: $content }')
 
