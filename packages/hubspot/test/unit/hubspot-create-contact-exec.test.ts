@@ -42,10 +42,11 @@ describe('hubspot-create-contact execution', () => {
     // Axios.request should have been called once
     expect(mockedAxios.request).toHaveBeenCalledTimes(1);
 
-    const callArg = mockedAxios.request.mock.calls[0][0];
+    const callArg = mockedAxios.request.mock.calls[0][0] as Record<string, unknown>;
     expect(callArg.method).toBe('POST');
     expect(callArg.url).toBe('https://api.hubapi.com/crm/v3/objects/contacts');
-    expect(callArg.headers.Authorization).toBe('Bearer testkey');
+    const headers = callArg.headers as Record<string, unknown>;
+    expect(headers.Authorization).toBe('Bearer testkey');
 
     // Verify returned data shape
     const data = result as Record<string, unknown>;

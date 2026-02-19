@@ -37,11 +37,12 @@ describe('hubspot-get-contact execution', () => {
     expect(result).toBeDefined();
     expect(mockedAxios.request).toHaveBeenCalledTimes(1);
 
-    const callArg = mockedAxios.request.mock.calls[0][0];
+    const callArg = mockedAxios.request.mock.calls[0][0] as Record<string, unknown>;
     expect(callArg.method).toBe('GET');
     // URL template includes {id}; expect it to be replaced
     expect(callArg.url).toContain('https://api.hubapi.com/crm/v3/objects/contacts/contact_456');
-    expect(callArg.headers.Authorization).toBe('Bearer testkey');
+    const headers = callArg.headers as Record<string, unknown>;
+    expect(headers.Authorization).toBe('Bearer testkey');
 
     const data = result as Record<string, unknown>;
     expect((data.data as Record<string, unknown>).id).toBe('contact_456');

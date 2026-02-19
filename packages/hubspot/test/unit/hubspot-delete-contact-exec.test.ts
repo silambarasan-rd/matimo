@@ -34,10 +34,11 @@ describe('hubspot-delete-contact execution', () => {
     expect(result).toBeDefined();
     expect(mockedAxios.request).toHaveBeenCalledTimes(1);
 
-    const callArg = mockedAxios.request.mock.calls[0][0];
+    const callArg = mockedAxios.request.mock.calls[0][0] as Record<string, unknown>;
     expect(callArg.method).toBe('DELETE');
     expect(callArg.url).toBe('https://api.hubapi.com/crm/v3/objects/contacts/contact_delete_1');
-    expect(callArg.headers.Authorization).toBe('Bearer testkey');
+    const headers = callArg.headers as Record<string, unknown>;
+    expect(headers.Authorization).toBe('Bearer testkey');
 
     const data = result as Record<string, unknown>;
     expect((data.data as Record<string, unknown>).status).toBeDefined();
