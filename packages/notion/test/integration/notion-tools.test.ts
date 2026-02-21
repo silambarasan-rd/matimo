@@ -46,18 +46,32 @@ describe('Notion Tools Integration Tests', () => {
       expect(tool?.parameters?.database_id?.required).toBe(true);
     });
 
-    it('should validate required parameters', async () => {
-      const apiKey = process.env.NOTION_API_KEY;
-      if (!apiKey) {
-        console.info('⊘ Skipping - NOTION_API_KEY not set');
-        return;
-      }
+    it('should validate required parameters', () => {
+      // Validate against the tool definition parameters locally (no network)
+      const tool = matimo.getTool('notion_query_database');
+      expect(tool).toBeDefined();
 
-      // Valid parameters should not throw validation error
-      expect(() => {
-        const params = { database_id: 'a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b' };
-        expect(params).toBeDefined();
-      }).not.toThrow();
+      const params = { database_id: 'a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b' };
+
+      // Ensure required parameters are declared on the tool
+      const declaredParams = tool?.parameters || {};
+      const requiredParams = Object.entries(declaredParams)
+        .filter(([, p]) => (p as { required?: boolean }).required === true)
+        .map(([name]) => name);
+
+      requiredParams.forEach((r) => {
+        expect(params[r as keyof typeof params]).toBeDefined();
+      });
+
+      // Basic type checks for declared parameters (string/number/boolean)
+      for (const [name, def] of Object.entries(declaredParams)) {
+        const provided = (params as Record<string, unknown>)[name];
+        if (provided !== undefined && def.type) {
+          if (def.type === 'string') expect(typeof provided).toBe('string');
+          if (def.type === 'number') expect(typeof provided).toBe('number');
+          if (def.type === 'boolean') expect(typeof provided).toBe('boolean');
+        }
+      }
     });
 
     it('should throw error without required database_id', async () => {
@@ -88,13 +102,20 @@ describe('Notion Tools Integration Tests', () => {
         const result = (await matimo.execute('notion_query_database', {
           database_id: 'a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b',
           page_size: 5,
-        })) as Record<string, unknown>;
+        })) as {
+          success?: boolean;
+          statusCode?: number;
+          data?: Record<string, unknown>;
+          [key: string]: unknown;
+        };
 
         expect(result).toBeDefined();
-        expect(result.results).toBeDefined();
-        expect(Array.isArray(result.results)).toBe(true);
-        expect(result.has_more).toBeDefined();
-        expect(typeof result.has_more).toBe('boolean');
+        expect(result.data).toBeDefined();
+        const data = result.data as { results?: unknown; has_more?: unknown };
+        expect(data.results).toBeDefined();
+        expect(Array.isArray(data.results)).toBe(true);
+        expect(data.has_more).toBeDefined();
+        expect(typeof data.has_more).toBe('boolean');
       } catch (error: unknown) {
         // May fail with 404 if database doesn't exist, but should still be a valid error
         expect(error).toBeDefined();
