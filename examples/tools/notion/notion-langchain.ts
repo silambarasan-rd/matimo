@@ -84,12 +84,6 @@ async function runNotionAIAgent() {
     process.exit(1);
   }
 
-  if (!openaiKey) {
-    console.error('❌ Error: OPENAI_API_KEY not set in .env');
-    console.info('   Get one from: https://platform.openai.com/api-keys');
-    process.exit(1);
-  }
-
   console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);
 
   try {
