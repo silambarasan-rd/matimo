@@ -33,7 +33,7 @@ parameters:
     required: false
     example: 'bcc@example.com'
 
-  is_html:
+  isHtml:
     type: boolean
     description: Whether the body content is HTML (default is plain text)
     required: false
@@ -55,7 +55,7 @@ execution:
 
   # Parameter encoding: automatically convert to/subject/body to MIME format
   parameter_encoding:
-    - source: [to, subject, body, cc, bcc, is_html]
+    - source: [to, subject, body, cc, bcc, isHtml]
       target: raw
       encoding: mime_rfc2822_base64url
 

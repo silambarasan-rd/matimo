@@ -48,7 +48,15 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/repos/{owner}/{repo}/issues?state={state}&per_page={per_page}&page={page}'
+  url: 'https://api.github.com/repos/{owner}/{repo}/issues'
+  query_params:
+    state: '{state}'
+    assignee: '{assignee}'
+    labels: '{labels}'
+    sort: '{sort}'
+    direction: '{direction}'
+    per_page: '{per_page}'
+    page: '{page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'

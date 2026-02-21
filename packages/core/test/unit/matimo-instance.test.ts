@@ -146,7 +146,7 @@ describe('MatimoInstance - Core Functionality', () => {
 
     it('should distinguish auth from user parameters', () => {
       // User parameters like 'to', 'subject', 'body' should not be treated as auth
-      const userParams = ['to', 'subject', 'body', 'message_id', 'query'];
+      const userParams = ['to', 'subject', 'body', 'messageId', 'query'];
 
       userParams.forEach((param) => {
         const isAuthPattern = ['TOKEN', 'KEY', 'SECRET', 'PASSWORD'].some((pattern) =>

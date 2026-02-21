@@ -9,14 +9,17 @@ Get Matimo up and running in 5 minutes.
 Not sure where to start? Pick one:
 
 ### 🚀 **Path A: Use Pre-Built Tools** (Fastest — 2 mins)
+
 You want to execute existing tools (Slack, Gmail, GitHub, etc.) without building your own.
 
 **Install:**
+
 ```bash
 npm install matimo @matimo/slack @matimo/gmail
 ```
 
 **Use immediately:**
+
 ```typescript
 import { MatimoInstance } from 'matimo';
 
@@ -37,6 +40,7 @@ console.log('Message sent!', result);
 ---
 
 ### 🛠️ **Path B: Build Your Own Tool** (Educational — 5 mins)
+
 You want to understand how to create and execute custom tools.
 
 **[Continue below to create a calculator tool →](#1-installation-1-min)**
@@ -47,6 +51,7 @@ You want to understand how to create and execute custom tools.
 ---
 
 ### 🤖 **Path C: Integrate with LangChain** (Advanced — 10 mins)
+
 You want to use Matimo tools with an AI agent (LangChain, CrewAI, etc.).
 
 **[See LangChain Integration →](../framework-integrations/LANGCHAIN.md)**

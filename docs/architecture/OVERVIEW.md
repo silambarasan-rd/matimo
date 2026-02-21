@@ -193,7 +193,25 @@ tools: Map<name, ToolDefinition>
 
 ### 5. Execution Layer (packages/core/src/executors)
 
-**CommandExecutor**: Runs shell commands
+**FunctionExecutor** (Primary for Core Tools): Executes JavaScript/TypeScript functions directly
+
+```
+Input: { code: "execute.ts", params: {...} }
+Process: Import and call function directly (no subprocess)
+Output: { result }
+```
+
+Used by all 6 core tools: `execute`, `read`, `edit`, `search`, `web`, `calculator`
+
+**HttpExecutor**: Makes HTTP requests with automatic validation
+
+```
+Input: { method: "POST", url: "...", headers: {...}, body: {...} }
+Process: Send request, embed params, validate by output_schema
+Output: { status, data, headers }
+```
+
+**CommandExecutor** (Legacy Shell Execution): Runs external shell commands
 
 ```
 Input: { command: "node script.js", args: [...] }
@@ -201,21 +219,7 @@ Process: Spawn child process
 Output: { stdout, stderr, exitCode }
 ```
 
-**HttpExecutor**: Makes HTTP requests
-
-```
-Input: { method: "POST", url: "...", headers: {...} }
-Process: Send request + validate response
-Output: { status, data, headers }
-```
-
-**FunctionExecutor**: Executes JavaScript/TypeScript functions
-
-```
-Input: { function: async (params) => {...} }
-Process: Call function with parameters
-Output: { result }
-```
+Used for external tools and legacy scripts that need subprocess execution.
 
 ### 6. Tool Definitions (YAML)
 
@@ -224,8 +228,8 @@ Output: { result }
 ```yaml
 name: calculator
 execution:
-  type: command
-  command: ts-node calculator.ts
+  type: function
+  code: './calculator.ts'
 ```
 
 **Provider Tools** (packages/{provider}/tools/):
@@ -277,20 +281,19 @@ Tools interact with:
 3. ToolRegistry
    └─> Lookup 'calculator' definition
        │
-       ├─ execution: { type: 'command', command: 'node calculator.js' }
+       ├─ execution: { type: 'function', code: './calculator.ts' }
        ├─ parameters: { operation, a, b }
        │
        ▼
-4. CommandExecutor
-   └─> Execute: 'node calculator.js --op add 5 3'
+4. FunctionExecutor (or CommandExecutor/HttpExecutor based on type)
+   └─> Execute: Import function and call with params { operation: 'add', a: 5, b: 3 }
        │
-       ├─ Substitute {operation}, {a}, {b} with actual values
-       ├─ Spawn child process
-       ├─ Capture stdout/stderr
+       ├─ (For command type): Spawn child process with templated args
+       ├─ (For http type): Make HTTP request with embedded params
        │
        ▼
-5. External Service (node script)
-   └─> Run: node calculator.js --op add 5 3
+5. Tool Implementation
+   └─> Run: calculator({ operation: 'add', a: 5, b: 3 })
        │
        ├─ Calculate: 5 + 3 = 8
        │

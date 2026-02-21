@@ -25,7 +25,10 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/repos/{owner}/{repo}/releases?per_page={per_page}&page={page}'
+  url: 'https://api.github.com/repos/{owner}/{repo}/releases'
+  query_params:
+    per_page: '{per_page}'
+    page: '{page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'

@@ -475,40 +475,6 @@ requires_approval: false  # Override keyword detection
 
 **Solution**: Remove `requires_approval` flag from tool YAML and let auto-detection handle it based on actual keywords.
 
-## Migration from Older Versions
-
-### Old PathApprovalManager (Deleted)
-
-Old code:
-```typescript
-import { getPathApprovalManager } from '@matimo/core';
-const manager = getPathApprovalManager(); // Deleted
-```
-
-New code:
-```typescript
-import { getGlobalApprovalHandler } from '@matimo/core';
-const handler = getGlobalApprovalHandler();
-handler.setApprovalCallback(callback);
-```
-
-### Old SQLApprovalManager (Deleted)
-
-Old code:
-```typescript
-import { getSQLApprovalManager } from '@matimo/postgres';
-const manager = getSQLApprovalManager(); // Deleted
-```
-
-New code:
-```typescript
-import { getGlobalApprovalHandler } from '@matimo/core';
-const handler = getGlobalApprovalHandler();
-handler.setApprovalCallback(callback);
-```
-
-Both old managers have been consolidated into the single `ApprovalHandler`.
-
 ## See Also
 
 - [Tool Development Guide](./tool-development/)

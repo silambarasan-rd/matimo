@@ -34,7 +34,12 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/repos/{owner}/{repo}/collaborators?affiliation={affiliation}&permission={permission}&per_page={per_page}&page={page}'
+  url: 'https://api.github.com/repos/{owner}/{repo}/collaborators'
+  query_params:
+    affiliation: '{affiliation}'
+    permission: '{permission}'
+    per_page: '{per_page}'
+    page: '{page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'

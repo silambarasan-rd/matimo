@@ -23,7 +23,7 @@ pnpm add @matimo/gmail   # Gmail tools
 pnpm add @matimo/cli     # CLI tool management
 ```
 
-**Note**: v0.1.0-alpha.4 is available on npm. Stable v1.0.0 release coming in Q4 2026.
+**Note**: v0.1.0-alpha.10 is available on npm. Stable v0.1.0 release coming in March 2026, with v1.0.0 planned for Q4 2026.
 
 ### Option 2: From Source (Recommended for Contributors)
 

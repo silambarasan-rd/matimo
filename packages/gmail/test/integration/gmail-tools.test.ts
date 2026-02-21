@@ -5,6 +5,7 @@
 
 import { MatimoInstance } from '../../../core/src/matimo-instance';
 import axios from 'axios';
+import { MatimoError } from '../../../core/src/errors/matimo-error';
 import path from 'path';
 
 jest.mock('axios');
@@ -180,7 +181,7 @@ describe('Gmail Tools Integration', () => {
   });
 
   describe('Tool Execution - Get Message', () => {
-    it('should execute gmail-get-message with message_id', async () => {
+    it('should execute gmail-get-message with messageId', async () => {
       mockedAxios.request.mockResolvedValue({
         status: 200,
         data: {
@@ -200,7 +201,7 @@ describe('Gmail Tools Integration', () => {
       } as unknown);
 
       const params = {
-        message_id: 'msg123',
+        messageId: 'msg123',
         format: 'full',
       };
 
@@ -252,7 +253,7 @@ describe('Gmail Tools Integration', () => {
       } as unknown);
 
       const params = {
-        message_id: 'msg123',
+        messageId: 'msg123',
       };
 
       const result = (await matimo.execute('gmail-delete-message', params)) as MatimoResult;
@@ -326,10 +327,14 @@ describe('Gmail Tools Integration', () => {
         body: 'Test',
       };
 
-      await expect(matimo.execute('gmail-send-email', params)).resolves.toMatchObject({
-        success: false,
-        error: 'API Error',
-      });
+      try {
+        await matimo.execute('gmail-send-email', params);
+        fail('Expected MatimoError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(MatimoError);
+        const me = err as MatimoError;
+        expect(String(me.details?.originalError)).toContain('API Error');
+      }
     });
 
     it('should retry on failure according to configuration', async () => {
@@ -343,10 +348,14 @@ describe('Gmail Tools Integration', () => {
         body: 'Test',
       };
 
-      const result = (await matimo.execute('gmail-send-email', params)) as MatimoResult;
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Network error');
+      try {
+        await matimo.execute('gmail-send-email', params);
+        fail('Expected MatimoError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(MatimoError);
+        const me = err as MatimoError;
+        expect(String(me.details?.originalError)).toContain('Network error');
+      }
       expect(mockedAxios.request).toHaveBeenCalledTimes(1); // Only one call since no retry
     });
   });

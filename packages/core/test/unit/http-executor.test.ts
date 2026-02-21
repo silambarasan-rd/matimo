@@ -1,5 +1,6 @@
 import { HttpExecutor } from '../../src/executors/http-executor';
 import axios from 'axios';
+import { MatimoError } from '../../src/errors/matimo-error';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -211,8 +212,15 @@ describe('HttpExecutor', () => {
 
       mockedAxios.request.mockRejectedValue(new Error('timeout'));
 
-      const result = (await executor.execute(tool, {})) as Record<string, unknown>;
-      expect(result.success).toBe(false);
+      try {
+        await executor.execute(tool, {});
+        fail('Expected executor to throw MatimoError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(MatimoError);
+        const me = err as MatimoError;
+        expect(me.details).toBeDefined();
+        expect(String(me.details?.originalError)).toContain('timeout');
+      }
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           timeout: 5000,
@@ -258,9 +266,15 @@ describe('HttpExecutor', () => {
 
       mockedAxios.request.mockRejectedValue(new Error('ECONNREFUSED'));
 
-      const result = (await executor.execute(tool, {})) as Record<string, unknown>;
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('ECONNREFUSED');
+      try {
+        await executor.execute(tool, {});
+        fail('Expected executor to throw MatimoError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(MatimoError);
+        const me = err as MatimoError;
+        expect(me.details).toBeDefined();
+        expect(String(me.details?.originalError)).toContain('ECONNREFUSED');
+      }
     });
   });
 

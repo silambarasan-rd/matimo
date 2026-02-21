@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Latest Release**: v0.1.0-alpha.6 (February 13, 2026)
+**Latest Release**: v0.1.0-alpha.10 (February 21, 2026)
 
 ✅ **Completed Features**:
 
@@ -11,10 +11,12 @@
 - YAML-based tool definitions with Zod validation
 - SDK patterns (Factory, Decorator, LangChain)
 - Core tools suite (execute, read, edit, search, web, calculator)
-- Provider integrations (Slack with 16+ tools, Gmail with 5 tools)
+- Provider integrations (Slack with 16+ tools, Gmail with 5 tools, GitHub, HubSpot with 50+ tools, Notion with 7 tools)
 - CLI tool management (list, search, install, help)
-- 625+ comprehensive test suite with 100% pass rate
+- 800+ comprehensive test suite with 85%+ coverage
 - Complete documentation and examples
+- Structured error handling with MatimoError and error chaining
+- Enhanced HTTP executor with parameter embedding (objects, arrays)
 
 **See [RELEASES.md](./RELEASES.md)** for detailed release notes on completed features.
 
@@ -28,12 +30,12 @@
 
 Expand provider ecosystem with real-world integrations:
 
-- [ ] **GitHub** — Repositories, issues, pull requests, releases
+- [x] **GitHub** — Repositories, issues, pull requests, releases (v0.1.0-alpha.8)
 - [ ] **Stripe** — Payments, invoices, customers, subscriptions
 - [ ] **Twilio** — SMS, voice, video, messaging
-- [ ] **Hubspot** — CRM, contacts, deals, tickets
+- [x] **HubSpot** — CRM, contacts, deals, tickets (v0.1.0-alpha.9)
 - [ ] **Linear** — Issues, projects, milestones
-- [ ] **Notion** — Databases, pages, blocks
+- [x] **Notion** — Databases, pages, blocks (v0.1.0-alpha.10)
 - [ ] **Airtable** — Tables, records, views
 - [ ] **Jira** — Issues, projects, workflows
 - [ ] **AWS** — EC2, S3, Lambda, and core services
@@ -185,7 +187,11 @@ Alpha Phase (✅ Completed)
   v0.1.0-alpha.3  Feb 5, 2026
   v0.1.0-alpha.4  Feb 10, 2026
   v0.1.0-alpha.5  Feb 11, 2026
-  v0.1.0-alpha.6  Feb 13, 2026 ← Current
+  v0.1.0-alpha.6  Feb 13, 2026
+  v0.1.0-alpha.7  Feb 15, 2026  (Postgres tools)
+  v0.1.0-alpha.8  Feb 18, 2026  (GitHub tools, unified approval)
+  v0.1.0-alpha.9  Feb 19, 2026  (HubSpot tools)
+  v0.1.0-alpha.10 Feb 21, 2026  (Notion tools) ← Current
 
 v0.1.0 Release (📅 Coming)
   Priorities:
@@ -291,155 +297,12 @@ We welcome contributions at any level!
 
 ---
 
-## v0.1.0-alpha.5 (Previous Release)
-
-### ✅ Core Features Implemented
-
-**OAuth2 Authentication**
-
-- OAuth2 handler with token management
-- Provider-agnostic configuration via YAML
-- Multi-provider support (Google, GitHub, Slack)
-- Token injection system for tools
-
-**Tool System**
-
-- YAML-based tool definitions with Zod validation
-- Tool loader and registry
-- Command executor (shell commands + templating)
-- HTTP executor (REST APIs with OAuth2 support)
-- Parameter encoding utilities
-- Function executor for inline JavaScript/TypeScript execution
-
-**SDK Patterns**
-
-- Factory pattern (recommended for simple use cases)
-- Decorator pattern (@tool decorators for class-based code)
-- Tool auto discovery and filtering
-- Full TypeScript type safety (zero `any` types)
-- LangChain integration for OpenAI function schemas
-
-**Tool Examples**
-
-- Gmail tools (list, get, send, create-draft, delete)
-- Slack tools suite (16+ tools for messaging, channels, users, topics)
-- GitHub provider configuration
-- Slack provider configuration
-- Calculator and echo tools (reference implementations)
-
-**Monorepo Packaging**
-
-- Workspace-based structure with independent package publishing
-- Tools packages under `packages/{provider}/`
-- Separate npm package publication via `pnpm publish -r`
-- Workspace dependency versioning with `workspace:*` protocol
-
-**CLI Tool**
-
-- `matimo list` - List all available tools
-- `matimo search` - Search tools by name/keyword
-- `matimo install` - Install tools from CLI
-
-**Documentation**
-
-- Complete YAML tool specification guide
-- OAuth2 implementation documentation
-- Decorator pattern usage guide
-- SDK patterns and best practices
-- Contributing and development guidelines
-- Security implementation guidelines
-- Comprehensive troubleshooting FAQ
-- API reference documentation
-- Architecture overview with data flow diagrams
-
-**Quality Assurance**
-
-- 100% test passing across all packages
-- Full TypeScript strict mode enforcement
-- ESLint configuration with no warnings
-- Prettier code formatting
-- Zod runtime validation for all tool definitions
-- Test coverage tracking and reporting
-
----
-
-## v0.1.0-alpha.4 (Previous Release)
-
-### ✅ Features Implemented
-
-**Monorepo Structure & Packaging**
-
-- Workspace-based monorepo with independent package publishing
-- Tool definitions and assets packaged with providers
-- Workspace publishing via `pnpm publish -r`
-- Proper dependency management across packages
-
-**Schema & Error Handling**
-
-- Tool deprecation warnings in schema
-- Definition path tracking in ToolDefinition
-- Standardized error codes (INVALID_SCHEMA, EXECUTION_FAILED, AUTH_FAILED, etc.)
-- Enhanced error recovery and retry logic
-
-**LangChain Integration**
-
-- Automatic OpenAI function schema generation
-- Secret parameter detection with camelCase support
-- Seamless integration with LangChain agents
-
-**Search & Discovery**
-
-- Dynamic package discovery in CLI
-- Enhanced search command with filtering
-- Improved error messaging and UX
-
-**Security & Stability**
-
-- Security warnings for embedded code execution
-- Input validation enhancements
-- Installation improvements for ESM environments
-
-**Documentation Expansion**
-
-- Security guidelines for code execution
-- Troubleshooting FAQ and common issues
-- Tool specification documentation
-- Decorator pattern guide
-
----
-
 ## How to Use This Roadmap
 
-- **v0.1.0-alpha.1**: Initial SDK implementation with OAuth2 and tool execution
-- **v0.1.0-alpha.2**: Npm workflow improvements and export fixes
-- **v0.1.0-alpha.3**: Slack tools, error standardization, comprehensive examples
-- **v0.1.0-alpha.4**: Monorepo packaging, CLI, workspace publish CI, docs and examples updates
-- **v0.1.0-alpha.6**: Core tools architecture overhaul, function-based execution, unified SDK model
-- **Future Releases**: These are planned but not yet implemented. Contributions welcome!
+- **Current Version**: v0.1.0-alpha.10 (February 21, 2026)
+- **Future Releases**: See sections above for planned features
+- **Past Releases**: See [RELEASES.md](./RELEASES.md) for detailed release notes for all previous versions
 - **Contributing**: See [CONTRIBUTING.md](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) for how to help
-
----
-
-## Release Thoughts
-
-```
-v0.1.0-alpha.1  Feb 3, 2026
-    ↓
-v0.1.0-alpha.2  Feb 4, 2026
-    ↓
-v0.1.0-alpha.3  Feb 5, 2026
-    ↓
-v0.1.0-alpha.4  Feb 10, 2026
-    ↓
-v0.1.0-alpha.5  Feb 11, 2026
-    ↓
-v0.1.0-alpha.6  Feb 13, 2026 (Current)
-    ↓
-    |
-    |
-    |
-v0.1.0         March 2026
-```
 
 ---
 

@@ -22,7 +22,7 @@ cd packages/github
 cat > package.json << 'EOF'
 {
   "name": "@matimo/github",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.10",
   "description": "GitHub repository and issue management tools for Matimo",
   "type": "module",
   "files": ["tools", "definition.yaml"],

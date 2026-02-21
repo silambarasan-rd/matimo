@@ -37,7 +37,13 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/repos/{owner}/{repo}/commits?per_page={per_page}&page={page}'
+  url: 'https://api.github.com/repos/{owner}/{repo}/commits'
+  query_params:
+    sha: '{sha}'
+    path: '{path}'
+    author: '{author}'
+    per_page: '{per_page}'
+    page: '{page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'

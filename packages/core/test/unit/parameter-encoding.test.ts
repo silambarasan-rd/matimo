@@ -191,12 +191,12 @@ describe('Parameter Encoding System', () => {
         body: 'Body',
         cc: 'cc@example.com',
         bcc: 'bcc@example.com',
-        is_html: false,
+        isHtml: false,
       };
 
       const encodings: ParameterEncodingConfig[] = [
         {
-          source: ['to', 'subject', 'body', 'cc', 'bcc', 'is_html'],
+          source: ['to', 'subject', 'body', 'cc', 'bcc', 'isHtml'],
           target: 'raw',
           encoding: 'mime_rfc2822_base64url',
         },
@@ -218,12 +218,12 @@ describe('Parameter Encoding System', () => {
         to: 'user@example.com',
         subject: 'HTML Email',
         body: '<h1>Hello</h1><p>Test</p>',
-        is_html: true,
+        isHtml: true,
       };
 
       const encodings: ParameterEncodingConfig[] = [
         {
-          source: ['to', 'subject', 'body', 'is_html'],
+          source: ['to', 'subject', 'body', 'isHtml'],
           target: 'raw',
           encoding: 'mime_rfc2822_base64url',
         },

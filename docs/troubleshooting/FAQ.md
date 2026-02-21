@@ -1,6 +1,6 @@
 # Troubleshooting & FAQ
 
-Common issues and solutions for Matimo v0.1.0-alpha.4
+Common issues and solutions for Matimo v0.1.0-alpha.10
 
 ## Installation & Setup
 
@@ -455,14 +455,17 @@ const tool = m.getTool('gmail-send-email');
 
 ---
 
-## v0.1.0-alpha.4 Features & Roadmap
+## v0.1.0-alpha.10 Features & Roadmap
 
-### ✅ Available Now
+### ✅ Available Now (as of February 21, 2026)
 
 - ✅ **Core SDK** - MatimoInstance, tool execution, discovery
 - ✅ **CLI** - `matimo` command for tool management
 - ✅ **LangChain Integration** - Full schema conversion with enum/default support
 - ✅ **OAuth2** - Provider-agnostic authentication
+- ✅ **Provider Packages** - Slack (16+ tools), Gmail (5 tools), GitHub (12+ tools), HubSpot (50+ tools), Notion (7 tools), Postgres (4+ tools)
+- ✅ **Structured Error Handling** - MatimoError with cause chaining
+- ✅ **HTTP Executor Enhancements** - Parameter embedding for objects/arrays
 - ✅ **Multiple Executors** - Command, HTTP, Function
 - ✅ **Auto-Discovery** - Automatic tool loading from `node_modules`
 - ✅ **Type Safety** - Full TypeScript support with Zod validation

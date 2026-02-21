@@ -39,6 +39,9 @@
     "hubspot:factory": "tsx hubspot/hubspot-factory.ts",
     "hubspot:decorator": "tsx hubspot/hubspot-decorator.ts",
     "hubspot:langchain": "tsx hubspot/hubspot-langchain.ts",
+    "notion:factory": "tsx notion/notion-factory.ts",
+    "notion:decorator": "tsx notion/notion-decorator.ts",
+    "notion:langchain": "tsx notion/notion-langchain.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -52,6 +55,7 @@
     "@matimo/postgres": "workspace:*",
     "@matimo/github": "workspace:*",
     "@matimo/hubspot": "workspace:*",
+    "@matimo/notion": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },

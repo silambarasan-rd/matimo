@@ -3,7 +3,7 @@ description: Permanently delete a message from Gmail (cannot be undone)
 version: '1.0.0'
 
 parameters:
-  message_id:
+  messageId:
     type: string
     description: ID of the message to delete
     required: true
@@ -12,7 +12,7 @@ parameters:
 execution:
   type: http
   method: DELETE
-  url: 'https://www.googleapis.com/gmail/v1/users/me/messages/{message_id}'
+  url: 'https://www.googleapis.com/gmail/v1/users/me/messages/{messageId}'
   headers:
     Authorization: 'Bearer {GMAIL_ACCESS_TOKEN}'
   note: 'Immediately and permanently deletes the message. This operation cannot be undone. Use trash instead if you want to allow recovery.'
@@ -25,11 +25,7 @@ authentication:
 
 output_schema:
   type: object
-  description: Empty response on successful deletion (204 No Content)
-  properties:
-    success:
-      type: boolean
-      description: Whether the message was successfully deleted
+  description: Empty response on successful deletion (204 No Content). The executor may return an empty body for 204 responses.
 
 error_handling:
   retry: 3
