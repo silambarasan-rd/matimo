@@ -168,10 +168,51 @@ export class HttpExecutor {
   }
 
   /**
-   * Replace parameter placeholders in an object (headers, body)
-   * Recursively handles nested objects
-   * Skips keys with unfilled placeholders (e.g., "{sort_by}" when sort_by not provided)
-   * Uses parameter schema type (object, array, string, etc.) to determine how to embed values
+   * Replace parameter placeholders in an object (headers, body, query params)
+   *
+   * CORE PRINCIPLE: "Define once in YAML, embed correctly at execution time"
+   *
+   * This method intelligently handles different parameter types:
+   * - STRING placeholders like "{title}": Always templated as strings
+   * - OBJECT placeholders like "{parent}": Embedded directly as JSON objects (not stringified) if paramDefinitions specifies type:object
+   * - ARRAY placeholders like "{items}": Embedded directly as JSON arrays (not stringified) if paramDefinitions specifies type:array
+   *
+   * Key behaviors:
+   * - Recursively processes nested objects
+   * - Skips keys with unfilled placeholders (e.g., "{sort_by}" when sort_by not provided)
+   * - Uses parameter schema type from YAML to determine how to embed values
+   * - Preserves JSON structure for complex types (objects/arrays) sent to APIs
+   *
+   * @example
+   * ```
+   * // YAML definition:
+   * parameters:
+   *   parent:
+   *     type: object  // <-- Tells executor to embed as-is, not stringify
+   *   items:
+   *     type: array   // <-- Tells executor to embed as-is, not stringify
+   *   title:
+   *     type: string  // <-- String templating applies
+   *
+   * body:
+   *   parent: "{parent}"  // Object embedded as {"id": "123", ...}
+   *   items: "{items}"    // Array embedded as [{"name": "a"}, ...]
+   *   title: "{title}"    // String embedded as "My Title"
+   *
+   * // JavaScript call:
+   * const result = await matimo.execute('notion_create_page', {
+   *   parent: { database_id: 'abc123' },  // JavaScript object
+   *   items: [{ type: 'text' }],          // JavaScript array
+   *   title: 'Create This Page'           // String
+   * });
+   *
+   * // HTTP body sent to API:
+   * {
+   *   "parent": {"database_id": "abc123"},     // Proper JSON object
+   *   "items": [{"type": "text"}],            // Proper JSON array
+   *   "title": "Create This Page"             // String
+   * }
+   * ```
    */
   private templateObject(
     obj: Record<string, unknown>,

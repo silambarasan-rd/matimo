@@ -34,6 +34,41 @@ import { MatimoInstance, setGlobalMatimoInstance, tool } from '@matimo/core';
 /**
  * Notion Manager - Class-based interface to Notion tools
  * Each method is decorated with @tool() which auto-executes via Matimo
+ *
+ * MATIMO DESIGN: Structured Parameters (Objects/Arrays)
+ * ──────────────────────────────────────────────────────
+ * Note: This example passes structured JavaScript objects and arrays
+ * (like { database_id: '123' }, [{ type: 'text', ... }]) directly to methods.
+ *
+ * The decorator converts these to matimo.execute() calls, and the HTTP executor
+ * properly embeds them as JSON in request bodies—they are NOT stringified.
+ *
+ * This works because:
+ * 1. Each parameter is defined in YAML with its type (object, array, string, etc.)
+ * 2. The HTTP executor uses this type information to decide how to embed the value
+ * 3. For type:object and type:array, values are embedded directly as JSON structures
+ * 4. For type:string, values are templated as strings
+ *
+ * Example YAML parameter definition:
+ * ```yaml
+ * parameters:
+ *   parent:
+ *     type: object
+ *     description: Parent database or page
+ *   rich_text:
+ *     type: array
+ *     description: Array of rich text objects
+ *   markdown:
+ *     type: string
+ *     description: Markdown content
+ *
+ * body:
+ *   parent: "{parent}"        # Embedded as JSON object
+ *   rich_text: "{rich_text}"  # Embedded as JSON array
+ *   markdown: "{markdown}"    # Embedded as string
+ * ```
+ *
+ * Result: The API receives proper JSON structures, not stringified "[object Object]".
  */
 class NotionManager {
   /**
@@ -159,12 +194,16 @@ async function demonstrateDecoratorPattern() {
         const timestamp = new Date().toLocaleTimeString();
         console.info('3️⃣  Testing @tool("notion_create_page") decorator...');
         console.info('    → Calling: manager.createPage({...}, markdown, icon)');
+        console.info(
+          '    → Note: Structured params (objects/arrays) are properly embedded in HTTP body'
+        );
+        console.info('           as JSON, not stringified—this is handled by HttpExecutor\n');
 
         try {
           const createResult = await manager.createPage(
-            { database_id: foundDatabase.id },
-            `# Decorator Test Page\n\nCreated at ${timestamp}`,
-            { type: 'emoji', emoji: '🔧' }
+            { database_id: foundDatabase.id }, // Object param → embedded as JSON
+            `# Decorator Test Page\n\nCreated at ${timestamp}`, // String param
+            { type: 'emoji', emoji: '🔧' } // Object param → embedded as JSON
           );
           console.info(`   ✅ Create decorator executed`);
           console.info(`   📨 Got response: ${JSON.stringify(createResult).substring(0, 100)}...`);
@@ -186,10 +225,18 @@ async function demonstrateDecoratorPattern() {
 
             // Try commenting
             console.info('5️⃣  Testing @tool("notion_create_comment") decorator...');
+            console.info('    → Calling: manager.addComment(parent, rich_text_array)');
+            console.info(
+              '    → Note: Array param is properly embedded as JSON array in HTTP body\n'
+            );
             try {
-              const commentResult = await manager.addComment({ page_id: createResult.id }, [
-                { type: 'text', text: { content: `Added at ${timestamp} via decorator!` } },
-              ]);
+              const commentResult = await manager.addComment(
+                { page_id: createResult.id }, // Object param → embedded as JSON
+                [
+                  // Array param → embedded as JSON array
+                  { type: 'text', text: { content: `Added at ${timestamp} via decorator!` } },
+                ]
+              );
               console.info(`   ✅ Comment decorator executed\n`);
             } catch (e) {
               console.info(`   ⚠️  Comment skipped (expected if permission limited): ${e}\n`);
