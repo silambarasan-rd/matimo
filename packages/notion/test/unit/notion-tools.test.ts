@@ -196,20 +196,14 @@ describe('Notion Tools Unit Tests', () => {
         // legacy-style provider definition (keeps authentication, oauth2, notes top-level)
         expect(providerDef.name).toBe('notion_provider');
         expect((providerDef.authentication as Record<string, unknown>).type).toBe('bearer');
-        // Ensure setup_docs is a valid Notion docs URL (hostname ends with notion.com)
+        // Ensure setup_docs is a valid absolute URL targeting Notion (strict whitelist)
         const setupDocs =
           ((providerDef.notes as Record<string, unknown>).setup_docs as string) || '';
         expect(typeof setupDocs).toBe('string');
-        let hostOk = false;
-        try {
-          const parsed = new URL(setupDocs);
-          // Accept exact notion.com or any subdomain of notion.com
-          hostOk = parsed.hostname === 'notion.com' || parsed.hostname.endsWith('.notion.com');
-        } catch {
-          // Fallback: ensure the string mentions 'notion.com' to preserve previous behavior
-          hostOk = setupDocs.includes('notion.com');
-        }
-        expect(hostOk).toBe(true);
+        // Require a valid absolute URL; let URL parsing throw (test will fail) if invalid
+        const parsed = new URL(setupDocs);
+        const host = parsed.hostname;
+        expect(host === 'notion.com' || host.endsWith('.notion.com')).toBe(true);
       }
     });
   });
