@@ -86,7 +86,8 @@ function encodeMimeRfc2822(sourceValues: Record<string, unknown>): string {
   const body = sourceValues.body as string;
   const cc = sourceValues.cc as string | undefined;
   const bcc = sourceValues.bcc as string | undefined;
-  const isHtml = (sourceValues.is_html as boolean) || false;
+  // Accept both camelCase (`isHtml`) and snake_case (`is_html`) for backward compatibility
+  const isHtml = ((sourceValues.isHtml ?? sourceValues.is_html) as boolean) || false;
 
   if (!to || !subject || !body) {
     throw new MatimoError(
@@ -141,7 +142,7 @@ function encodeUrlParams(sourceValues: Record<string, unknown>): string {
  *     Authorization: 'Bearer {GMAIL_ACCESS_TOKEN}'
  *
  *   parameter_encoding:
- *     - source: [to, subject, body, cc, bcc, is_html]
+ *     - source: [to, subject, body, cc, bcc, isHtml]
  *       target: raw
  *       encoding: mime_rfc2822_base64url
  *

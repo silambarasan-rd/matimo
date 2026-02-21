@@ -84,6 +84,9 @@ importers:
       '@matimo/hubspot':
         specifier: workspace:*
         version: link:../../packages/hubspot
+      '@matimo/notion':
+        specifier: workspace:*
+        version: link:../../packages/notion
       '@matimo/postgres':
         specifier: workspace:*
         version: link:../../packages/postgres
@@ -243,6 +246,19 @@ importers:
       '@matimo/core':
         specifier: workspace:*
         version: link:../core
+
+  packages/notion:
+    dependencies:
+      matimo:
+        specifier: workspace:*
+        version: link:../..
+    devDependencies:
+      '@matimo/core':
+        specifier: workspace:*
+        version: link:../core
+      axios:
+        specifier: ^1.13.4
+        version: 1.13.5
 
   packages/postgres:
     dependencies:

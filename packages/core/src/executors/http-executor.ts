@@ -38,6 +38,9 @@ export class HttpExecutor {
       finalParams = applyParameterEncodings(params, parameterEncodings);
     }
 
+    // Validate URL parameters are provided
+    this.validateUrlParameters(url, finalParams);
+
     // Implement parameter templating
     let finalUrl = this.templateString(url, finalParams);
 
@@ -49,10 +52,10 @@ export class HttpExecutor {
       }
     }
 
-    const templatedHeaders = this.templateObject(headers, finalParams);
+    const templatedHeaders = this.templateObject(headers, finalParams, tool.parameters);
     const templatedBody =
       body && typeof body === 'object'
-        ? this.templateObject(body as Record<string, unknown>, finalParams)
+        ? this.templateObject(body as Record<string, unknown>, finalParams, tool.parameters)
         : body;
 
     // Build request config
@@ -87,12 +90,11 @@ export class HttpExecutor {
       const axiosError = error as AxiosError;
       const status = axiosError.response?.status || 500;
       const details = axiosError.response?.data || {};
-      return {
-        success: false,
-        error: axiosError.message || String(error),
+      throw new MatimoError('HTTP request failed', ErrorCode.EXECUTION_FAILED, {
         statusCode: status,
         details,
-      };
+        originalError: axiosError.message || String(error),
+      });
     }
   }
 
@@ -108,6 +110,43 @@ export class HttpExecutor {
       }
     }
     return result;
+  }
+
+  /**
+   * Check if a string is an unfilled placeholder
+   * Only matches single placeholders like "{param}", not "{...}" or embedded placeholders
+   */
+  private isUnfilledPlaceholder(str: string): boolean {
+    // Match exactly "{word}" where word is a valid identifier
+    return /^\{[a-zA-Z_][a-zA-Z0-9_]*\}$/.test(str);
+  }
+
+  /**
+   * Validate that all URL parameters are provided
+   */
+  private validateUrlParameters(url: string, params: Record<string, unknown>): void {
+    // Extract all placeholders from URL like {param_name}
+    const urlParamMatches = url.match(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g);
+    if (!urlParamMatches) {
+      return; // No parameters in URL
+    }
+
+    for (const match of urlParamMatches) {
+      const paramName = match.slice(1, -1); // Remove { }
+      const paramValue = params[paramName];
+
+      // Check if parameter is missing or undefined
+      if (paramValue === undefined) {
+        throw new MatimoError(
+          `Required URL parameter '${paramName}' is missing`,
+          ErrorCode.INVALID_SCHEMA,
+          { url, missingParam: paramName }
+        );
+      }
+
+      // Allow null, empty string, 0, false, etc. as valid values
+      // Just ensure the parameter is defined
+    }
   }
 
   /**
@@ -129,31 +168,150 @@ export class HttpExecutor {
   }
 
   /**
-   * Replace parameter placeholders in an object (headers, body)
-   * Recursively handles nested objects
+   * Replace parameter placeholders in an object (headers, body, query params)
+   *
+   * CORE PRINCIPLE: "Define once in YAML, embed correctly at execution time"
+   *
+   * This method intelligently handles different parameter types:
+   * - STRING placeholders like "{title}": Always templated as strings
+   * - OBJECT placeholders like "{parent}": Embedded directly as JSON objects (not stringified) if paramDefinitions specifies type:object
+   * - ARRAY placeholders like "{items}": Embedded directly as JSON arrays (not stringified) if paramDefinitions specifies type:array
+   *
+   * Key behaviors:
+   * - Recursively processes nested objects
+   * - Skips keys with unfilled placeholders (e.g., "{sort_by}" when sort_by not provided)
+   * - Uses parameter schema type from YAML to determine how to embed values
+   * - Preserves JSON structure for complex types (objects/arrays) sent to APIs
+   *
+   * @example
+   * ```
+   * // YAML definition:
+   * parameters:
+   *   parent:
+   *     type: object  // <-- Tells executor to embed as-is, not stringify
+   *   items:
+   *     type: array   // <-- Tells executor to embed as-is, not stringify
+   *   title:
+   *     type: string  // <-- String templating applies
+   *
+   * body:
+   *   parent: "{parent}"  // Object embedded as {"id": "123", ...}
+   *   items: "{items}"    // Array embedded as [{"name": "a"}, ...]
+   *   title: "{title}"    // String embedded as "My Title"
+   *
+   * // JavaScript call:
+   * const result = await matimo.execute('notion_create_page', {
+   *   parent: { database_id: 'abc123' },  // JavaScript object
+   *   items: [{ type: 'text' }],          // JavaScript array
+   *   title: 'Create This Page'           // String
+   * });
+   *
+   * // HTTP body sent to API:
+   * {
+   *   "parent": {"database_id": "abc123"},     // Proper JSON object
+   *   "items": [{"type": "text"}],            // Proper JSON array
+   *   "title": "Create This Page"             // String
+   * }
+   * ```
    */
   private templateObject(
     obj: Record<string, unknown>,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
+    paramDefinitions?: Record<string, { type: string }>
   ): Record<string, unknown> {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'string') {
-        result[key] = this.templateString(value, params);
+        // Check if this is exactly a placeholder like "{parent}"
+        const paramNameMatch = value.match(/^\{([a-zA-Z_][a-zA-Z0-9_]*)\}$/);
+
+        if (paramNameMatch) {
+          const paramName = paramNameMatch[1];
+          const paramValue = params[paramName];
+
+          // If parameter is defined in schema with type object or array,
+          // embed the value directly instead of stringifying
+          if (paramValue !== undefined && paramDefinitions?.[paramName]) {
+            const paramType = paramDefinitions[paramName].type;
+            if ((paramType === 'object' || paramType === 'array') && paramValue !== null) {
+              result[key] = paramValue;
+              continue;
+            }
+          }
+        }
+
+        // Otherwise, do normal string templating
+        const templated = this.templateString(value, params);
+        if (templated && !this.isUnfilledPlaceholder(templated)) {
+          // Extract parameter name from template (e.g., "{page_size}" → "page_size")
+          const paramName = paramNameMatch ? paramNameMatch[1] : null;
+
+          // If this is a single parameter placeholder, use the parameter's defined type
+          if (paramName && paramDefinitions?.[paramName]) {
+            const paramType = paramDefinitions[paramName].type;
+            if (paramType === 'number' && !isNaN(Number(templated))) {
+              result[key] = Number(templated);
+            } else if (paramType === 'boolean') {
+              result[key] = templated === 'true' || templated === '1' || templated === 'yes';
+            } else {
+              result[key] = templated;
+            }
+          } else {
+            result[key] = templated;
+          }
+        }
       } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         // Recursively template nested objects
-        result[key] = this.templateObject(value as Record<string, unknown>, params);
+        const nestedResult = this.templateObject(
+          value as Record<string, unknown>,
+          params,
+          paramDefinitions
+        );
+        // Only include nested object if it has content
+        if (Object.keys(nestedResult).length > 0) {
+          result[key] = nestedResult;
+        }
       } else if (Array.isArray(value)) {
         // Handle arrays of objects
-        result[key] = value.map((item) => {
-          if (typeof item === 'string') {
-            return this.templateString(item, params);
-          } else if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
-            return this.templateObject(item as Record<string, unknown>, params);
-          }
-          return item;
-        });
-      } else {
+        const templatedArray = value
+          .map((item) => {
+            if (typeof item === 'string') {
+              const templated = this.templateString(item, params);
+              // Skip unfilled placeholders
+              if (!this.isUnfilledPlaceholder(templated)) {
+                // Extract parameter name from template
+                const paramNameMatch = item.match(/^\{([a-zA-Z_][a-zA-Z0-9_]*)\}$/);
+                const paramName = paramNameMatch ? paramNameMatch[1] : null;
+
+                // If this is a single parameter placeholder, use the parameter's defined type
+                if (paramName && paramDefinitions?.[paramName]) {
+                  const paramType = paramDefinitions[paramName].type;
+                  if (paramType === 'number' && !isNaN(Number(templated))) {
+                    return Number(templated);
+                  } else if (paramType === 'boolean') {
+                    return templated === 'true' || templated === '1' || templated === 'yes';
+                  }
+                }
+                return templated;
+              }
+              return null;
+            } else if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+              const templated = this.templateObject(
+                item as Record<string, unknown>,
+                params,
+                paramDefinitions
+              );
+              // Only include if has content
+              return Object.keys(templated).length > 0 ? templated : null;
+            }
+            return item;
+          })
+          .filter((item) => item !== null);
+        // Only include array if it has items
+        if (templatedArray.length > 0) {
+          result[key] = templatedArray;
+        }
+      } else if (value !== undefined && value !== null) {
         result[key] = value;
       }
     }

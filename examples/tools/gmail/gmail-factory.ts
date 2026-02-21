@@ -44,7 +44,7 @@
  *    Example queries: "is:unread", "from:someone@example.com", "has:attachment"
  *
  * 3. gmail-get-message
- *    Parameters: message_id, [format]
+ *    Parameters: messageId, [format]
  *    Format options: "minimal" (lightweight), "full" (complete with headers)
  *    Returns: { payload { headers, body }, snippet }
  *
@@ -54,7 +54,7 @@
  *    Note: Draft is created but not sent - user edits then sends manually
  *
  * 5. gmail-delete-message
- *    Parameters: message_id
+ *    Parameters: messageId
  *    Returns: { success }
  *    Note: Permanently deletes the message
  *
