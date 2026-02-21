@@ -1,6 +1,7 @@
 import { HttpExecutor } from '../../src/executors/http-executor';
 import { ToolDefinition } from '../../src/core/schema';
 import { ExecutionResult } from '../../src/core/types';
+import { MatimoError, ErrorCode } from '../../src/errors/matimo-error';
 import axios from 'axios';
 
 // Mock axios to avoid real HTTP calls
@@ -472,10 +473,14 @@ describe('HttpExecutor - GitHub Approval Flows', () => {
       parameters: {},
     };
 
-    const result = (await executor.execute(tool, {})) as ExecutionResult;
-    expect(result).toBeDefined();
-    expect(result.success).toBe(false);
-    expect(result.statusCode).toBe(500);
+    try {
+      await executor.execute(tool, {});
+      fail('Expected executor to throw MatimoError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(MatimoError);
+      expect((err as MatimoError).code).toBe(ErrorCode.EXECUTION_FAILED);
+      expect((err as MatimoError).details?.statusCode).toBe(500);
+    }
   });
 
   it('should handle axios request errors without error response', async () => {
@@ -495,10 +500,14 @@ describe('HttpExecutor - GitHub Approval Flows', () => {
       parameters: {},
     };
 
-    const result = (await executor.execute(tool, {})) as ExecutionResult;
-    expect(result).toBeDefined();
-    expect(result.success).toBe(false);
-    expect(result.statusCode).toBe(500);
+    try {
+      await executor.execute(tool, {});
+      fail('Expected executor to throw MatimoError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(MatimoError);
+      expect((err as MatimoError).code).toBe(ErrorCode.EXECUTION_FAILED);
+      expect((err as MatimoError).details?.statusCode).toBe(500);
+    }
   });
 
   it('should preserve query params structure when building query string', async () => {
