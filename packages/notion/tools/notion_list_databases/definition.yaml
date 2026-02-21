@@ -8,8 +8,8 @@ version: "1.0.0"
 parameters:
   page_size:
     type: number
-    required: false
-    description: How many databases to return (1-100, default 10). Increase if you have more than 10 databases.
+    required: true
+    description: How many databases to return (1-100). Set this explicitly to avoid sending a literal placeholder when omitted.
 
 execution:
   type: http

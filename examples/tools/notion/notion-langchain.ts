@@ -188,8 +188,14 @@ async function runNotionAIAgent() {
       console.info(`👤 User: "${task.request}"\n`);
 
       try {
+        // Use the same invoke shape as the Slack example: supply `messages` array
         const response = (await (agent as any).invoke({
-          input: task.request,
+          messages: [
+            {
+              role: 'user',
+              content: task.request,
+            },
+          ],
         })) as any;
 
         // Get the output from the agent

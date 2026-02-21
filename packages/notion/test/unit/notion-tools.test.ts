@@ -120,16 +120,40 @@ describe('Notion Tools Unit Tests', () => {
         });
       });
 
-      it('should have Notion API v1 base URL', () => {
-        const url = toolDef.execution.url as string;
-        expect(url).toContain('api.notion.com');
-        expect(url).toContain('/v1/');
+      it('should have Notion API v1 base URL when using HTTP execution, or point to function/command otherwise', () => {
+        const exec = toolDef.execution as Record<string, unknown>;
+        const execType = typeof exec.type === 'string' ? exec.type : undefined;
+        if (execType === 'http') {
+          const url = exec.url as string;
+          expect(url).toContain('api.notion.com');
+          expect(url).toContain('/v1/');
+        } else if (execType === 'function') {
+          // function-executed tools should declare a code entry
+          const code = exec.code as string | undefined;
+          expect(code).toBeDefined();
+          expect(typeof code).toBe('string');
+        } else if (execType === 'command') {
+          const command = exec.command as string | undefined;
+          expect(command).toBeDefined();
+          expect(typeof command).toBe('string');
+        }
       });
 
-      it('should use Bearer token authentication header', () => {
-        const headers = (toolDef.execution.headers as Record<string, unknown>) || {};
-        expect(headers.Authorization).toBeDefined();
-        expect(headers.Authorization as string).toContain('Bearer');
+      it('should use Bearer token authentication header for HTTP tools, or declare bearer auth at top-level for others', () => {
+        const exec = toolDef.execution as Record<string, unknown>;
+        const execType = typeof exec.type === 'string' ? exec.type : undefined;
+        if (execType === 'http') {
+          const headers = (exec.headers as Record<string, unknown>) || {};
+          expect(headers.Authorization).toBeDefined();
+          expect(headers.Authorization as string).toContain('Bearer');
+        } else {
+          // non-HTTP tools should still declare authentication at top-level
+          expect(toolDef.authentication).toBeDefined();
+          const auth = toolDef.authentication as Record<string, unknown>;
+          expect(auth.type).toBeDefined();
+          // prefer bearer for Notion provider tools
+          expect(['bearer', 'api_key', 'oauth2', 'basic']).toContain(auth.type);
+        }
       });
 
       it('should not expose secrets in examples', () => {

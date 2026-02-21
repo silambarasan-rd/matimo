@@ -80,16 +80,21 @@ output_schema:
 examples:
   - name: "Query data source - all pages"
     params:
-      data_source_id: "d9824bdc-8445-4327-be8b-5b47500af6ce"
-    expected_result: "Returns paginated list of all pages in data source"
+      database_id: "d9824bdc-8445-4327-be8b-5b47500af6ce"
+    expected_result: "Returns paginated list of all pages in the database"
   - name: "Query data source - with filter"
     params:
-      data_source_id: "d9824bdc-8445-4327-be8b-5b47500af6ce"
-      filter: '{"property": "Status", "status": {"equals": "Done"}}'
-    expected_result: "Returns pages where Status property equals 'Done'"
+      database_id: "d9824bdc-8445-4327-be8b-5b47500af6ce"
+      filter:
+        property: Status
+        status:
+          equals: Done
+    expected_result: "Returns pages where the Status property equals 'Done'"
   - name: "Query data source - with sorting"
     params:
-      data_source_id: "d9824bdc-8445-4327-be8b-5b47500af6ce"
-      sorts: '[{"property": "Created", "direction": "descending"}]'
+      database_id: "d9824bdc-8445-4327-be8b-5b47500af6ce"
+      sorts:
+        - property: Created
+          direction: descending
       page_size: 25
-    expected_result: "Returns up to 25 pages sorted by creation date descending"
+    expected_result: "Returns up to 25 pages sorted by creation date (descending)"

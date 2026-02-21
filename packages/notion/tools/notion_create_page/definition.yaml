@@ -46,23 +46,8 @@ parameters:
     description: Position of page in parent. Can specify before_id or after_id
 
 execution:
-  type: http
-  method: POST
-  url: "https://api.notion.com/v1/pages"
-  headers:
-    Authorization: "Bearer {NOTION_API_KEY}"
-    "Notion-Version": "2025-09-03"
-    Content-Type: application/json
-  body:
-    parent: "{parent}"
-    properties: "{properties}"
-    icon: "{icon}"
-    cover: "{cover}"
-    children: "{children}"
-    markdown: "{markdown}"
-    template: "{template}"
-    position: "{position}"
-  timeout: 15000
+  type: function
+  code: './index.ts'
 
 authentication:
   type: bearer
@@ -70,7 +55,7 @@ authentication:
   name: Authorization
 notes:
   env: NOTION_API_KEY
-  caution: "Ensure 'Insert content' capability is enabled on the parent. Properties must match parent data source schema. For data source parents, properties are required. For page parents, only title is supported via properties. Either children or markdown can be used, not both. When using template, children parameter is not allowed."
+  caution: "Ensure 'Insert content' capability is enabled on the parent. Properties must match parent database schema. For database parents, properties are required. For page parents, only title is supported via properties. Either children or markdown can be used, not both. When using template, children parameter is not allowed."
 
 output_schema:
   type: object
@@ -104,19 +89,39 @@ output_schema:
   required: ["object", "id", "url"]
 
 examples:
-  - name: "Create page in data source"
+  - name: "Create page in database"
     params:
-      parent: '{"data_source_id": "a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b"}'
-      properties: '{"Name": {"title": [{"text": {"content": "New Page"}}]}}'
-    expected_result: "Creates a new page in the data source with the specified properties"
+      parent:
+        database_id: a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b
+      properties:
+        Name:
+          title:
+            - text:
+                content: "New Page"
+    expected_result: "Creates a new page in the database with the specified properties"
   - name: "Create page under existing page"
     params:
-      parent: '{"page_id": "be633bf1-dfa0-436d-b259-571129a590e5"}'
-      children: '[{"object": "block", "type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "Page content"}}]}}]'
+      parent:
+        page_id: be633bf1-dfa0-436d-b259-571129a590e5
+      children:
+        - object: block
+          type: paragraph
+          paragraph:
+            rich_text:
+              - type: text
+                text:
+                  content: "Page content"
     expected_result: "Creates a subpage with content blocks"
   - name: "Create page with emoji icon"
     params:
-      parent: '{"data_source_id": "a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b"}'
-      properties: '{"Name": {"title": [{"text": {"content": "Task"}}]}}'
-      icon: '{"type": "emoji", "emoji": "✅"}'
+      parent:
+        database_id: a1d8501e-1ac1-43e9-a6bd-ea9fe6c8822b
+      properties:
+        Name:
+          title:
+            - text:
+                content: "Task"
+      icon:
+        type: emoji
+        emoji: "✅"
     expected_result: "Creates a page with an emoji icon"

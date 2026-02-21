@@ -99,14 +99,24 @@ async function runFactoryPatternExamples() {
     console.info('3️⃣  CREATING NEW PAGE...\n');
     const pageTitle = `Matimo Test ${new Date().toLocaleTimeString()}`;
 
+    // Prefer the database_id from the query results (page parent) if available,
+    // otherwise fall back to the discovered database id from notion_list_databases.
+    const fallbackDbId = foundDatabase.id;
+    const pageParentDbId = queryData?.results?.[0]?.parent?.database_id;
+    const resolvedDatabaseId = pageParentDbId || fallbackDbId;
+
     const createParams = {
-      parent: { database_id: foundDatabase.id },
+      parent: { database_id: resolvedDatabaseId },
       markdown: `# ${pageTitle}\n\nCreated by Matimo at ${new Date().toLocaleString()}`,
       icon: {
         type: 'emoji',
         emoji: '✅',
       },
     };
+
+    console.info(
+      `DEBUG: Using database id for creation: ${resolvedDatabaseId} (from ${pageParentDbId ? 'query result' : 'discovery'})`
+    );
 
     console.info('DEBUG: Creating page with params:', JSON.stringify(createParams, null, 2));
     const createResult = (await matimo.execute('notion_create_page', createParams)) as any;
@@ -139,7 +149,7 @@ async function runFactoryPatternExamples() {
       // STEP 5: Add comment
       console.info('5️⃣  ADDING COMMENT...\n');
       try {
-        await matimo.execute('notion_create_comment', {
+        const commentResult = (await matimo.execute('notion_create_comment', {
           parent: { page_id: createData.id },
           rich_text: [
             {
@@ -149,17 +159,83 @@ async function runFactoryPatternExamples() {
               },
             },
           ],
-        });
-        console.info(`✅ Comment added!\n`);
+        })) as any;
+
+        console.info('DEBUG: Comment result:', JSON.stringify(commentResult).substring(0, 500));
+
+        const cr = commentResult.data || commentResult;
+        if (cr && cr.id) {
+          console.info(`✅ Comment added!\n`);
+        } else if (commentResult && (commentResult.success === false || commentResult.statusCode)) {
+          console.info(
+            `   ⚠️  Comment failed: ${JSON.stringify(commentResult).substring(0, 200)}\n`
+          );
+        } else {
+          console.info(`✅ Comment added (no id returned)\n`);
+        }
       } catch (err) {
-        console.info(
-          `   ⚠️  Could not add comment: ${err instanceof Error ? err.message : String(err)}\n`
-        );
+        try {
+          console.info('   ⚠️  Could not add comment. Error payload:', JSON.stringify(err));
+        } catch (_) {
+          console.info(
+            `   ⚠️  Could not add comment: ${err instanceof Error ? err.message : String(err)}\n`
+          );
+        }
       }
     } else {
       console.info(
         `   ⚠️  Failed to create page. Response: ${JSON.stringify(createData).substring(0, 200)}\n`
       );
+
+      // If the database wasn't found or not shared, attempt a fallback:
+      // create a child page under an existing page returned by the query above.
+      const errCode =
+        (createData && (createData as any).error && (createData as any).error.code) || '';
+      if (errCode === 'object_not_found') {
+        console.info(
+          '   ℹ️  Notion reports the database object was not found or not shared with the integration.'
+        );
+        const firstPage = queryData?.results?.[0];
+        if (firstPage && firstPage.id) {
+          console.info(`   ℹ️  Falling back to creating a sub-page under page id ${firstPage.id}`);
+          try {
+            const fallbackResult = await matimo.execute('notion_create_page', {
+              parent: { page_id: firstPage.id },
+              properties: {
+                Name: { title: [{ text: { content: pageTitle } }] },
+              },
+              icon: {
+                type: 'emoji',
+                emoji: '✅',
+              },
+            });
+
+            const fr = (fallbackResult as any).data || fallbackResult;
+            if (fr && fr.id) {
+              console.info('   ✅ Fallback page created as child page!');
+              console.info(`      🔑 ID: ${fr.id}`);
+              console.info(`      🔗 URL: ${fr.url}\n`);
+            } else {
+              console.info(
+                '   ⚠️  Fallback creation also failed. Check integration permissions and that the target page is shared.'
+              );
+            }
+          } catch (fbErr) {
+            console.info(
+              '   ⚠️  Fallback create threw an error:',
+              fbErr instanceof Error ? fbErr.message : String(fbErr)
+            );
+          }
+        } else {
+          console.info(
+            '   ℹ️  No pages available to fall back to. Ensure your integration is shared with the target database.'
+          );
+        }
+      } else {
+        console.info(
+          '   ℹ️  Creation failed for other reasons; inspect the response above for details.'
+        );
+      }
     }
 
     console.info('════════════════════════════════════════════════════════════\n');
