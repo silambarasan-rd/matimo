@@ -36,7 +36,13 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/orgs/{owner}/repos?type={type}&per_page={per_page}&page={page}'
+  url: 'https://api.github.com/orgs/{owner}/repos'
+  query_params:
+    type: '{type}'
+    sort: '{sort}'
+    direction: '{direction}'
+    per_page: '{per_page}'
+    page: '{page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'

@@ -31,7 +31,13 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/search/users?q={query}&sort={sort}&order={order}&per_page={per_page}&page={page}'
+  url: 'https://api.github.com/search/users'
+  query_params:
+    q: '{query}'
+    sort: '{sort}'
+    order: '{order}'
+    per_page: '{per_page}'
+    page: '{page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'

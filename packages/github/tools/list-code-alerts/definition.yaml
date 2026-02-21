@@ -38,7 +38,13 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts?state={state}&severity={severity}&sort={sort}&direction={direction}&per_page={per_page}'
+  url: 'https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts'
+  query_params:
+    state: '{state}'
+    severity: '{severity}'
+    sort: '{sort}'
+    direction: '{direction}'
+    per_page: '{per_page}'
   headers:
     Accept: application/vnd.github+json
     Authorization: 'Bearer {GITHUB_TOKEN}'
