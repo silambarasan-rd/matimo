@@ -151,11 +151,23 @@ describe('Notion Tools Integration Tests', () => {
       try {
         const result = (await matimo.execute('notion_search', {
           page_size: 5,
-        })) as Record<string, unknown>;
+        })) as {
+          success: boolean;
+          statusCode: number;
+          data?: Record<string, unknown>;
+          [key: string]: unknown;
+        };
+
         expect(result).toBeDefined();
-        expect(result.results).toBeDefined();
+        expect(result.success).toBe(true);
+        expect(result.statusCode).toBeGreaterThanOrEqual(200);
+        expect(result.statusCode).toBeLessThan(300);
+        expect(result.data).toBeDefined();
+
+        const data = result.data as { results?: unknown };
+        expect(data.results).toBeDefined();
       } catch (error: unknown) {
-        // Should still be valid error, not validation error
+        // If the call throws, ensure it's a handled error (e.g., permission/HTTP error)
         expect(error).toBeDefined();
       }
     });
@@ -222,9 +234,20 @@ describe('Notion Tools Integration Tests', () => {
       }
 
       try {
-        await matimo.execute('notion_query_database', {
+        const result = await matimo.execute('notion_query_database', {
           database_id: 'invalid-id-format',
         });
+
+        // Matimo HTTP executor returns a structured failure object instead of throwing
+        if (
+          result &&
+          typeof result === 'object' &&
+          'success' in (result as Record<string, unknown>)
+        ) {
+          const s = JSON.stringify(result);
+          expect(s).not.toContain(apiKey);
+          expect(s).not.toContain('secret_');
+        }
       } catch (error: unknown) {
         const errorString = JSON.stringify(error);
         expect(errorString).not.toContain(apiKey);
@@ -240,7 +263,23 @@ describe('Notion Tools Integration Tests', () => {
       }
 
       try {
-        await matimo.execute('notion_query_database', {});
+        const result = await matimo.execute('notion_query_database', {});
+
+        if (
+          result &&
+          typeof result === 'object' &&
+          'success' in (result as Record<string, unknown>)
+        ) {
+          const r = result as Record<string, unknown>;
+          if ((r.success as unknown) === false) {
+            const msg =
+              (r.error && (r.error as Record<string, unknown>).message) ||
+              r.message ||
+              JSON.stringify(r);
+            expect(msg).toBeDefined();
+            expect(String(msg).length > 0).toBe(true);
+          }
+        }
       } catch (error: unknown) {
         const err = error as Record<string, unknown>;
         expect(err.message).toBeDefined();
