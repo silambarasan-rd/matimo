@@ -154,6 +154,12 @@ describe('HubSpot Tools Integration', () => {
   });
 
   it('should not expose API keys in error messages', async () => {
+    const apiKey = process.env.MATIMO_HUBSPOT_API_KEY;
+    if (!apiKey) {
+      console.info('Skipping - API key not set');
+      return;
+    }
+
     try {
       await matimo.execute('hubspot-create-contact', { email: 'fail@example.com' });
     } catch (error) {
