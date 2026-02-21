@@ -7,7 +7,7 @@ parameters:
     required: false
     description: Search text to find in page/data_source titles - omit to return all shared items
   filter_object:
-    type: string
+    type: object
     required: false
     description: Filter results by object type - page or data_source
   sort_direction:
@@ -37,9 +37,7 @@ execution:
     Content-Type: application/json
   body:
     query: "{query}"
-    filter:
-      property: object
-      value: "{filter_object}"
+    filter: "{filter_object}"
     sort:
       direction: "{sort_direction}"
       timestamp: "{sort_timestamp}"

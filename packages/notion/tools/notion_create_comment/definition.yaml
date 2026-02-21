@@ -67,17 +67,31 @@ output_schema:
 examples:
   - name: "Comment on page with simple text"
     params:
-      parent: '{"page_id": "be633bf1-dfa0-436d-b259-571129a590e5"}'
-      rich_text: '[{"type": "text", "text": {"content": "This looks great! Consider adding more examples."}}]'
+      parent:
+        page_id: be633bf1-dfa0-436d-b259-571129a590e5
+      rich_text:
+        - type: text
+          text:
+            content: "This looks great! Consider adding more examples."
     expected_result: "Comment posted on the page"
   - name: "Reply to discussion thread"
     params:
       discussion_id: "discussion-thread-id"
-      rich_text: '[{"type": "text", "text": {"content": "I agree with this suggestion"}, "annotations": {"bold": true}}]'
+      rich_text:
+        - type: text
+          text:
+            content: "I agree with this suggestion"
+          annotations:
+            bold: true
     expected_result: "Reply added to existing discussion thread"
   - name: "Comment on block with attachment"
     params:
-      parent: '{"block_id": "block-id-uuid"}'
-      rich_text: '[{"type": "text", "text": {"content": "Attached document:"}}]'
-      attachments: '[{"url": "https://example.com/document.pdf"}]'
+      parent:
+        block_id: block-id-uuid
+      rich_text:
+        - type: text
+          text:
+            content: "Attached document:"
+      attachments:
+        - url: https://example.com/document.pdf
     expected_result: "Comment posted on block with file attachment"

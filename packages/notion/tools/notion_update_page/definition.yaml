@@ -48,14 +48,14 @@ execution:
     "Notion-Version": "2025-09-03"
     Content-Type: application/json
   body:
-    properties: {properties}
-    icon: {icon}
-    cover: {cover}
-    is_locked: {is_locked}
-    template: {template}
-    erase_content: {erase_content}
-    archived: {archived}
-    in_trash: {in_trash}
+    properties: "{properties}"
+    icon: "{icon}"
+    cover: "{cover}"
+    is_locked: "{is_locked}"
+    template: "{template}"
+    erase_content: "{erase_content}"
+    archived: "{archived}"
+    in_trash: "{in_trash}"
   timeout: 15000
 
 authentication:
@@ -91,17 +91,27 @@ examples:
   - name: "Update page title"
     params:
       page_id: "be633bf1-dfa0-436d-b259-571129a590e5"
-      properties: '{"Name": {"title": [{"text": {"content": "Updated Title"}}]}}'
+      properties:
+        Name:
+          title:
+            - text:
+                content: Updated Title
     expected_result: "Page title updated to 'Updated Title'"
   - name: "Update page icon"
     params:
       page_id: "be633bf1-dfa0-436d-b259-571129a590e5"
-      icon: '{"type": "emoji", "emoji": "🎉"}'
+      icon:
+        type: emoji
+        emoji: "🎉"
     expected_result: "Page icon changed to celebration emoji"
   - name: "Update page with cover and apply template"
     params:
       page_id: "be633bf1-dfa0-436d-b259-571129a590e5"
-      cover: '{"type": "external", "external": {"url": "https://example.com/image.png"}}'
-      template: '{"type": "default"}'
+      cover:
+        type: external
+        external:
+          url: https://example.com/image.png
+      template:
+        type: default
       erase_content: true
     expected_result: "Page cover set, default template applied, existing content replaced"
