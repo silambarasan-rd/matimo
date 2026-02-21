@@ -48,14 +48,14 @@ execution:
     "Notion-Version": "2025-09-03"
     Content-Type: application/json
   body:
-    properties: "{properties}"
-    icon: "{icon}"
-    cover: "{cover}"
-    is_locked: "{is_locked}"
-    template: "{template}"
-    erase_content: "{erase_content}"
-    archived: "{archived}"
-    in_trash: "{in_trash}"
+    properties: {properties}
+    icon: {icon}
+    cover: {cover}
+    is_locked: {is_locked}
+    template: {template}
+    erase_content: {erase_content}
+    archived: {archived}
+    in_trash: {in_trash}
   timeout: 15000
 
 authentication:
