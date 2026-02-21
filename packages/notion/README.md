@@ -131,7 +131,11 @@ class NotionManager {
   }
 
   @tool('notion_create_page')
-  async createPage(parent_id: string, parent_type: string, title: string) {
+  async createPage(
+    parent: Record<string, string>, // e.g., { database_id: '...' } or { page_id: '...' }
+    markdown?: string,
+    icon?: Record<string, string>
+  ) {
     // Auto-executed by decorator
   }
 
@@ -196,12 +200,15 @@ Query pages in a Notion database with optional filtering and sorting.
 Create a new page, optionally with properties and content.
 
 **Parameters:**
-- `parent_id` (required): ID of parent (database, page, or data source)
-- `parent_type` (required): 'database_id', 'page_id', or 'data_source_id'
-- `title` (optional): Page title
+- `parent` (required): Object describing where to create the page. Provide ONE of:
+  - `{ "database_id": "..." }` to create inside a database
+  - `{ "page_id": "..." }` to create as a child page
 - `properties` (optional): JSON properties matching parent schema
-- `icon_emoji` (optional): Single emoji for icon
-- `children` (optional): Array of block objects for content
+- `markdown` (optional): String content using Markdown (easiest way to add content)
+- `icon` (optional): Object for page icon, e.g. `{ type: 'emoji', emoji: '✅' }`
+- `children` (optional): Array of Notion block objects to add to the page
+
+> **Note:** This tool accepts a single `parent` object (for example `{ "database_id": "..." }` or `{ "page_id": "..."`) — do not pass separate `parent_id` / `parent_type` parameters. This matches the tool's YAML definition (`packages/notion/tools/notion_create_page/definition.yaml`).
 
 **Returns:** Created page object with `id`, `url`, and `properties`
 
@@ -244,13 +251,14 @@ Search workspace pages and databases by title.
 Add a comment to a page, block, or discussion thread.
 
 **Parameters:**
-- `page_id` (optional): Page to comment on
-- `block_id` (optional): Block to comment on
-- `discussion_id` (optional): Discussion thread to reply to
-- `text` (required): Comment content
-- `is_bolded` (optional): Bold text
-- `is_italic` (optional): Italicize text
-- `is_code` (optional): Code formatting
+- `parent` (optional): Object describing the comment target. Provide ONE of:
+  - `{ "page_id": "..." }` — comment on a page
+  - `{ "block_id": "..." }` — comment on a block
+  - omit to reply to a `discussion_id` (use `discussion_id` parameter)
+- `discussion_id` (optional): Discussion thread to reply to (alternative to `parent`)
+- `rich_text` (required): Array of rich text objects representing the comment content
+- `attachments` (optional): Array of file objects to attach to the comment
+- Formatting/annotations should be provided within the `rich_text` objects (bold/italic/code via annotations)
 
 **Returns:** Created comment object with `id` and `created_time`
 
