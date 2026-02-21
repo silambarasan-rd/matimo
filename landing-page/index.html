@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Matimo - Define AI tools once in YAML, use them everywhere. Framework-agnostic SDK for LangChain, OpenAI agents, and more.">
+    <meta name="keywords" content="AI agents, tools SDK, YAML, LangChain, OpenAI, framework-agnostic">
+    <meta name="author" content="Matimo">
+    <meta property="og:title" content="Matimo - AI Tools Unified">
+    <meta property="og:description" content="Define tools once in YAML, use them everywhere. Universal tool provider for AI agents.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://matimo.dev">
+    <title>Matimo - Define AI Tools Once, Use Everywhere</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #000000;
+            --primary-dark: #000000;
+            --primary-light: #333333;
+            --secondary: #1a1a1a;
+            --dark: #0f172a;
+            --dark-secondary: #1e293b;
+            --light: #f8fafc;
+            --text: #000000;
+            --text-light: #666666;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --accent: #000000;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ============= HEADER ============= */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            margin: 0 1.5rem;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .cta-header {
+            padding: 0.6rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .cta-header:hover {
+            background: var(--primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            nav, .cta-header {
+                display: none;
+            }
+        }
+
+        /* ============= HERO SECTION ============= */
+        .hero {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            font-weight: 800;
+        }
+
+        .hero-highlight {
+            background: linear-gradient(120deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .hero-date {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-badges a {
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+
+        .hero-badges a:hover {
+            transform: translateY(-2px);
+        }
+
+        .hero-badges img {
+            height: 28px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .hero-image {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .code-block {
+            background: var(--dark);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            text-align: left;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-keyword { color: #a78bfa; }
+        .code-string { color: #86efac; }
+        .code-property { color: #60a5fa; }
+
+        /* ============= FEATURES SECTION ============= */
+        .features {
+            padding: 100px 20px;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 4rem;
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            background: var(--light);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+        }
+
+        /* ============= BENEFITS SECTION ============= */
+        .benefits {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .benefits-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .benefits-text h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .benefit-list {
+            list-style: none;
+        }
+
+        .benefit-list li {
+            padding: 1rem 0;
+            padding-left: 3rem;
+            position: relative;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .benefit-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+
+        .benefits-visual {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .yaml-example {
+            background: var(--dark);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .benefits-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============= INTEGRATION PATTERNS ============= */
+        .patterns {
+            padding: 100px 20px;
+        }
+
+        .patterns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .pattern-card {
+            padding: 2rem;
+            background: var(--light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .pattern-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .pattern-number {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .pattern-card code {
+            display: block;
+            background: var(--dark);
+            color: var(--light);
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            text-align: left;
+            overflow-x: auto;
+        }
+
+        /* ============= ECOSYSTEM SECTION ============= */
+        .ecosystem {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .ecosystem h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .ecosystem p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tool-badge {
+            background: rgb(255, 255, 255);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: rgb(22, 20, 20);
+        }
+
+        .tool-badge img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .tool-badge svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .tool-badge:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .tool-badge-plus {
+            background: rgb(255, 255, 255);
+            border-style: dashed;
+        }
+
+        .tool-badge-plus svg {
+            width: 50px;
+            height: 50px;
+            stroke: rgb(2, 255, 7);
+        }
+
+        /* ============= DISCORD SECTION ============= */
+        .discord-cta {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .discord-cta h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .discord-cta > .container > p {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .discord-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btn-lg {
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: white;
+            color: #175fee;
+            border: none;
+        }
+
+        .btn-lg:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .discord-description {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .discord-cta {
+                padding: 60px 20px;
+            }
+
+            .btn-lg {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* ============= CTA SECTION ============= */
+        .final-cta {
+            padding: 80px 20px;
+            background: white;
+            text-align: center;
+        }
+
+        .final-cta h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .final-cta p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        /* ============= FOOTER ============= */
+        footer {
+            background: var(--dark);
+            color: #94a3b8;
+            padding: 3rem 20px;
+            text-align: center;
+            border-top: 1px solid var(--dark-secondary);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .footer-section h4 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section a {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--dark-secondary);
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: #94a3b8;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: var(--primary);
+        }
+
+        /* ============= RESPONSIVE ============= */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .benefits-text h2 {
+                font-size: 1.6rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .footer-content {
+                text-align: center;
+            }
+
+            .footer-section a {
+                display: inline;
+                margin: 0 0.5rem;
+            }
+        }
+
+        /* ============= ANIMATIONS ============= */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-content {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .feature-card {
+            animation: fadeInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .feature-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .feature-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <!-- ============= HEADER ============= -->
+    <header>
+        <div class="header-content container">
+            <a href="#" class="logo">
+                <img src="assets/matimo-logo.png" alt="Matimo Logo" style="border-radius: 8px;">
+                Matimo
+            </a>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#patterns">Patterns</a>
+                <a href="#ecosystem">Ecosystem</a>
+            </nav>
+            <a href="https://docs.matimo.dev" class="cta-header">Documentation</a>
+        </div>
+    </header>
+
+    <!-- ============= HERO ============= -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-badges">
+                <a href="https://github.com/tallclub/matimo/actions/workflows/ci.yml?branch=main" title="CI Status">
+                    <img src="https://img.shields.io/github/actions/workflow/status/tallclub/matimo/ci.yml?branch=main&style=flat-square" alt="CI Status">
+                </a>
+                <a href="https://www.npmjs.com/package/matimo" title="npm version">
+                    <img src="https://img.shields.io/npm/v/matimo.svg?style=flat-square" alt="npm version">
+                </a>
+                <a href="https://opensource.org/licenses/MIT" title="MIT License">
+                    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License">
+                </a>
+                <a href="https://www.typescriptlang.org/" title="TypeScript 5.9+">
+                    <img src="https://img.shields.io/badge/TypeScript-5.9+-blue?style=flat-square" alt="TypeScript">
+                </a>
+                <a href="https://discord.gg/3JPt4mxWDV" title="Discord Community">
+                    <img src="https://img.shields.io/badge/Discord-Join%20Chat-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord">
+                </a>
+            </div>
+            <h1>Define AI Tools <span class="hero-highlight">Once in YAML</span>, Use <span class="hero-highlight">Everywhere</span></h1>
+            <p>A universal, framework-agnostic tools SDK. Write tools once and seamlessly integrate with LangChain, OpenAI agents, Claude, and any AI framework.</p>
+            <div class="cta-buttons">
+                <a href="https://docs.matimo.dev/getting-started/QUICK_START" class="btn btn-primary">Get Started in 5 Minutes</a>
+                <a href="https://github.com/tallclub/matimo" class="btn btn-secondary">View on GitHub</a>
+            </div>
+            <div class="hero-image">
+                <div class="code-block">
+<span class="code-keyword">import</span> { MatimoInstance } <span class="code-keyword">from</span> <span class="code-string">'matimo'</span>;
+
+<span class="code-keyword">const</span> matimo = <span class="code-keyword">await</span> MatimoInstance.init();
+<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> matimo.execute(<span class="code-string">'slack-send-message'</span>, {
+  channel: <span class="code-string">'#general'</span>,
+  text: <span class="code-string">'Hello Matimo!'</span>
+});</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= FEATURES ============= -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need to build AI agents with confidence</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Define Once</h3>
+                    <p>Write tools in simple YAML. No duplicating schemas across frameworks. One definition, infinite possibilities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Use Everywhere</h3>
+                    <p>Plug into LangChain, OpenAI agents, Claude, custom decorators—no framework lock-in or re-implementation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Pre-Built Tools</h3>
+                    <p>Start with Slack, Gmail, GitHub, Notion, Hubspot, Postgres tools. Add your own in minutes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>OAuth2 Ready</h3>
+                    <p>Provider-agnostic OAuth2 support. Secure auth for Google, GitHub, Slack, and any service.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Type-Safe</h3>
+                    <p>Full TypeScript support with runtime validation. Zod-powered parameter and response schemas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Framework Agnostic</h3>
+                    <p>Works with any AI framework. LangChain, CrewAI, custom agents—same tools, different frameworks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= BENEFITS ============= -->
+    <section class="benefits">
+        <div class="benefits-container">
+            <div class="benefits-text">
+                <h2>Why Teams Choose Matimo</h2>
+                <ul class="benefit-list">
+                    <li><strong>No Tool Duplication</strong> — Define once, reuse everywhere</li>
+                    <li><strong>Framework Freedom</strong> — Migrate between AI frameworks without rewriting tools</li>
+                    <li><strong>Faster Development</strong> — Pre-built tools from day one</li>
+                    <li><strong>Type Safe</strong> — TypeScript + Zod validation catches errors early</li>
+                    <li><strong>Community Tools</strong> — Growing ecosystem of @matimo/* providers</li>
+                    <li><strong>Enterprise Ready</strong> — OAuth2, error handling, retry logic built-in</li>
+                    <li><strong>Open Source</strong> — MIT licensed, fully transparent</li>
+                </ul>
+            </div>
+            <div class="benefits-visual">
+                <div class="yaml-example">name: slack_send_message
+description: Post message to channel
+
+parameters:
+  channel:
+    type: string
+    required: true
+  text:
+    type: string
+    required: true
+
+execution:
+  type: http
+  method: POST
+  url: https://slack.com/api/chat.postMessage
+  headers:
+    Authorization: Bearer {SLACK_BOT_TOKEN}
+  body:
+    channel: '{channel}'
+    text: '{text}'</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= INTEGRATION PATTERNS ============= -->
+    <section class="patterns" id="patterns">
+        <div class="container">
+            <h2 class="section-title">Three Integration Patterns</h2>
+            <p class="section-subtitle">Choose what works best for your use case</p>
+            <div class="patterns-grid">
+                <div class="pattern-card">
+                    <div class="pattern-number">1</div>
+                    <h3>Factory Pattern</h3>
+                    <p>Simple and direct. Load tools and execute by name. Perfect for CLI tools and quick prototypes.</p>
+                    <code>const matimo = await MatimoInstance.init();
+await matimo.execute('tool-name', params);</code>
+                </div>
+                <div class="pattern-card">
+                    <div class="pattern-number">2</div>
+                    <h3>Decorator Pattern</h3>
+                    <p>Class-based approach. Use @tool decorator for natural, object-oriented tool execution.</p>
+                    <code>@tool('tool-name')
+async myMethod(param) {
+  // Auto-executed
+}</code>
+                </div>
+                <div class="pattern-card">
+                    <div class="pattern-number">3</div>
+                    <h3>Framework Integration</h3>
+                    <p>Full LangChain, OpenAI, or CrewAI integration. Convert tools to framework schemas automatically.</p>
+                    <code>const tools = matimo
+  .listTools()
+  .map(t => toLangChainSchema(t));</code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= ECOSYSTEM ============= -->
+    <section class="ecosystem" id="ecosystem">
+        <div class="container">
+            <h2>Expanding Ecosystem</h2>
+            <p>Pre-built tools ready to use. More coming soon.</p>
+            <div class="tools-grid">
+                <!-- Slack -->
+                <a href="https://github.com/tallclub/matimo/tree/main/packages/slack" class="tool-badge" title="Slack Tools" target="_blank">
+                    <img src="assets/slack-logo.svg" alt="Slack Logo">
+                    Slack
+                </a>
+
+                <!-- Gmail -->
+                <a href="https://github.com/tallclub/matimo/tree/main/packages/gmail" class="tool-badge" title="Gmail Tools" target="_blank">
+                    <img src="assets/gmail-logo.svg" alt="Gmail Logo">
+                    Gmail
+                </a>
+
+                <!-- GitHub -->
+                <a href="https://github.com/tallclub/matimo/tree/main/packages/github" class="tool-badge" title="GitHub Tools" target="_blank">
+                    <img src="assets/github-logo.svg" alt="GitHub Logo">
+                    GitHub
+                </a>
+
+                <!-- Notion -->
+                <a href="https://github.com/tallclub/matimo/tree/main/packages/notion" class="tool-badge" title="Notion Tools" target="_blank">
+                    <img src="assets/notion-logo.svg" alt="Notion Logo">
+                    Notion
+                </a>
+
+                <!-- PostgreSQL -->
+                <a href="https://github.com/tallclub/matimo/tree/main/packages/postgres" class="tool-badge" title="PostgreSQL Tools" target="_blank">
+                    <img src="assets/postgres-logo.svg" alt="PostgreSQL Logo">
+                    PostgreSQL
+                </a>
+
+                <!-- HubSpot -->
+                <a href="https://github.com/tallclub/matimo/tree/main/packages/hubspot" class="tool-badge" title="HubSpot Tools" target="_blank">
+                    <img src="assets/hubspot-logo.svg" alt="HubSpot Logo">
+                    HubSpot
+                </a>
+
+                <!-- Custom Tools -->
+                <a href="https://docs.matimo.dev/getting-started/YOUR_FIRST_TOOL.html" class="tool-badge tool-badge-plus" title="Add Your Own Tools" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Custom Tools
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= DISCORD COMMUNITY ============= -->
+    <section class="discord-cta">
+        <div class="container">
+            <h2>Join Our Community</h2>
+            <p>Connect with developers, share ideas, and get help building with Matimo</p>
+            <div class="discord-container">
+                <a href="https://discord.gg/3JPt4mxWDV" class="btn btn-primary btn-lg" target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 71 55" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M60.1045 4.8978C55.3195 2.8214 50.3139 1.2922 45.1245 0.5C44.6645 1.3278 44.1345 2.4602 43.7745 3.2931C38.192 2.4299 32.6956 2.4299 27.255 3.2931C26.895 2.4602 26.3645 1.3278 25.9045 0.5C20.7173 1.2922 15.7117 2.8325 10.9265 4.8978C1.51848 21.694 -0.31949 38.0703 0.0951549 54.5733C5.6077 58.6634 10.9265 61.6928 15.8830 63.7345C16.9695 62.0999 17.8055 60.3665 18.4495 58.5931C16.7423 57.8505 15.1275 56.9731 13.612 55.9707C13.8575 55.7558 14.1025 55.5415 14.3382 55.3243C37.813 67.356 64.1635 67.356 86.9859 55.3243C87.2216 55.5415 87.4671 55.7558 87.7126 55.9707C86.1971 56.9731 84.5823 57.8505 82.8751 58.5931C83.5191 60.3665 84.3551 62.0999 85.4416 63.7345C90.3981 61.6928 95.7170 58.6634 101.230 54.5733C101.810 35.8625 96.970 19.4882 86.5822 4.8978C81.7922 2.8214 76.7866 1.2922 71.5972 0.5C71.2372 1.3278 70.6672 2.4602 70.3072 3.2931C64.7345 2.4299 59.1626 2.4299 53.722 3.2931C53.362 2.4602 52.8320 1.3278 52.3720 0.5C47.1826 1.2922 42.1770 2.8325 37.3920 4.8978ZM23.7259 46.3059C20.2276 46.3059 17.3451 43.3137 17.3451 39.6469C17.3451 35.9801 20.1717 33.0034 23.7259 33.0034C27.2571 33.0034 30.1396 35.9801 30.1396 39.6469C30.1396 43.3137 27.256 46.3059 23.7259 46.3059ZM47.3178 46.3059C43.8196 46.3059 40.9371 43.3137 40.9371 39.6469C40.9371 35.9801 43.7636 33.0034 47.3178 33.0034C50.8490 33.0034 53.7315 35.9801 53.7315 39.6469C53.7315 43.3137 50.8490 46.3059 47.3178 46.3059Z"/>
+                    </svg>
+                    Join Our Discord Server
+                </a>
+                <p class="discord-description">
+                    <strong>Building with us. </strong>Ask questions, share your tools, and stay updated.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= FINAL CTA ============= -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>Ready to Unify Your AI Tools?</h2>
+            <p>Join the growing community building with Matimo. Start in minutes.</p>
+            <div class="cta-buttons">
+                <a href="https://docs.matimo.dev/getting-started/QUICK_START" class="btn btn-primary">Start Now</a>
+                <a href="https://docs.matimo.dev" class="btn btn-secondary">Full Documentation</a>
+                <a href="https://discord.gg/3JPt4mxWDV" class="btn btn-secondary">Join Discord</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============= FOOTER ============= -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h4>Product</h4>
+                <a href="https://github.com/tallclub/matimo">GitHub Repository</a>
+                <a href="https://docs.matimo.dev">Documentation</a>
+                <a href="https://github.com/tallclub/matimo/releases">Releases</a>
+            </div>
+            <div class="footer-section">
+                <h4>Docs</h4>
+                <a href="https://docs.matimo.dev/getting-started/QUICK_START">Quick Start</a>
+                <a href="https://docs.matimo.dev/api-reference/SDK">API Reference</a>
+                <a href="https://docs.matimo.dev/tool-development/ADDING_TOOLS">Add Tools</a>
+            </div>
+            <div class="footer-section">
+                <h4>Community</h4>
+                <a href="https://discord.gg/3JPt4mxWDV">Discord</a>
+                <a href="https://github.com/tallclub/matimo/discussions">Discussions</a>
+                <a href="https://github.com/tallclub/matimo/issues">Issues</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-links">
+                <a href="https://github.com/tallclub/matimo" title="GitHub">🐙</a>
+                <a href="https://discord.gg/3JPt4mxWDV" title="Discord">💬</a>
+            </div>
+            <p>&copy; 2026 Matimo. Open source under MIT License.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll active state
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .pattern-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
