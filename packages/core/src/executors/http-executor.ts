@@ -1,7 +1,7 @@
-import axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { ToolDefinition } from '../core/schema';
 import { applyParameterEncodings } from '../encodings/parameter-encoding';
-import { MatimoError, ErrorCode } from '../errors/matimo-error';
+import { MatimoError, ErrorCode, fromHttpError } from '../errors/matimo-error';
 
 /**
  * HttpExecutor - Executes HTTP requests
@@ -87,14 +87,14 @@ export class HttpExecutor {
         headers: response.headers,
       };
     } catch (error) {
-      const axiosError = error as AxiosError;
-      const status = axiosError.response?.status || 500;
-      const details = axiosError.response?.data || {};
-      throw new MatimoError('HTTP request failed', ErrorCode.EXECUTION_FAILED, {
-        statusCode: status,
-        details,
-        originalError: axiosError.message || String(error),
-      });
+      // If this is already a MatimoError, rethrow to preserve semantics
+      if (error instanceof MatimoError) {
+        throw error;
+      }
+
+      // Normalize any HTTP/axios-like or generic errors into MatimoError.
+      // This keeps callers consistent and preserves original cause via details.cause.
+      throw fromHttpError(error, 'HTTP request failed');
     }
   }
 
@@ -105,7 +105,8 @@ export class HttpExecutor {
     let result = str;
     for (const [key, value] of Object.entries(params)) {
       const placeholder = `{${key}}`;
-      if (value !== undefined && value !== null && value !== '') {
+      // Allow empty-string values to be substituted (validation allows empty strings)
+      if (value !== undefined && value !== null) {
         result = result.replace(new RegExp(placeholder, 'g'), String(value));
       }
     }
@@ -242,7 +243,11 @@ export class HttpExecutor {
 
         // Otherwise, do normal string templating
         const templated = this.templateString(value, params);
-        if (templated && !this.isUnfilledPlaceholder(templated)) {
+        if (
+          templated !== undefined &&
+          templated !== null &&
+          !this.isUnfilledPlaceholder(templated)
+        ) {
           // Extract parameter name from template (e.g., "{page_size}" → "page_size")
           const paramName = paramNameMatch ? paramNameMatch[1] : null;
 
@@ -277,8 +282,12 @@ export class HttpExecutor {
           .map((item) => {
             if (typeof item === 'string') {
               const templated = this.templateString(item, params);
-              // Skip unfilled placeholders
-              if (!this.isUnfilledPlaceholder(templated)) {
+              // Skip unfilled placeholders; allow empty strings
+              if (
+                templated !== undefined &&
+                templated !== null &&
+                !this.isUnfilledPlaceholder(templated)
+              ) {
                 // Extract parameter name from template
                 const paramNameMatch = item.match(/^\{([a-zA-Z_][a-zA-Z0-9_]*)\}$/);
                 const paramName = paramNameMatch ? paramNameMatch[1] : null;
