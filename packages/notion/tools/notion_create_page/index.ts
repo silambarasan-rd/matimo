@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { MatimoError, ErrorCode } from '@matimo/core';
 
 interface Params {
   parent: Record<string, unknown>;
@@ -60,7 +61,52 @@ export default async function createPage(params: Params) {
   } = params as Params;
 
   if (!parent || typeof parent !== 'object') {
-    throw new Error('Missing required `parent` parameter');
+    throw new MatimoError('Missing required `parent` parameter', ErrorCode.INVALID_PARAMETER, {
+      parameter: 'parent',
+    });
+  }
+
+  // Validate parameters according to tool contract:
+  // - If creating inside a database (`parent.database_id`), `properties` is required
+  // - Either `children` or `markdown` can be provided, not both (empty children array is treated as not provided)
+  // - When using `template`, `children` is not allowed
+  const isDatabaseParent = parent && typeof parent === 'object' && Object.prototype.hasOwnProperty.call(parent, 'database_id');
+
+  if (Array.isArray(children) && children.length > 0 && typeof markdown === 'string' && markdown.trim().length > 0) {
+    throw new MatimoError('Provide either `children` or `markdown`, not both', ErrorCode.VALIDATION_FAILED, {
+      parameters: { children: children.length, markdown: markdown.length },
+    });
+  }
+
+  if (template && Array.isArray(children) && children.length > 0) {
+    throw new MatimoError('`template` cannot be used together with `children`. Omit `children` when using `template`', ErrorCode.VALIDATION_FAILED, {
+      parameters: { template: !!template, children: children.length },
+    });
+  }
+
+  // Allow generating a minimal title property from `markdown` when creating in a database.
+  // If caller didn't provide `properties`, we'll attempt several common title property names
+  // (e.g., 'Name', 'Title') derived from the first markdown line. If none succeed,
+  // we return the API error to the caller.
+  const resolvedProperties = properties as Record<string, unknown> | undefined;
+  let titleCandidates: string[] | undefined;
+
+  if (isDatabaseParent) {
+    const hasProperties = resolvedProperties && typeof resolvedProperties === 'object' && Object.keys(resolvedProperties).length > 0;
+
+    if (!hasProperties) {
+      if (typeof markdown === 'string' && markdown.trim().length > 0) {
+        // Candidate property names to try when the database title property name is unknown
+        titleCandidates = ['Name', 'Title', 'title', 'name'].map((k) => k);
+
+        // We'll construct properties later per candidate when sending the request.
+        // Use resolvedProperties only if caller provided it explicitly.
+      } else {
+        throw new MatimoError('Creating a page in a database requires `properties` (at minimum a title property)', ErrorCode.VALIDATION_FAILED, {
+          parent,
+        });
+      }
+    }
   }
 
   // Convert markdown to children if provided and children not explicitly set
@@ -69,24 +115,27 @@ export default async function createPage(params: Params) {
     resolvedChildren = markdownToChildren(markdown);
   }
 
-  const body: Record<string, unknown> = {
+  const baseBody: Record<string, unknown> = {
     parent,
   };
 
-  if (properties) body.properties = properties;
-  if (icon) body.icon = icon;
-  if (cover) body.cover = cover;
-  if (resolvedChildren) body.children = resolvedChildren;
-  if (template) body.template = template;
-  if (position) body.position = position;
+  if (resolvedProperties) baseBody.properties = resolvedProperties;
+  if (icon) baseBody.icon = icon;
+  if (cover) baseBody.cover = cover;
+  if (resolvedChildren) baseBody.children = resolvedChildren;
+  if (template) baseBody.template = template;
+  if (position) baseBody.position = position;
 
   const apiKey = process.env.NOTION_API_KEY;
   if (!apiKey) {
-    throw new Error('NOTION_API_KEY not set');
+    throw new MatimoError('NOTION_API_KEY not set', ErrorCode.AUTH_FAILED, {
+      envVar: 'NOTION_API_KEY',
+    });
   }
 
-  try {
-    const resp = await axios.post('https://api.notion.com/v1/pages', body, {
+  // Helper to send request with a given body
+  const sendRequest = async (requestBody: Record<string, unknown>) => {
+    return axios.post('https://api.notion.com/v1/pages', requestBody, {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Notion-Version': '2025-09-03',
@@ -94,7 +143,72 @@ export default async function createPage(params: Params) {
       },
       timeout: 15000,
     });
+  };
 
+  // If we have title candidates, try each one until a request succeeds.
+  if (titleCandidates && titleCandidates.length > 0) {
+    let lastError: unknown = null;
+    const firstLine = markdown!.split(/\r?\n/)[0].replace(/^#+\s*/, '').trim() || 'New Page';
+
+    for (const candidate of titleCandidates) {
+      const candidateProps: Record<string, unknown> = {
+        [candidate]: {
+          title: [
+            {
+              text: { content: firstLine },
+            },
+          ],
+        },
+      };
+
+      const tryBody = { ...baseBody, ...{ properties: candidateProps } } as Record<string, unknown>;
+
+      try {
+        const resp = await sendRequest(tryBody);
+        return {
+          success: true,
+          statusCode: resp.status,
+          data: resp.data,
+        };
+      } catch (err: unknown) {
+        lastError = err;
+        // If API returns validation error about missing property name, continue to next candidate.
+          if (axios.isAxiosError(err)) {
+            type NotionError = { message?: string; code?: string; request_id?: string };
+            const errData = err.response?.data as NotionError | undefined;
+            const message = errData?.message || '';
+            if (typeof message === 'string' && /is not a property that exists/i.test(message)) {
+              // try next candidate
+              continue;
+            }
+          }
+        // For other errors, break and return immediately
+        break;
+      }
+    }
+
+    // All candidates failed — return last error in a structured form
+    if (axios.isAxiosError(lastError)) {
+      type NotionError = { message?: string; code?: string; request_id?: string };
+      const errData = lastError.response?.data as NotionError | undefined;
+      const statusCode = lastError.response?.status || 0;
+      return {
+        success: false,
+        statusCode,
+        error: errData || (lastError as Error).message,
+      };
+    }
+
+    return {
+      success: false,
+      statusCode: 0,
+      error: String(lastError),
+    };
+  }
+
+  // No candidate loop — send single request using baseBody (which may include provided properties)
+  try {
+    const resp = await sendRequest(baseBody);
     return {
       success: true,
       statusCode: resp.status,
@@ -102,18 +216,18 @@ export default async function createPage(params: Params) {
     };
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      const status = err.response?.status || 0;
-      return {
-        success: false,
-        statusCode: status,
-        error: err.response?.data || err.message,
+      // Wrap HTTP error from Notion in a MatimoError so callers can programmatically inspect it
+      type NotionError = { message?: string; code?: string; request_id?: string };
+      const errData = err.response?.data as NotionError | undefined;
+      const details: Record<string, unknown> = {
+        status: err.response?.status,
+        code: errData?.code,
+        request_id: errData?.request_id,
       };
+      throw new MatimoError(errData?.message || 'Notion API error', ErrorCode.EXECUTION_FAILED, details);
     }
 
-    return {
-      success: false,
-      statusCode: 0,
-      error: String(err),
-    };
+    // Non-HTTP error (network, unexpected) — wrap and throw
+    throw new MatimoError(String(err), ErrorCode.UNKNOWN_ERROR);
   }
 }
