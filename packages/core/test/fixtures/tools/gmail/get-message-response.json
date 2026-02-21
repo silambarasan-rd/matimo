@@ -1,0 +1,14 @@
+{
+  "id": "msg123",
+  "threadId": "thread123",
+  "labelIds": ["INBOX"],
+  "snippet": "Test snippet",
+  "payload": {
+    "mimeType": "text/plain",
+    "headers": [
+      { "name": "Subject", "value": "Test Subject" },
+      { "name": "From", "value": "sender@example.com" }
+    ],
+    "body": { "data": "dGVzdCBib2R5" }
+  }
+}

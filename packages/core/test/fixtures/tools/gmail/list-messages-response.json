@@ -1,0 +1,8 @@
+{
+  "messages": [
+    { "id": "msg1", "threadId": "thread1" },
+    { "id": "msg2", "threadId": "thread2" }
+  ],
+  "nextPageToken": "token123",
+  "resultSizeEstimate": 2
+}
