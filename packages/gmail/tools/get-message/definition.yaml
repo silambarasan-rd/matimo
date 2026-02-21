@@ -3,7 +3,7 @@ description: Get full details of a specific Gmail message including headers and 
 version: '1.0.0'
 
 parameters:
-  message_id:
+  messageId:
     type: string
     description: ID of the message to retrieve
     required: true
@@ -20,7 +20,7 @@ parameters:
     default: full
     example: full
 
-  metadata_headers:
+  metadataHeaders:
     type: string
     description: Comma-separated headers to include in metadata (when format=minimal)
     required: false
@@ -29,7 +29,10 @@ parameters:
 execution:
   type: http
   method: GET
-  url: 'https://www.googleapis.com/gmail/v1/users/me/messages/{message_id}?format={format}&metadataHeaders={metadata_headers}'
+  url: 'https://www.googleapis.com/gmail/v1/users/me/messages/{messageId}'
+  query_params:
+    format: '{format}'
+    metadataHeaders: '{metadataHeaders}'
   headers:
     Authorization: 'Bearer {GMAIL_ACCESS_TOKEN}'
     Accept: 'application/json'
@@ -39,8 +42,6 @@ authentication:
   provider: google
   scopes:
     - 'https://www.googleapis.com/auth/gmail.readonly'
-  client_id_env: GMAIL_CLIENT_ID
-  client_secret_env: GMAIL_CLIENT_SECRET
 
 output_schema:
   type: object
@@ -48,10 +49,10 @@ output_schema:
     id:
       type: string
       description: Message ID
-    thread_id:
+    threadId:
       type: string
       description: Thread ID
-    label_ids:
+    labelIds:
       type: array
       items:
         type: string
@@ -59,7 +60,7 @@ output_schema:
     snippet:
       type: string
       description: Short snippet of the message text
-    size_estimate:
+    sizeEstimate:
       type: number
       description: Estimated size of the message in bytes
     headers:
@@ -69,7 +70,7 @@ output_schema:
       type: object
       description: Message body with data and mimeType
       properties:
-        mime_type:
+        mimeType:
           type: string
         data:
           type: string

@@ -67,8 +67,8 @@ class DecoratorPatternAgent {
    * Gmail get-message tool - automatically executes via @tool decorator
    */
   @tool('gmail-get-message')
-  async getMessage(message_id: string, format?: string): Promise<unknown> {
-    // Decorator automatically calls: matimo.execute('gmail-get-message', { message_id, format })
+  async getMessage(messageId: string, format?: string): Promise<unknown> {
+    // Decorator automatically calls: matimo.execute('gmail-get-message', { messageId, format })
     // Matimo automatically injects GMAIL_ACCESS_TOKEN from env vars
     return undefined;
   }
@@ -87,8 +87,8 @@ class DecoratorPatternAgent {
    * Gmail delete-message tool - automatically executes via @tool decorator
    */
   @tool('gmail-delete-message')
-  async deleteMessage(message_id: string): Promise<unknown> {
-    // Decorator automatically calls: matimo.execute('gmail-delete-message', { message_id })
+  async deleteMessage(messageId: string): Promise<unknown> {
+    // Decorator automatically calls: matimo.execute('gmail-delete-message', { messageId })
     // Matimo automatically injects GMAIL_ACCESS_TOKEN from env vars
     return undefined;
   }
