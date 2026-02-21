@@ -221,8 +221,8 @@ Update page properties, status, archive status, or icon.
 **Parameters:**
 - `page_id` (required): UUID of page to update
 - `properties` (optional): JSON properties to update
-- `icon_emoji` (optional): New emoji icon
-- `archived` (optional): Archive/unarchive page
+- `icon` (optional): Object for page icon (e.g., { "type": "emoji", "emoji": "✅" } or { "type": "external", "external": { "url": "https://..." } })
+- `archived` (optional): Archive/unarchive page (boolean)
 - `in_trash` (optional): Move to/restore from trash
 - `is_locked` (optional): Lock/unlock page editing
 
@@ -236,8 +236,8 @@ Search workspace pages and databases by title.
 
 **Parameters:**
 - `query` (optional): Search text (omit to return all items)
-- `filter_type` (optional): 'page' or 'database'
-- `sort_by` (optional): 'relevance' or 'last_edited_time'
+- `filter_object` (optional): 'page' or 'data_source'
+- `sort_timestamp` (optional): 'last_edited_time' or 'created_time'
 - `sort_direction` (optional): 'ascending' or 'descending'
 - `page_size` (optional): Results per page (1-100)
 - `start_cursor` (optional): Pagination cursor
