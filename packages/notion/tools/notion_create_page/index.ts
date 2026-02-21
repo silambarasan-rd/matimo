@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MatimoError, ErrorCode } from '@matimo/core';
 
 interface Params {
-  parent: Record<string, unknown>;
+  parent?: Record<string, unknown>;
   properties?: Record<string, unknown>;
   icon?: Record<string, unknown>;
   cover?: Record<string, unknown>;
@@ -50,7 +50,7 @@ function markdownToChildren(md: string): unknown[] {
 
 export default async function createPage(params: Params) {
   const {
-    parent,
+    parent: userProvidedParent,
     properties,
     icon,
     cover,
@@ -60,10 +60,43 @@ export default async function createPage(params: Params) {
     position,
   } = params as Params;
 
-  if (!parent || typeof parent !== 'object') {
-    throw new MatimoError('Missing required `parent` parameter', ErrorCode.INVALID_PARAMETER, {
-      parameter: 'parent',
+  const apiKey = process.env.NOTION_API_KEY;
+  if (!apiKey) {
+    throw new MatimoError('NOTION_API_KEY not set', ErrorCode.AUTH_FAILED, {
+      envVar: 'NOTION_API_KEY',
     });
+  }
+
+  // If no parent provided, auto-discover a database
+  let parent = userProvidedParent;
+  if (!parent || typeof parent !== 'object') {
+    try {
+      const response = await axios.get('https://api.notion.com/v1/databases', {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Notion-Version': '2025-09-03',
+        },
+        timeout: 15000,
+        params: { page_size: 1 },
+      });
+      const databases = response.data?.results || [];
+      if (databases.length > 0) {
+        parent = { database_id: databases[0].id };
+      } else {
+        throw new MatimoError(
+          'No databases found in workspace. Create a database first or provide `parent` parameter.',
+          ErrorCode.VALIDATION_FAILED
+        );
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        throw new MatimoError(
+          `Failed to auto-discover database: ${(err.response?.data as Record<string, unknown>)?.message || err.message}`,
+          ErrorCode.EXECUTION_FAILED
+        );
+      }
+      throw new MatimoError('Failed to auto-discover database', ErrorCode.EXECUTION_FAILED);
+    }
   }
 
   // Validate parameters according to tool contract:
@@ -125,13 +158,6 @@ export default async function createPage(params: Params) {
   if (resolvedChildren) baseBody.children = resolvedChildren;
   if (template) baseBody.template = template;
   if (position) baseBody.position = position;
-
-  const apiKey = process.env.NOTION_API_KEY;
-  if (!apiKey) {
-    throw new MatimoError('NOTION_API_KEY not set', ErrorCode.AUTH_FAILED, {
-      envVar: 'NOTION_API_KEY',
-    });
-  }
 
   // Helper to send request with a given body
   const sendRequest = async (requestBody: Record<string, unknown>) => {
