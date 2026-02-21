@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Latest Release**: v0.1.0-alpha.6 (February 13, 2026)
+**Latest Release**: v0.1.0-alpha.10 (February 21, 2026)
 
 ✅ **Completed Features**:
 
@@ -11,10 +11,12 @@
 - YAML-based tool definitions with Zod validation
 - SDK patterns (Factory, Decorator, LangChain)
 - Core tools suite (execute, read, edit, search, web, calculator)
-- Provider integrations (Slack with 16+ tools, Gmail with 5 tools)
+- Provider integrations (Slack with 16+ tools, Gmail with 5 tools, GitHub, HubSpot with 50+ tools, Notion with 7 tools)
 - CLI tool management (list, search, install, help)
-- 625+ comprehensive test suite with 100% pass rate
+- 800+ comprehensive test suite with 85%+ coverage
 - Complete documentation and examples
+- Structured error handling with MatimoError and error chaining
+- Enhanced HTTP executor with parameter embedding (objects, arrays)
 
 **See [RELEASES.md](./RELEASES.md)** for detailed release notes on completed features.
 
@@ -28,12 +30,12 @@
 
 Expand provider ecosystem with real-world integrations:
 
-- [ ] **GitHub** — Repositories, issues, pull requests, releases
+- [x] **GitHub** — Repositories, issues, pull requests, releases (v0.1.0-alpha.8)
 - [ ] **Stripe** — Payments, invoices, customers, subscriptions
 - [ ] **Twilio** — SMS, voice, video, messaging
-- [ ] **Hubspot** — CRM, contacts, deals, tickets
+- [x] **HubSpot** — CRM, contacts, deals, tickets (v0.1.0-alpha.9)
 - [ ] **Linear** — Issues, projects, milestones
-- [ ] **Notion** — Databases, pages, blocks
+- [x] **Notion** — Databases, pages, blocks (v0.1.0-alpha.10)
 - [ ] **Airtable** — Tables, records, views
 - [ ] **Jira** — Issues, projects, workflows
 - [ ] **AWS** — EC2, S3, Lambda, and core services
@@ -185,7 +187,11 @@ Alpha Phase (✅ Completed)
   v0.1.0-alpha.3  Feb 5, 2026
   v0.1.0-alpha.4  Feb 10, 2026
   v0.1.0-alpha.5  Feb 11, 2026
-  v0.1.0-alpha.6  Feb 13, 2026 ← Current
+  v0.1.0-alpha.6  Feb 13, 2026
+  v0.1.0-alpha.7  Feb 15, 2026  (Postgres tools)
+  v0.1.0-alpha.8  Feb 18, 2026  (GitHub tools, unified approval)
+  v0.1.0-alpha.9  Feb 19, 2026  (HubSpot tools)
+  v0.1.0-alpha.10 Feb 21, 2026  (Notion tools) ← Current
 
 v0.1.0 Release (📅 Coming)
   Priorities:

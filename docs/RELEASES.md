@@ -1,3 +1,84 @@
+## v0.1.0-alpha.10
+
+> Release: Notion tools provider, enhanced HTTP executor with structured parameters, and improved error handling
+
+**Released**: February 21, 2026
+
+### 🚀 Features
+
+- **Notion Provider** (`packages/notion`)
+  - Complete Notion tools package with 7 core tools for database and page operations
+  - **Tools**: `notion_list_databases`, `notion_query_database`, `notion_create_page`, `notion_update_page`, `notion_get_page`, `notion_search`, `notion_create_comment`
+  - Support for markdown content, database queries, page properties, icons, and covers
+  - Full OAuth2 or API key authentication
+  - Comprehensive YAML definitions with examples and output schemas
+
+- **Notion Examples** (Factory, Decorator, LangChain patterns)
+  - Three complete example scripts for integrating Notion tools
+  - **Factory Pattern** (`notion-factory.ts`) — Direct tool execution with database discovery and real operations
+  - **Decorator Pattern** (`notion-decorator.ts`) — Class-based `@tool()` decorator pattern
+  - **LangChain Pattern** (`notion-langchain.ts`) — AI agent with OpenAI GPT-4o-mini that auto-discovers databases
+  - Comprehensive README with setup, environment configuration, and troubleshooting
+
+- **HTTP Executor Enhancements**
+  - Improved parameter embedding for complex types (objects, arrays)
+  - Better handling of empty strings and null values in templating
+  - Structured response extraction with proper data validation
+  - Enhanced error normalization via new `fromHttpError()` factory method
+
+- **Error Handling Improvements**
+  - `MatimoError` class extended with optional `cause` field for error chaining
+  - New `fromHttpError()` helper to standardize HTTP/Axios errors into structured `MatimoError`
+  - Consistent error context preservation across executors
+
+### 🛠 Fixes & Improvements
+
+- **Notion Tools**
+  - Auto-title generation for pages when DB properties are missing
+  - Validation of required `parent` parameter for create/update operations
+  - Proper markdown-to-block conversion for page content
+  - Fixed parameter templating for optional fields
+
+- **HTTP Executor**
+  - Fixed parameter validation to allow empty strings in templates
+  - Improved object/array embedding logic with explicit null/undefined checks
+  - Better error messages with original error details preserved
+  - Response schema validation via Zod
+
+- **Tests**
+  - Enhanced unit tests for HTTP executor with edge cases (empty strings, objects, arrays)
+  - Improved integration tests with better parameter validation
+  - Added response fixtures for multiple tool types
+
+- **Examples**
+  - Standardized `convertToolsToLangChain()` pattern across Slack, Gmail, and Notion examples
+  - LangChain examples now auto-discover resources (channels, databases) before creating agents
+  - Improved error handling and logging in all example patterns
+
+- **Documentation**
+  - Updated tool parameter documentation for clarity
+  - Added examples for complex parameter types (objects, arrays)
+  - Improved HTTP executor documentation with structured parameter embedding
+
+### 🔧 Technical Notes
+
+- **Parameter Templating**: Object and array parameters are now properly embedded as JSON when indicated by parameter type in YAML
+- **Error Chaining**: Use `MatimoError.cause` and `MatimoError.details.originalError` to access the original exception
+- **LangChain Integration**: Secret injection pattern now supports complex types (objects) in addition to strings
+- **Notion Authentication**: Both API key and OAuth2 flows are fully supported; requires database sharing via Notion UI
+
+### ⚠️ Breaking Changes
+
+- None.
+
+### 📝 Migration Notes
+
+- **Notion Tools**: Set `NOTION_API_KEY` environment variable; share databases with your integration in Notion UI
+- **Error Handling**: Code catching generic `Error` types should check for `MatimoError` first; original errors available via `error.cause`
+- **LangChain Examples**: All examples now discover required context (database IDs, channel IDs) before creating agents; no changes needed if using as-is
+
+---
+
 ## v0.1.0-alpha.9
 
 > Release: HubSpot provider, 50+ CRM tools, LLM-powered examples, approval enforcement, and full documentation
