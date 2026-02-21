@@ -10,13 +10,13 @@ When you define a tool with HTTP execution, parameters can be different data typ
 
 Matimo uses the **parameter type from your YAML definition** to determine how values should be embedded:
 
-| Parameter Type | How It's Embedded | Example |
-|---|---|---|
-| `string` | String templating | `"Hello World"` |
-| `number` | Number conversion | `42` |
-| `boolean` | Boolean conversion | `true` |
-| `object` | Direct JSON object | `{"id": "123", "type": "db"}` |
-| `array` | Direct JSON array | `[{"text": "item1"}, {"text": "item2"}]` |
+| Parameter Type | How It's Embedded  | Example                                  |
+| -------------- | ------------------ | ---------------------------------------- |
+| `string`       | String templating  | `"Hello World"`                          |
+| `number`       | Number conversion  | `42`                                     |
+| `boolean`      | Boolean conversion | `true`                                   |
+| `object`       | Direct JSON object | `{"id": "123", "type": "db"}`            |
+| `array`        | Direct JSON array  | `[{"text": "item1"}, {"text": "item2"}]` |
 
 ## Key Principle: Type Information Drives Embedding
 
@@ -55,18 +55,18 @@ execution:
   method: POST
   url: https://api.notion.com/v1/pages
   body:
-    parent: "{parent}"      # Placeholder for object param
-    children: "{items}"     # Placeholder for array param  
-    title: "{title}"        # Placeholder for string param
+    parent: '{parent}' # Placeholder for object param
+    children: '{items}' # Placeholder for array param
+    title: '{title}' # Placeholder for string param
 ```
 
 ### Step 3: Execute from JavaScript
 
 ```typescript
 const result = await matimo.execute('notion_create_page', {
-  parent: { database_id: 'abc123', type: 'database' },  // JavaScript object
-  items: [{ type: 'text', text: 'Content' }],           // JavaScript array
-  title: 'Create This Page'                             // String
+  parent: { database_id: 'abc123', type: 'database' }, // JavaScript object
+  items: [{ type: 'text', text: 'Content' }], // JavaScript array
+  title: 'Create This Page', // String
 });
 ```
 
@@ -81,8 +81,8 @@ The HTTP executor:
 
 ```json
 {
-  "parent": {"database_id": "abc123", "type": "database"},
-  "children": [{"type": "text", "text": "Content"}],
+  "parent": { "database_id": "abc123", "type": "database" },
+  "children": [{ "type": "text", "text": "Content" }],
   "title": "Create This Page"
 }
 ```
@@ -94,8 +94,8 @@ The HTTP executor:
 ```typescript
 // DON'T do this:
 await matimo.execute('notion_create_page', {
-  parent: JSON.stringify({ database_id: 'abc123' }),  // ❌ Already stringified
-  items: JSON.stringify([{ type: 'text' }])           // ❌ Already stringified
+  parent: JSON.stringify({ database_id: 'abc123' }), // ❌ Already stringified
+  items: JSON.stringify([{ type: 'text' }]), // ❌ Already stringified
 });
 ```
 
@@ -106,7 +106,7 @@ await matimo.execute('notion_create_page', {
 ```yaml
 parameters:
   parent:
-    type: string  # ❌ Wrong type for an object
+    type: string # ❌ Wrong type for an object
     description: Parent database
 ```
 
@@ -117,13 +117,14 @@ parameters:
 ```typescript
 class NotionManager {
   @tool('notion_create_page')
-  async createPage(parent: string, title: string) {  // ❌ Wrong signature
+  async createPage(parent: string, title: string) {
+    // ❌ Wrong signature
     throw new Error('Should not be called');
   }
 }
 
 // This will fail:
-await manager.createPage('{"database_id": "123"}', 'Title');  // ❌ String, not object
+await manager.createPage('{"database_id": "123"}', 'Title'); // ❌ String, not object
 ```
 
 **Why:** The decorator doesn't know you meant this to be an object. Always pass actual objects/arrays.
@@ -171,7 +172,7 @@ execution:
     Content-Type: application/json
   body:
     parent: "{parent}"          # ← Object embedded directly as JSON
-    icon: "{icon}"              # ← Object embedded directly as JSON  
+    icon: "{icon}"              # ← Object embedded directly as JSON
     children: "{children}"      # ← Array embedded directly as JSON
     markdown: "{markdown}"      # ← String templated normally
 
@@ -205,13 +206,13 @@ const result = await matimo.execute('notion_create_page', {
         rich_text: [
           {
             type: 'text',
-            text: { content: 'Page content here' }
-          }
-        ]
-      }
-    }
+            text: { content: 'Page content here' },
+          },
+        ],
+      },
+    },
   ],
-  markdown: '# My Page\n\nSome content'
+  markdown: '# My Page\n\nSome content',
 });
 
 console.log('Created page:', result.data.id);
@@ -228,9 +229,9 @@ setGlobalMatimoInstance(matimo);
 class NotionManager {
   @tool('notion_create_page')
   async createPage(
-    parent: Record<string, string>,      // Object type
-    markdown?: string,                    // String type
-    icon?: Record<string, string>        // Object type
+    parent: Record<string, string>, // Object type
+    markdown?: string, // String type
+    icon?: Record<string, string> // Object type
   ): Promise<any> {
     throw new Error('Should not be called');
   }
@@ -304,10 +305,10 @@ paramDefinitions: {
 ```typescript
 // Without using type information:
 result = {
-  parent: "[object Object]",  // ❌ Stringified!
-  children: "[object Object]",  // ❌ Stringified!
-  title: "My Page"
-}
+  parent: '[object Object]', // ❌ Stringified!
+  children: '[object Object]', // ❌ Stringified!
+  title: 'My Page',
+};
 ```
 
 **With type information**, everything works correctly:
@@ -315,10 +316,10 @@ result = {
 ```typescript
 // With type information:
 result = {
-  parent: { database_id: "123" },     // ✅ Proper JSON
-  children: [{ type: "text" }],       // ✅ Proper JSON
-  title: "My Page"                    // ✅ String
-}
+  parent: { database_id: '123' }, // ✅ Proper JSON
+  children: [{ type: 'text' }], // ✅ Proper JSON
+  title: 'My Page', // ✅ String
+};
 ```
 
 ## Best Practices
@@ -361,12 +362,12 @@ parameters:
 ```typescript
 // ❌ Wrong
 await matimo.execute('my_tool', {
-  data: JSON.stringify({ nested: { value: 123 } })
+  data: JSON.stringify({ nested: { value: 123 } }),
 });
 
 // ✅ Correct
 await matimo.execute('my_tool', {
-  data: { nested: { value: 123 } }
+  data: { nested: { value: 123 } },
 });
 ```
 
@@ -380,13 +381,13 @@ await matimo.execute('my_tool', {
 
 Here are common APIs that need structured parameters:
 
-| API | Parameter Type | Example |
-|---|---|---|
-| **Notion** | Objects and arrays | `{ database_id: "..." }`, `[{ type: "..." }]` |
-| **GitHub** | Objects | `{ owner: "...", repo: "..." }` |
-| **Slack** | Objects | `{ channel_id: "...", user_id: "..." }` |
-| **MongoDB** | Objects and arrays | `{ filter: { ... } }`, `[{ $set: { ... } }]` |
-| **OpenAI** | Objects and arrays | `{ messages: [...] }`, `{ tools: [...] }` |
+| API         | Parameter Type     | Example                                       |
+| ----------- | ------------------ | --------------------------------------------- |
+| **Notion**  | Objects and arrays | `{ database_id: "..." }`, `[{ type: "..." }]` |
+| **GitHub**  | Objects            | `{ owner: "...", repo: "..." }`               |
+| **Slack**   | Objects            | `{ channel_id: "...", user_id: "..." }`       |
+| **MongoDB** | Objects and arrays | `{ filter: { ... } }`, `[{ $set: { ... } }]`  |
+| **OpenAI**  | Objects and arrays | `{ messages: [...] }`, `{ tools: [...] }`     |
 
 ## See Also
 

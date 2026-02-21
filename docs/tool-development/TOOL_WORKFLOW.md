@@ -51,6 +51,7 @@ touch packages/{provider}/tools/{tool-name}/definition.yaml
 ```
 
 **Directory structure:**
+
 ```
 packages/core-or-provider/
 ├── tools/
@@ -129,11 +130,12 @@ pnpm validate-tools
 ```
 
 **Expected output:**
+
 ```
 ✅ Validating tools...
   ✅ packages/core/tools/my-tool/definition.yaml
   ✅ packages/slack/tools/slack-send-message/definition.yaml
-  ... 
+  ...
 ✅ All tools valid!
 ```
 
@@ -158,6 +160,7 @@ pnpm validate-tools
 If your tool type is `command`, you may need an executable file.
 
 **Simple implementation (inline in YAML):**
+
 ```yaml
 execution:
   type: command
@@ -188,6 +191,7 @@ async function processInput(data: string) {
 ```
 
 Then reference in YAML:
+
 ```yaml
 execution:
   type: command
@@ -267,9 +271,7 @@ describe('MyTool', () => {
   });
 
   it('should fail with missing required parameter', async () => {
-    await expect(
-      matimo.execute('my-tool', {})
-    ).rejects.toThrow();
+    await expect(matimo.execute('my-tool', {})).rejects.toThrow();
   });
 
   it('should validate output schema', async () => {
@@ -283,6 +285,7 @@ describe('MyTool', () => {
 ```
 
 **Test template:**
+
 ```typescript
 describe('ToolName', () => {
   // Test basic execution
@@ -336,6 +339,7 @@ open coverage/lcov-report/index.html
 ```
 
 **For your tool, aim for:**
+
 - ✅ 80%+ line coverage
 - ✅ 80%+ branch coverage
 - ✅ 80%+ function coverage
@@ -348,36 +352,42 @@ open coverage/lcov-report/index.html
 Before submitting a pull request, verify:
 
 ### YAML & Validation
+
 - [ ] `pnpm validate-tools` passes
 - [ ] All required fields in definition.yaml
 - [ ] Parameter types match Zod schema
 - [ ] Output schema is valid
 
 ### Code Quality
+
 - [ ] `pnpm lint:fix` + `pnpm format` passes
 - [ ] No TypeScript errors (if code implementation)
 - [ ] No console.log in core SDK (use logger instead)
 - [ ] Proper error handling with MatimoError
 
 ### Testing
+
 - [ ] Unit tests written (80%+ coverage)
 - [ ] Test fixtures created
 - [ ] `pnpm test` passes (all 603+ tests)
 - [ ] `pnpm test:coverage` shows 80%+ for tool
 
 ### Documentation
+
 - [ ] Tool has clear description
 - [ ] Parameters documented with descriptions
 - [ ] Examples provided (at least 1)
 - [ ] README added (if complex tool)
 
 ### Security
+
 - [ ] No hardcoded secrets
 - [ ] No sensitive data in logs
-- [ ] API keys from environment variables (prefix: MATIMO_)
+- [ ] API keys from environment variables (prefix: MATIMO\_)
 - [ ] Input validated via Zod
 
 ### Logging
+
 - [ ] Tool imports `getGlobalMatimoLogger()`
 - [ ] Errors logged with context
 - [ ] No silent failures
@@ -405,45 +415,54 @@ git push origin feat/my-tool-description
 
 ### PR Description Template
 
-```markdown
+````markdown
 ## Description
+
 What does this tool do? Why is it useful?
 
 ## Changes
+
 - Added my-tool definition
 - Implemented core logic
 - Added comprehensive tests
 - Created usage examples
 
 ## Tool Details
+
 - **Name:** my-tool
 - **Type:** command/http/function
 - **Authentication:** none/api_key/oauth2
 - **Parameters:** [list them]
 
 ## Testing
+
 - [x] All tests pass (`pnpm test`)
 - [x] Coverage 80%+ (`pnpm test:coverage`)
 - [x] YAML validates (`pnpm validate-tools`)
 - [x] Lint passes (`pnpm lint`)
 
 ## Example Usage
+
 ```typescript
 const result = await matimo.execute('my-tool', {
   param: 'value',
 });
 ```
+````
 
 ## Related Issues
+
 Closes #123
 
 ## Checklist
+
 - [x] YAML syntax valid
 - [x] Tests cover happy path + errors
 - [x] Documentation complete
 - [x] No hardcoded secrets
 - [x] Logger used for errors
-```
+
+````
 
 ### What to Expect
 
@@ -476,9 +495,10 @@ pnpm validate-tools 2>&1
 # - Missing required field (name, execution, output_schema)
 # - Invalid YAML syntax
 # - Parameter type mismatched
-```
+````
 
 **Fix:**
+
 - Review [TOOL_SPECIFICATION.md](./TOOL_SPECIFICATION.md)
 - Check existing tools for examples
 - Run again after fixes
@@ -488,6 +508,7 @@ pnpm validate-tools 2>&1
 ### "Tests don't find my tool"
 
 **Check:**
+
 ```bash
 # Verify tool loads
 pnpm test -- --testPathPattern="tool-loader"
@@ -502,6 +523,7 @@ pnpm test -- --testPathPattern="tool-loader"
 ### "Coverage too low"
 
 **Add tests for:**
+
 - Valid parameter combinations
 - Invalid/missing parameters
 - Edge cases (empty strings, zero values)
@@ -521,6 +543,7 @@ it('should handle network errors gracefully', async () => {
 ### "Lint/Format issues"
 
 **Auto-fix:**
+
 ```bash
 pnpm lint:fix
 pnpm format
@@ -611,6 +634,7 @@ git commit -m "feat(github): add github-clone-repo tool"
 - ✅ Respond to feedback from maintainers
 
 **Questions?**
+
 - 📖 [Tool Specification](./TOOL_SPECIFICATION.md)
 - 📖 [YAML Tools](./YAML_TOOLS.md)
 - 💬 [GitHub Discussions](https://github.com/tallclub/matimo/discussions)
