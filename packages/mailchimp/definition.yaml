@@ -1,0 +1,49 @@
+# Mailchimp Provider Definition
+#
+# This file defines provider metadata for Mailchimp.
+# Mailchimp Marketing API v3 uses API key authentication (Basic Auth).
+#
+# Setup:
+# 1. Log in to Mailchimp → Account → Extras → API Keys
+# 2. Generate a new API key
+# 3. Note your server prefix (last part of the API key, e.g. "us6" from "abc123-us6")
+# 4. Set MAILCHIMP_API_KEY environment variable to your full API key
+# 5. Pass server_prefix as a parameter to each tool call
+
+name: mailchimp-provider
+type: provider
+version: '1.0.0'
+tags:
+  - Email Marketing
+  - Audiences
+  - Campaigns
+  - Marketing Automation
+
+description: |
+  Mailchimp Marketing API v3 Provider Configuration
+
+  All Mailchimp tools use API key authentication.
+
+  Authentication:
+  - API Key found at: https://us1.admin.mailchimp.com/account/api/
+  - Set MAILCHIMP_API_KEY environment variable to your full API key
+  - Server prefix is the datacenter suffix on your API key (e.g. "us6" from "abc123-us6")
+
+provider:
+  name: mailchimp
+  displayName: Mailchimp
+
+  # Mailchimp uses API key auth (no OAuth2 required for basic usage)
+  authType: api_key
+
+  # Additional metadata
+  documentation: https://mailchimp.com/developer/marketing/api/
+  learnMore: https://mailchimp.com/developer/marketing/guides/quick-start/
+
+  # UI assets and branding
+  assets:
+    icon: assets/icon.svg
+    logo: assets/logo.svg
+  brand_color: '#FFE01B'
+  homepage: 'https://mailchimp.com'
+  alt: 'Mailchimp'
