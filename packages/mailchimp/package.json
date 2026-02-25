@@ -8,10 +8,11 @@
     "README.md",
     "definition.yaml"
   ],
-  "dependencies": {
-    "@matimo/core": "workspace:*"
+  "peerDependencies": {
+    "matimo": "workspace:*"
   },
   "devDependencies": {
+    "@matimo/core": "workspace:*",
     "typescript": "^5.9.3"
   }
 }

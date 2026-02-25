@@ -111,7 +111,7 @@ pnpm mailchimp:decorator
 
 **Key Code:**
 ```typescript
-import { setGlobalMatimoInstance, tool } from '@matimo/core';
+import { setGlobalMatimoInstance, tool } from 'matimo';
 
 const matimo = await MatimoInstance.init({ autoDiscover: true });
 setGlobalMatimoInstance(matimo);
@@ -176,7 +176,7 @@ pnpm mailchimp:langchain
 
 **Key Code:**
 ```typescript
-import { convertToolsToLangChain } from '@matimo/core';
+import { MatimoInstance, convertToolsToLangChain } from 'matimo';
 import { ChatOpenAI } from '@langchain/openai';
 
 const matimo = await MatimoInstance.init({ autoDiscover: true });

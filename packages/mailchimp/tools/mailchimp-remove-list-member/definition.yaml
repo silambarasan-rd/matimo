@@ -1,10 +1,10 @@
 name: mailchimp-remove-list-member
 version: '1.0.0'
 description: >
-  Permanently remove a subscriber from a Mailchimp audience/list.
-  This action unsubscribes and archives the contact. Use the MD5 hash
-  of the lowercase email address as the subscriber_hash.
-  ⚠️ This action requires approval as it permanently removes subscriber data.
+  Archive (unsubscribe and remove) a subscriber from a Mailchimp audience/list.
+  This action archives the contact so they no longer appear as an active member.
+  Use the MD5 hash of the lowercase email address as the subscriber_hash.
+  ⚠️ This action requires approval — it cannot be undone from this tool.
 
 requires_approval: true
 

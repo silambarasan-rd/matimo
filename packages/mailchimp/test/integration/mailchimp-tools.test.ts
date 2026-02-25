@@ -96,7 +96,7 @@ describe('Mailchimp Tools Integration', () => {
     expect(Array.isArray(result.data.members)).toBe(true);
   });
 
-  it('should execute mailchimp-add-list-member and cleanup', async () => {
+  it('should execute mailchimp-add-list-member', async () => {
     const apiKey = process.env.MAILCHIMP_API_KEY;
     const listId = process.env.MAILCHIMP_TEST_LIST_ID;
     if (!apiKey || !listId) {
@@ -120,6 +120,15 @@ describe('Mailchimp Tools Integration', () => {
     expect(result.data.email_address).toBe(testEmail);
     expect(result.data.status).toBe('subscribed');
     expect(result.data.id).toBeDefined();
+
+    // Cleanup: remove the test member to avoid polluting real Mailchimp audiences
+    const subscriberHash = result.data.id;
+    const cleanupResult = (await matimo.execute('mailchimp-remove-list-member', {
+      server_prefix: serverPrefix,
+      list_id: listId,
+      subscriber_hash: subscriberHash,
+    })) as { success: boolean; statusCode: number };
+    expect(cleanupResult.success).toBe(true);
   });
 
   it('should not expose API key in error output', async () => {
