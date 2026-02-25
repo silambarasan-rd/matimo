@@ -32,7 +32,8 @@ class MailchimpAgent {
 
   @tool('mailchimp-get-lists')
   async getLists(server_prefix: string, count?: number): Promise<unknown> {
-    return { server_prefix, count };
+    // Decorator auto-executes via matimo
+    return undefined;
   }
 
   @tool('mailchimp-add-list-member')
@@ -44,7 +45,8 @@ class MailchimpAgent {
     merge_fields?: Record<string, string>,
     tags?: string[]
   ): Promise<unknown> {
-    return { server_prefix, list_id, email_address, status, merge_fields, tags };
+    // Decorator auto-executes via matimo
+    return undefined;
   }
 
   @tool('mailchimp-get-list-members')
@@ -55,7 +57,8 @@ class MailchimpAgent {
     count?: number,
     offset?: number
   ): Promise<unknown> {
-    return { server_prefix, list_id, status, count, offset };
+    // Decorator auto-executes via matimo
+    return undefined;
   }
 
   @tool('mailchimp-update-list-member')
@@ -65,7 +68,8 @@ class MailchimpAgent {
     subscriber_hash: string,
     merge_fields?: Record<string, string>
   ): Promise<unknown> {
-    return { server_prefix, list_id, subscriber_hash, merge_fields };
+    // Decorator auto-executes via matimo
+    return undefined;
   }
 
   @tool('mailchimp-create-campaign')
@@ -79,7 +83,8 @@ class MailchimpAgent {
     from_name?: string,
     reply_to?: string
   ): Promise<unknown> {
-    return { server_prefix, type, list_id, subject_line, preview_text, title, from_name, reply_to };
+    // Decorator auto-executes via matimo
+    return undefined;
   }
 
   // ── Convenience helpers that bind server_prefix automatically ────────────
