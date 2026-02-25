@@ -42,6 +42,9 @@
     "notion:factory": "tsx notion/notion-factory.ts",
     "notion:decorator": "tsx notion/notion-decorator.ts",
     "notion:langchain": "tsx notion/notion-langchain.ts",
+    "mailchimp:factory": "tsx mailchimp/mailchimp-factory.ts",
+    "mailchimp:decorator": "tsx mailchimp/mailchimp-decorator.ts",
+    "mailchimp:langchain": "tsx mailchimp/mailchimp-langchain.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -56,6 +59,7 @@
     "@matimo/github": "workspace:*",
     "@matimo/hubspot": "workspace:*",
     "@matimo/notion": "workspace:*",
+    "@matimo/mailchimp": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },

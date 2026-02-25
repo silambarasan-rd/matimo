@@ -5,6 +5,7 @@ packages:
   - "packages/github"
   - "packages/hubspot"
   - "packages/notion"
+  - "packages/mailchimp"
   - "packages/cli"
   - "examples/tools"
   - "packages/postgres"
