@@ -1,7 +1,7 @@
 # Mailchimp Provider Definition
 #
 # This file defines provider metadata for Mailchimp.
-# Mailchimp Marketing API v3 uses API key authentication (Basic Auth).
+# Mailchimp Marketing API v3 accepts API key auth via the Authorization header.
 #
 # Setup:
 # 1. Log in to Mailchimp → Account → Extras → API Keys
@@ -22,7 +22,8 @@ tags:
 description: |
   Mailchimp Marketing API v3 Provider Configuration
 
-  All Mailchimp tools use API key authentication.
+  All Mailchimp tools use API key authentication via the Authorization header.
+  Format: Authorization: apikey YOUR_API_KEY
 
   Authentication:
   - API Key found at: https://us1.admin.mailchimp.com/account/api/
@@ -33,7 +34,7 @@ provider:
   name: mailchimp
   displayName: Mailchimp
 
-  # Mailchimp uses API key auth (no OAuth2 required for basic usage)
+  # Mailchimp uses API key auth via Authorization header (apikey <key>)
   authType: api_key
 
   # Additional metadata
