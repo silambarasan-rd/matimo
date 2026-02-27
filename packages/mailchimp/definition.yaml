@@ -43,8 +43,8 @@ provider:
 
   # UI assets and branding
   assets:
-    icon: assets/icon.svg
-    logo: assets/logo.svg
+    icon: assets/mc-logo.svg
+    logo: assets/mc-logo.svg
   brand_color: '#FFE01B'
   homepage: 'https://mailchimp.com'
   alt: 'Mailchimp'

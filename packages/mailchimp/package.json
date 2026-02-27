@@ -6,7 +6,8 @@
   "files": [
     "tools",
     "README.md",
-    "definition.yaml"
+    "definition.yaml",
+    "assets"
   ],
   "peerDependencies": {
     "matimo": "workspace:*"

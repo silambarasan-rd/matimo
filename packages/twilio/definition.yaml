@@ -35,3 +35,8 @@ description: |
   Pass your Account SID as the `account_sid` parameter to each tool call.
 
   API Documentation: https://www.twilio.com/docs/messaging/api/message-resource
+
+assets:
+  icon: assets/twilio-icon.svg
+  logo: assets/twilio-logo.svg
+  brand_color: '#F22F46'
