@@ -53,6 +53,11 @@ export class HttpExecutor {
     }
 
     const templatedHeaders = this.templateObject(headers, finalParams, tool.parameters);
+
+    // Natively handle HTTP Basic Auth when authentication.type === 'basic' and
+    // username_env/password_env are declared. This eliminates the need for
+    // developers to pre-compute base64 credentials as a separate env var step.
+    this.applyBasicAuth(tool, templatedHeaders as Record<string, string>);
     const templatedBody =
       body && typeof body === 'object'
         ? this.templateObject(body as Record<string, unknown>, finalParams, tool.parameters)
@@ -96,6 +101,35 @@ export class HttpExecutor {
       // This keeps callers consistent and preserves original cause via details.cause.
       throw fromHttpError(error, 'HTTP request failed');
     }
+  }
+
+  /**
+   * Automatically inject `Authorization: Basic <base64(username:password)>` when
+   * the tool declares `authentication.type: basic` with `username_env` and `password_env`.
+   *
+   * This is a zero-friction pattern: developers only set two natural env vars
+   * (e.g. TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN) and Matimo handles encoding.
+   * No pre-computed base64 credential string required.
+   */
+  private applyBasicAuth(tool: ToolDefinition, headers: Record<string, string>): void {
+    const auth = tool.authentication;
+    if (auth?.type !== 'basic' || !auth.username_env || !auth.password_env) {
+      return;
+    }
+
+    const username = process.env[auth.username_env];
+    const password = process.env[auth.password_env];
+
+    if (!username || !password) {
+      throw new MatimoError(
+        `Basic Auth requires env vars '${auth.username_env}' and '${auth.password_env}' to be set`,
+        ErrorCode.AUTH_FAILED,
+        { toolName: tool.name, username_env: auth.username_env, password_env: auth.password_env }
+      );
+    }
+
+    const encoded = Buffer.from(`${username}:${password}`).toString('base64');
+    headers['Authorization'] = `Basic ${encoded}`;
   }
 
   /**
