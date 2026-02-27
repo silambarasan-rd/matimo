@@ -152,15 +152,15 @@ async function runTwilioAIAgent() {
     const userRequests = [
       {
         title: 'Example 1: Check message history',
-        request: `Check my recent Twilio message history for account SID ${accountSid}. How many messages are there and what are their statuses?`,
+        request: `Check my recent Twilio message history. How many messages are there and what are their statuses?`,
       },
       {
         title: 'Example 2: Send a test SMS',
-        request: `Send a test SMS from ${fromNumber} to ${toNumber} saying "Hello from the Matimo AI Agent! LangChain integration test." Use account SID ${accountSid}.`,
+        request: `Send a test SMS from ${fromNumber} to ${toNumber} saying "Hello from the Matimo AI Agent! LangChain integration test." Use account SID  .`,
       },
       {
         title: 'Example 3: Check sent message status',
-        request: `List the 3 most recent messages sent from ${fromNumber} on my account ${accountSid} and describe their delivery status.`,
+        request: `List the 3 most recent messages sent from ${fromNumber} on my account    and describe their delivery status.`,
       },
     ];
 

@@ -61,7 +61,9 @@ export class HttpExecutor {
     const templatedBody =
       body && typeof body === 'object'
         ? this.templateObject(body as Record<string, unknown>, finalParams, tool.parameters)
-        : body;
+        : typeof body === 'string'
+          ? this.templateString(body, finalParams)
+          : body;
 
     // Build request config
     const requestConfig: AxiosRequestConfig = {
@@ -74,7 +76,28 @@ export class HttpExecutor {
     }
 
     if (templatedBody !== undefined) {
-      requestConfig.data = templatedBody;
+      // If Content-Type is application/x-www-form-urlencoded and body is an object,
+      // convert to URLSearchParams for proper form encoding by axios
+      const contentType =
+        (templatedHeaders as Record<string, string>)['Content-Type'] ||
+        (templatedHeaders as Record<string, string>)['content-type'];
+
+      if (
+        contentType?.includes('application/x-www-form-urlencoded') &&
+        typeof templatedBody === 'object' &&
+        templatedBody !== null &&
+        !(templatedBody instanceof FormData)
+      ) {
+        const params = new URLSearchParams();
+        for (const [key, value] of Object.entries(templatedBody as Record<string, unknown>)) {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        }
+        requestConfig.data = params;
+      } else {
+        requestConfig.data = templatedBody;
+      }
     }
 
     if (timeout !== undefined) {
