@@ -105,7 +105,7 @@ async function runTwilioAIAgent() {
     process.exit(1);
   }
 
-  console.info(`🔑 Account SID: ${accountSid.slice(0, 12)}...`);
+  console.info(`🔑 Account SID: Configured`);
   console.info(`📤 From Number: ${fromNumber}`);
   console.info(`📥 To Number:   ${toNumber}`);
   console.info(`🤖 Using OpenAI (GPT-4o-mini) as the AI agent\n`);

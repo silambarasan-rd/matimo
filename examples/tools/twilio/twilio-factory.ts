@@ -102,7 +102,7 @@ async function runTwilioFactoryExamples() {
     process.exit(1);
   }
 
-  console.info(`🔑 Account SID: ${accountSid.slice(0, 12)}...`);
+  console.info(`🔑 Account SID: Configured.`);
   console.info(`📤 From: ${fromNumber}`);
   console.info(`📥 To:   ${toNumber}\n`);
 

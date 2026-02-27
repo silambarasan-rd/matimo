@@ -161,7 +161,7 @@ async function runTwilioDecoratorExamples() {
     console.info('⚠️  Missing credentials — skipping live API calls.\n');
   }
 
-  console.info(`🔑 Account SID: ${accountSid ? accountSid.slice(0, 12) + '...' : '(not set)'}`);
+  console.info(`🔑 Account SID: ${accountSid ? 'Configured' : '(not set)'}`);
   console.info(`📤 From: ${fromNumber || '(not set)'}`);
   console.info(`📥 To:   ${toNumber || '(not set)'}\n`);
 
