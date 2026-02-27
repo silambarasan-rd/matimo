@@ -318,6 +318,7 @@
         .benefits {
             padding: 100px 20px;
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            overflow: hidden;
         }
 
         .benefits-container {
@@ -327,12 +328,16 @@
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
+            overflow: hidden;
         }
 
         .benefits-text h2 {
             font-size: 2.2rem;
             margin-bottom: 1.5rem;
             color: var(--dark);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .benefit-list {
@@ -345,6 +350,11 @@
             position: relative;
             font-size: 1rem;
             color: var(--text);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            max-width: 100%;
         }
 
         .benefit-list li:before {
@@ -354,6 +364,12 @@
             color: var(--success);
             font-weight: bold;
             font-size: 1.3rem;
+        }
+
+        .benefit-list li strong {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            display: inline;
         }
 
         .benefits-visual {
@@ -375,8 +391,45 @@
         }
 
         @media (max-width: 768px) {
+            .benefits {
+                padding: 60px 0;
+                overflow-x: hidden;
+            }
+
             .benefits-container {
                 grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 0 20px;
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .benefits-text h2 {
+                font-size: 1.6rem;
+                margin-bottom: 1.5rem;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+
+            .benefit-list li {
+                padding: 0.75rem 0;
+                padding-left: 2rem;
+                font-size: 0.9rem;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                word-break: break-word;
+                margin-right: 0;
+            }
+
+            .benefits-visual {
+                overflow-x: hidden;
+            }
+
+            .yaml-example {
+                font-size: 0.7rem;
+                padding: 0.75rem;
+                overflow-x: auto;
+                margin: 0;
             }
         }
 
@@ -450,13 +503,33 @@
         }
 
         .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            display: flex;
             gap: 1.5rem;
             margin-top: 2rem;
-            max-width: 900px;
+            width: 100%;
             margin-left: auto;
             margin-right: auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tools-grid-wrapper {
+            display: flex;
+            gap: 1.5rem;
+            animation: scrollLogos 30s linear infinite;
+        }
+
+        @keyframes scrollLogos {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .tools-grid:hover .tools-grid-wrapper {
+            animation-play-state: paused;
         }
 
         .tool-badge {
@@ -469,20 +542,24 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 0.75rem;
             text-decoration: none;
             color: rgb(22, 20, 20);
+            flex-shrink: 0;
+            width: 150px;
+            min-height: 150px;
         }
 
         .tool-badge img {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
         }
 
         .tool-badge svg {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
         }
 
         .tool-badge:hover {
@@ -654,6 +731,10 @@
                 font-size: 1.8rem;
             }
 
+            .benefits {
+                padding: 60px 20px;
+            }
+
             .benefits-text h2 {
                 font-size: 1.6rem;
             }
@@ -673,6 +754,31 @@
             .footer-section a {
                 display: inline;
                 margin: 0 0.5rem;
+            }
+
+            .tool-badge {
+                width: 120px;
+                min-height: 120px;
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .tool-badge img {
+                width: 40px;
+                height: 40px;
+            }
+
+            .tool-badge svg {
+                width: 40px;
+                height: 40px;
+            }
+
+            .tools-grid {
+                gap: 1rem;
+            }
+
+            .tools-grid-wrapper {
+                gap: 1rem;
             }
         }
 
@@ -882,50 +988,122 @@ async myMethod(param) {
             <h2>Expanding Ecosystem</h2>
             <p>Pre-built tools ready to use. More coming soon.</p>
             <div class="tools-grid">
-                <!-- Slack -->
-                <a href="https://github.com/tallclub/matimo/tree/main/packages/slack" class="tool-badge" title="Slack Tools" target="_blank">
-                    <img src="assets/slack-logo.svg" alt="Slack Logo">
-                    Slack
-                </a>
+                <div class="tools-grid-wrapper">
+                    <!-- Slack -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/slack" class="tool-badge" title="Slack Tools" target="_blank">
+                        <img src="assets/slack-logo.svg" alt="Slack Logo">
+                        Slack
+                    </a>
 
-                <!-- Gmail -->
-                <a href="https://github.com/tallclub/matimo/tree/main/packages/gmail" class="tool-badge" title="Gmail Tools" target="_blank">
-                    <img src="assets/gmail-logo.svg" alt="Gmail Logo">
-                    Gmail
-                </a>
+                    <!-- Gmail -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/gmail" class="tool-badge" title="Gmail Tools" target="_blank">
+                        <img src="assets/gmail-logo.svg" alt="Gmail Logo">
+                        Gmail
+                    </a>
 
-                <!-- GitHub -->
-                <a href="https://github.com/tallclub/matimo/tree/main/packages/github" class="tool-badge" title="GitHub Tools" target="_blank">
-                    <img src="assets/github-logo.svg" alt="GitHub Logo">
-                    GitHub
-                </a>
+                    <!-- GitHub -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/github" class="tool-badge" title="GitHub Tools" target="_blank">
+                        <img src="assets/github-logo.svg" alt="GitHub Logo">
+                        GitHub
+                    </a>
 
-                <!-- Notion -->
-                <a href="https://github.com/tallclub/matimo/tree/main/packages/notion" class="tool-badge" title="Notion Tools" target="_blank">
-                    <img src="assets/notion-logo.svg" alt="Notion Logo">
-                    Notion
-                </a>
+                    <!-- Notion -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/notion" class="tool-badge" title="Notion Tools" target="_blank">
+                        <img src="assets/notion-logo.svg" alt="Notion Logo">
+                        Notion
+                    </a>
 
-                <!-- PostgreSQL -->
-                <a href="https://github.com/tallclub/matimo/tree/main/packages/postgres" class="tool-badge" title="PostgreSQL Tools" target="_blank">
-                    <img src="assets/postgres-logo.svg" alt="PostgreSQL Logo">
-                    PostgreSQL
-                </a>
+                    <!-- PostgreSQL -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/postgres" class="tool-badge" title="PostgreSQL Tools" target="_blank">
+                        <img src="assets/postgres-logo.svg" alt="PostgreSQL Logo">
+                        PostgreSQL
+                    </a>
 
-                <!-- HubSpot -->
-                <a href="https://github.com/tallclub/matimo/tree/main/packages/hubspot" class="tool-badge" title="HubSpot Tools" target="_blank">
-                    <img src="assets/hubspot-logo.svg" alt="HubSpot Logo">
-                    HubSpot
-                </a>
+                    <!-- HubSpot -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/hubspot" class="tool-badge" title="HubSpot Tools" target="_blank">
+                        <img src="assets/hubspot-logo.svg" alt="HubSpot Logo">
+                        HubSpot
+                    </a>
 
-                <!-- Custom Tools -->
-                <a href="https://docs.matimo.dev/getting-started/YOUR_FIRST_TOOL.html" class="tool-badge tool-badge-plus" title="Add Your Own Tools" target="_blank">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    Custom Tools
-                </a>
+                    <!-- Mailchimp -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/mailchimp" class="tool-badge" title="Mailchimp Tools" target="_blank">
+                        <img src="assets/mailchimp-logo.svg" alt="Mailchimp Logo">
+                        Mailchimp
+                    </a>
+
+                    <!-- Twilio -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/twilio" class="tool-badge" title="Twilio Tools" target="_blank">
+                        <img src="assets/twilio-logo.svg" alt="Twilio Logo">
+                        Twilio
+                    </a>
+
+                    <!-- Custom Tools -->
+                    <a href="https://docs.matimo.dev/getting-started/YOUR_FIRST_TOOL.html" class="tool-badge tool-badge-plus" title="Add Your Own Tools" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Tools
+                    </a>
+
+                    <!-- Duplicate set for seamless looping -->
+                    <!-- Slack -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/slack" class="tool-badge" title="Slack Tools" target="_blank">
+                        <img src="assets/slack-logo.svg" alt="Slack Logo">
+                        Slack
+                    </a>
+
+                    <!-- Gmail -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/gmail" class="tool-badge" title="Gmail Tools" target="_blank">
+                        <img src="assets/gmail-logo.svg" alt="Gmail Logo">
+                        Gmail
+                    </a>
+
+                    <!-- GitHub -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/github" class="tool-badge" title="GitHub Tools" target="_blank">
+                        <img src="assets/github-logo.svg" alt="GitHub Logo">
+                        GitHub
+                    </a>
+
+                    <!-- Notion -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/notion" class="tool-badge" title="Notion Tools" target="_blank">
+                        <img src="assets/notion-logo.svg" alt="Notion Logo">
+                        Notion
+                    </a>
+
+                    <!-- PostgreSQL -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/postgres" class="tool-badge" title="PostgreSQL Tools" target="_blank">
+                        <img src="assets/postgres-logo.svg" alt="PostgreSQL Logo">
+                        PostgreSQL
+                    </a>
+
+                    <!-- HubSpot -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/hubspot" class="tool-badge" title="HubSpot Tools" target="_blank">
+                        <img src="assets/hubspot-logo.svg" alt="HubSpot Logo">
+                        HubSpot
+                    </a>
+
+                    <!-- Mailchimp -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/mailchimp" class="tool-badge" title="Mailchimp Tools" target="_blank">
+                        <img src="assets/mailchimp-logo.svg" alt="Mailchimp Logo">
+                        Mailchimp
+                    </a>
+
+                    <!-- Twilio -->
+                    <a href="https://github.com/tallclub/matimo/tree/main/packages/twilio" class="tool-badge" title="Twilio Tools" target="_blank">
+                        <img src="assets/twilio-logo.svg" alt="Twilio Logo">
+                        Twilio
+                    </a>
+
+                    <!-- Custom Tools -->
+                    <a href="https://docs.matimo.dev/getting-started/YOUR_FIRST_TOOL.html" class="tool-badge tool-badge-plus" title="Add Your Own Tools" target="_blank">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Custom Tools
+                    </a>
+                </div>
             </div>
         </div>
     </section>
