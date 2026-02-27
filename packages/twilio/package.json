@@ -1,0 +1,18 @@
+{
+  "name": "@matimo/twilio",
+  "version": "0.1.0-alpha.10",
+  "description": "Twilio messaging tools for Matimo — send SMS, MMS, and manage messages",
+  "type": "module",
+  "files": [
+    "tools",
+    "README.md",
+    "definition.yaml"
+  ],
+  "peerDependencies": {
+    "matimo": "workspace:*"
+  },
+  "devDependencies": {
+    "@matimo/core": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}
