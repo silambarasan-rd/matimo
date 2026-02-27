@@ -25,6 +25,17 @@ export interface AuthConfig {
   location?: 'header' | 'query' | 'body';
   name?: string;
   scheme?: string;
+  /**
+   * For type: basic — name of the environment variable holding the HTTP Basic Auth username.
+   * HttpExecutor will read this env var and the password_env var, base64-encode them as
+   * "username:password", and inject `Authorization: Basic <encoded>` automatically.
+   */
+  username_env?: string;
+  /**
+   * For type: basic — name of the environment variable holding the HTTP Basic Auth password.
+   * Used together with username_env to build the Authorization header automatically.
+   */
+  password_env?: string;
 }
 
 /**
