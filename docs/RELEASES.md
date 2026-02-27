@@ -1,8 +1,118 @@
+## v0.1.0-alpha.11
+
+> Release: Twilio SMS/MMS provider, Mailchimp email marketing provider, native Basic Auth support, enhanced HTTP executor form-encoding, comprehensive test coverage, production-ready examples.
+
+**Released**: February 27, 2026
+
+### 🚀 Features
+
+**New Providers** (11 New Tools)
+
+- **Twilio Provider** (`packages/twilio`) — **4 SMS/MMS Tools**
+  - `twilio-send-sms` — Send SMS to E.164 formatted phone numbers with message content and optional callbacks
+  - `twilio-send-mms` — Send MMS with media URLs to recipients
+  - `twilio-get-message` — Retrieve message status and details by SID
+  - `twilio-list-messages` — List messages with filtering (to/from phone, date, pagination)
+  - E.164 phone number format validation and handling
+  - Trial account support (50 messages/day limit)
+  - Full Twilio Programmable Messaging API integration
+
+- **Mailchimp Provider** (`packages/mailchimp`) — **7 Email Marketing Tools**
+  - `mailchimp-get-lists` — Retrieve email lists from account
+  - `mailchimp-add-list-member` — Add subscribers to lists (with merge fields)
+  - `mailchimp-update-list-member` — Update subscriber information (email, name, status)
+  - `mailchimp-get-list-members` — Query list members with pagination
+  - `mailchimp-remove-list-member` — Remove subscribers from lists
+  - `mailchimp-create-campaign` — Create new email campaigns with templates
+  - `mailchimp-send-campaign` — Send campaigns to lists with content
+  - Full Mailchimp Marketing API integration with OAuth2
+  - Campaign scheduling and performance tracking
+
+**HTTP Executor Enhancements**
+
+- **Native Basic Auth Support**
+  - New `authentication.type: basic` with `username_env` and `password_env` fields
+  - Automatic base64 encoding of `username:password` at request time
+  - Works with Mailchimp, HubSpot, and any Basic Auth service
+  - No pre-computation needed; credentials stored separate in env vars
+  - Added to `AuthConfig` interface in `packages/core/src/core/types.ts`
+
+- **Form-Encoded Request Bodies**
+  - Automatic URLSearchParams conversion when `Content-Type: application/x-www-form-urlencoded`
+  - Fixes axios default JSON serialization for form submissions
+  - Validated with Twilio SMS/MMS live API testing
+  - Intelligent null/undefined filtering in templated fields
+  - Preserves JSON and custom formats for other Content-Types
+
+
+**Documentation & Examples**
+
+- **Provider READMEs**
+  - `packages/twilio/README.md` 
+  - `packages/mailchimp/README.md`
+
+- **Integration Examples** (Factory, Decorator, LangChain patterns)
+  - Twilio: `twilio-factory.ts`, `twilio-decorator.ts`, `twilio-langchain.ts` 
+  - Mailchimp: `mailchimp-factory.ts`, `mailchimp-decorator.ts`, `mailchimp-langchain.ts` 
+  - Real-world scenarios: Send SMS from agent, manage email subscribers, create campaigns
+  - Full error handling and credential validation
+
+
+### 🛠 Fixes & Improvements
+
+- **HTTP Executor** (`packages/core/src/executors/http-executor.ts`)
+  - Enhanced request body handling for form encoding 
+  - Automatic URLSearchParams conversion for form-encoded bodies
+  - Better parameter templating with string conversion for numbers/booleans
+  - Improved null/undefined filtering to prevent orphaned keys in templated objects
+  - Case-insensitive Content-Type detection
+
+- **Mailchimp Documentation**
+  - Updated API key logging for clarity (removed sensitive details)
+  - Adjusted asset paths for logo handling
+  - Corrected authentication method clarification
+
+### 🔧 Technical Notes
+
+- **Basic Auth Pattern**: Set two env vars per service
+  - Example: `MATIMO_MAILCHIMP_USERNAME=api_key_start`, `MATIMO_MAILCHIMP_PASSWORD=api_key_end`
+  - Executor base64-encodes at request time; credentials never exposed in logs
+
+- **Form Encoding**: Automatically triggered when `Content-Type: application/x-www-form-urlencoded` detected
+  - No YAML changes needed; existing tools work transparently
+  - Objects in body converted to URLSearchParams by HTTP executor
+  - Numbers and booleans automatically converted to strings for form submission
+
+- **Twilio Setup**: Environment variables required
+  - `TWILIO_ACCOUNT_SID` — Find in Twilio Console
+  - `TWILIO_AUTH_TOKEN` — Find in Twilio Console
+  - `TWILIO_FROM_NUMBER` — Phone number to send from (E.164 format: +1234567890)
+  - `TWILIO_TO_NUMBER` — Optional; can also be passed as parameter
+
+- **Mailchimp Setup**: OAuth2 or API key
+  - API key: Set `MATIMO_MAILCHIMP_API_KEY` (Basic Auth with 'user' + key)
+  - OAuth2: Supported; token refresh handled transparently
+
+- **Trial Accounts**: Twilio trial accounts prepend "[Twilio] " prefix to messages; upgrade to paid account to remove
+
+### ⚠️ Breaking Changes
+
+- None.
+
+### 📝 Migration Notes
+
+- **New Tools**: Twilio and Mailchimp available immediately after alpha.11 merge; no migration needed
+- **Basic Auth**: Existing tools can opt-in to native Basic Auth by updating YAML; backward compatible with hardcoded Authorization headers
+- **Dependencies**: Added `twilio` and `mailchimp` TypeScript types to `packages/core/test/integration/`; no user-facing API changes
+
+---
+
 ## v0.1.0-alpha.10
 
 > Release: Notion tools provider, enhanced HTTP executor with structured parameters, and improved error handling
 
 **Released**: February 21, 2026
+
 
 ### 🚀 Features
 

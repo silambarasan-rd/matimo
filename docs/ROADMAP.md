@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Latest Release**: v0.1.0-alpha.10 (February 21, 2026)
+**Latest Release**: v0.1.0-alpha.11 (February 27, 2026)
 
 ✅ **Completed Features**:
 
@@ -32,10 +32,11 @@ Expand provider ecosystem with real-world integrations:
 
 - [x] **GitHub** — Repositories, issues, pull requests, releases (v0.1.0-alpha.8)
 - [ ] **Stripe** — Payments, invoices, customers, subscriptions
-- [ ] **Twilio** — SMS, voice, video, messaging
 - [x] **HubSpot** — CRM, contacts, deals, tickets (v0.1.0-alpha.9)
 - [ ] **Linear** — Issues, projects, milestones
 - [x] **Notion** — Databases, pages, blocks (v0.1.0-alpha.10)
+- [x] **Twilio** — SMS, MMS, messaging (v0.1.0-alpha.11)
+- [x] **Mailchimp** — Email campaigns, subscribers, lists (v0.1.0-alpha.11)
 - [ ] **Airtable** — Tables, records, views
 - [ ] **Jira** — Issues, projects, workflows
 - [ ] **AWS** — EC2, S3, Lambda, and core services
@@ -191,7 +192,8 @@ Alpha Phase (✅ Completed)
   v0.1.0-alpha.7  Feb 15, 2026  (Postgres tools)
   v0.1.0-alpha.8  Feb 18, 2026  (GitHub tools, unified approval)
   v0.1.0-alpha.9  Feb 19, 2026  (HubSpot tools)
-  v0.1.0-alpha.10 Feb 21, 2026  (Notion tools) ← Current
+  v0.1.0-alpha.10 Feb 21, 2026  (Notion tools)
+  v0.1.0-alpha.11 Feb 27, 2026  (Twilio & Mailchimp tools) ← Current
 
 v0.1.0 Release (📅 Coming)
   Priorities:
@@ -299,7 +301,7 @@ We welcome contributions at any level!
 
 ## How to Use This Roadmap
 
-- **Current Version**: v0.1.0-alpha.10 (February 21, 2026)
+- **Current Version**: v0.1.0-alpha.11 (February 27, 2026)
 - **Future Releases**: See sections above for planned features
 - **Past Releases**: See [RELEASES.md](./RELEASES.md) for detailed release notes for all previous versions
 - **Contributing**: See [CONTRIBUTING.md](https://github.com/tallclub/matimo/blob/main/CONTRIBUTING.md) for how to help

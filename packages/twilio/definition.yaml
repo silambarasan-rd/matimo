@@ -1,0 +1,42 @@
+# Twilio Provider Definition
+#
+# This file defines provider metadata for Twilio Programmable Messaging.
+# Twilio REST API uses HTTP Basic authentication:
+#   Username = Account SID (ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+#   Password = Auth Token
+#
+# Setup:
+# 1. Log in to Twilio Console: https://console.twilio.com
+# 2. Find your Account SID and Auth Token on the dashboard
+# 3. Set environment variables:
+#    export TWILIO_ACCOUNT_SID="ACxxxxxxxxxx"
+#    export TWILIO_AUTH_TOKEN="your_auth_token"
+#    (Matimo automatically handles base64 encoding — no extra steps needed)
+# 4. Pass account_sid as a parameter to each tool call
+
+name: twilio-provider
+type: provider
+version: '1.0.0'
+tags:
+  - Messaging
+  - SMS
+  - MMS
+  - Communications
+
+description: |
+  Twilio Programmable Messaging API Provider Configuration
+
+  All Twilio tools use HTTP Basic authentication.
+  Matimo natively handles base64 encoding — just set two env vars:
+    TWILIO_ACCOUNT_SID = your Account SID (ACxxxxxxxxxx)
+    TWILIO_AUTH_TOKEN  = your Auth Token (from the Twilio Console dashboard)
+
+  Authentication is automatically injected as: Authorization: Basic base64(AccountSid:AuthToken)
+  Pass your Account SID as the `account_sid` parameter to each tool call.
+
+  API Documentation: https://www.twilio.com/docs/messaging/api/message-resource
+
+assets:
+  icon: assets/twilio-icon.svg
+  logo: assets/twilio-logo.svg
+  brand_color: '#F22F46'

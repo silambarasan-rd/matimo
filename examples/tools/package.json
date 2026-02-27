@@ -1,6 +1,6 @@
 {
   "name": "matimo-examples",
-  "version": "0.1.0-alpha.9",
+  "version": "0.1.0-alpha.11",
   "description": "Matimo SDK examples - Factory Pattern, Decorator Pattern, and LangChain integration with Slack and Gmail",
   "type": "module",
   "scripts": {
@@ -42,6 +42,12 @@
     "notion:factory": "tsx notion/notion-factory.ts",
     "notion:decorator": "tsx notion/notion-decorator.ts",
     "notion:langchain": "tsx notion/notion-langchain.ts",
+    "mailchimp:factory": "tsx mailchimp/mailchimp-factory.ts",
+    "mailchimp:decorator": "tsx mailchimp/mailchimp-decorator.ts",
+    "mailchimp:langchain": "tsx mailchimp/mailchimp-langchain.ts",
+    "twilio:factory": "tsx twilio/twilio-factory.ts",
+    "twilio:decorator": "tsx twilio/twilio-decorator.ts",
+    "twilio:langchain": "tsx twilio/twilio-langchain.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -56,6 +62,8 @@
     "@matimo/github": "workspace:*",
     "@matimo/hubspot": "workspace:*",
     "@matimo/notion": "workspace:*",
+    "@matimo/mailchimp": "workspace:*",
+    "@matimo/twilio": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },

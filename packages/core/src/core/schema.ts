@@ -25,6 +25,18 @@ export const AuthConfigSchema = z.object({
   name: z.string().optional(),
   provider: z.string().optional(),
   required: z.boolean().optional(),
+  /**
+   * For type: basic — name of the environment variable holding the HTTP Basic Auth username.
+   * HttpExecutor will read this env var and the password_env var, base64-encode them as
+   * "username:password", and inject `Authorization: Basic <encoded>` automatically.
+   * This eliminates the need for developers to pre-compute a base64 credential string.
+   */
+  username_env: z.string().optional(),
+  /**
+   * For type: basic — name of the environment variable holding the HTTP Basic Auth password.
+   * Used together with username_env to build the Authorization header automatically.
+   */
+  password_env: z.string().optional(),
 });
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;
