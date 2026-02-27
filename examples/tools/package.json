@@ -45,6 +45,9 @@
     "mailchimp:factory": "tsx mailchimp/mailchimp-factory.ts",
     "mailchimp:decorator": "tsx mailchimp/mailchimp-decorator.ts",
     "mailchimp:langchain": "tsx mailchimp/mailchimp-langchain.ts",
+    "twilio:factory": "tsx twilio/twilio-factory.ts",
+    "twilio:decorator": "tsx twilio/twilio-decorator.ts",
+    "twilio:langchain": "tsx twilio/twilio-langchain.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
   },
@@ -60,6 +63,7 @@
     "@matimo/hubspot": "workspace:*",
     "@matimo/notion": "workspace:*",
     "@matimo/mailchimp": "workspace:*",
+    "@matimo/twilio": "workspace:*",
     "dotenv": "^17.2.3",
     "zod": "^4.3.6"
   },
