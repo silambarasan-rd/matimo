@@ -54,7 +54,7 @@ async function runMailchimpAIAgent() {
   // The server prefix is infrastructure context required by every Mailchimp
   // API call — it is derived from the API key, not a business concept.
   const serverPrefix = apiKey.split('-').pop()!;
-  console.info(`🔑 API Key is configured...   📍 Server: ${serverPrefix}`);
+  console.info(`🔑 API Key is configured... 📍 Server`);
   console.info(`🤖 Using GPT-4o-mini\n`);
 
   // ── Initialize Matimo ────────────────────────────────────────────────────

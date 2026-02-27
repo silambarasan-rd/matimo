@@ -145,7 +145,7 @@ async function runMailchimpDecoratorFlow() {
   }
 
   const serverPrefix = apiKey.split('-').pop()!;
-  console.info(`🔑 API Key is configured..   📍 Server: ${serverPrefix}\n`);
+  console.info(`🔑 API Key is configured.. 📍 Server \n`);
 
   console.info('🚀 Initializing Matimo...');
   const matimo = await MatimoInstance.init({ autoDiscover: true });
