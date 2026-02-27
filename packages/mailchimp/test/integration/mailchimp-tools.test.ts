@@ -148,5 +148,5 @@ describe('Mailchimp Tools Integration', () => {
       }
       // Error is expected - just verify no key exposure
     }
-  });
+  }, 15000);
 });

@@ -6,6 +6,7 @@ packages:
   - "packages/hubspot"
   - "packages/notion"
   - "packages/mailchimp"
+  - "packages/twilio"
   - "packages/cli"
   - "examples/tools"
   - "packages/postgres"

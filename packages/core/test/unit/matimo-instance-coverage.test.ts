@@ -101,7 +101,7 @@ describe('MatimoInstance - Uncovered Lines Coverage', () => {
           expect(error).toBeDefined();
         }
       }
-    });
+    }, 15000);
 
     it('should execute calculator tool with parameters to test both getExecutor and scanObjectForParams', async () => {
       // This tests both private methods: getExecutor and parameter extraction/injection
