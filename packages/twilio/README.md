@@ -62,7 +62,7 @@ After signing up you land in the [Twilio Console](https://console.twilio.com) wh
 
 Your **Account SID** and **Auth Token** are displayed on your [Twilio Console dashboard](https://console.twilio.com) under **Account Info**.
 
-- **Account SID** — a 34-character identifier that starts with `AC` (e.g. `ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`). Acts as your username for every API call.
+- **Account SID** — a 34-character identifier that starts with `AC` (e.g. `ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`). Acts as your username for every API call.
 - **Auth Token** — a 32-character secret key. Acts as your password. Click the **eye (👁) icon** to reveal it.
 
 > ⚠️ **Security Note**: Keep both values secret. Do not commit them to version control. Anyone with your Account SID and Auth Token has full access to your Twilio project. Source: [Twilio Help — What is a Twilio Account SID?](https://help.twilio.com/articles/14726256820123-What-is-a-Twilio-Account-SID)
