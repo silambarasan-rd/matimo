@@ -28,6 +28,11 @@ parameters:
     required: false
     description: Protect message from forwarding/saving
     default: false
+  TOKEN:
+    type: string
+    required: true
+    description: Telegram BOT token goes here
+    example: "secret_token_here"
 
 execution:
   type: http

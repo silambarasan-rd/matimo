@@ -8,6 +8,11 @@ parameters:
     required: true
     description: Unique identifier for the target chat
     example: "@mychannel"
+  TOKEN:
+    type: string
+    required: true
+    description: Telegram BOT token goes here
+    example: "secret_token_here"
 
 execution:
   type: http

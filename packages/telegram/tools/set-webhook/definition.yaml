@@ -13,6 +13,11 @@ parameters:
     required: false
     description: Secret token for webhook verification
     example: "your_secret_token"
+  TOKEN:
+    type: string
+    required: true
+    description: Telegram BOT token goes here
+    example: "secret_token_here"
 
 execution:
   type: http

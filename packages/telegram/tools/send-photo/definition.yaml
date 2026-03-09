@@ -23,6 +23,11 @@ parameters:
     required: false
     description: Mode for parsing caption entities
     example: "Markdown"
+  TOKEN:
+    type: string
+    required: true
+    description: Telegram BOT token goes here
+    example: "secret_token_here"
 
 execution:
   type: http
