@@ -1,0 +1,62 @@
+name: telegram-send-photo
+description: Send a photo to a Telegram chat
+version: '1.0.0'
+
+parameters:
+  chat_id:
+    type: string
+    required: true
+    description: Unique identifier for the target chat
+    example: "@mychannel"
+  photo:
+    type: string
+    required: true
+    description: Photo file (URL, file_id, or base64)
+    example: "https://example.com/photo.jpg"
+  caption:
+    type: string
+    required: false
+    description: Photo caption (0-1024 characters)
+    example: "Check this out!"
+  parse_mode:
+    type: string
+    required: false
+    description: Mode for parsing caption entities
+    example: "Markdown"
+
+execution:
+  type: http
+  method: POST
+  url: https://api.telegram.org/bot{TOKEN}/sendPhoto
+  headers:
+    Content-Type: application/json
+  body:
+    chat_id: '{chat_id}'
+    photo: '{photo}'
+    caption: '{caption}'
+    parse_mode: '{parse_mode}'
+
+authentication:
+  type: bearer
+  location: header
+  name: Authorization
+
+output_schema:
+  type: object
+  properties:
+    ok:
+      type: boolean
+    result:
+      type: object
+      properties:
+        message_id:
+          type: integer
+        photo:
+          type: array
+
+error_handling:
+  retry: 2
+  backoff_type: exponential
+  initial_delay_ms: 1000
+  max_delay_ms: 10000
+  retryable_status_codes: [429, 500, 502, 503]

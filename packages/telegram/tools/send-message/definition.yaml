@@ -1,0 +1,81 @@
+name: telegram-send-message
+description: Send a text message to a Telegram chat
+version: '1.0.0'
+
+parameters:
+  chat_id:
+    type: string
+    required: true
+    description: Unique identifier for the target chat (username, ID, or @channel)
+    example: "@mychannel"
+  text:
+    type: string
+    required: true
+    description: Text of the message (1-4096 characters)
+    example: "Hello from Matimo!"
+  parse_mode:
+    type: string
+    required: false
+    description: Mode for parsing entities (Markdown, HTML)
+    example: "Markdown"
+  disable_notification:
+    type: boolean
+    required: false
+    description: Send silently without notification
+    default: false
+  protect_content:
+    type: boolean
+    required: false
+    description: Protect message from forwarding/saving
+    default: false
+
+execution:
+  type: http
+  method: POST
+  url: https://api.telegram.org/bot{TOKEN}/sendMessage
+  headers:
+    Content-Type: application/json
+  body:
+    chat_id: '{chat_id}'
+    text: '{text}'
+    parse_mode: '{parse_mode}'
+    disable_notification: '{disable_notification}'
+    protect_content: '{protect_content}'
+
+authentication:
+  type: bearer
+  location: header
+  name: Authorization
+
+output_schema:
+  type: object
+  properties:
+    ok:
+      type: boolean
+    result:
+      type: object
+      properties:
+        message_id:
+          type: integer
+        chat:
+          type: object
+        text:
+          type: string
+
+error_handling:
+  retry: 2
+  backoff_type: exponential
+  initial_delay_ms: 1000
+  max_delay_ms: 10000
+  retryable_status_codes: [429, 500, 502, 503]
+
+examples:
+  - name: Send simple message
+    params:
+      chat_id: "@example_channel"
+      text: "Hello World!"
+  - name: Send formatted message
+    params:
+      chat_id: "123456789"
+      text: "*Bold* and _italic_ text"
+      parse_mode: "Markdown"

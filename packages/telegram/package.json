@@ -1,0 +1,17 @@
+{
+  "name": "@matimo/telegram",
+  "version": "0.1.0-alpha.11",
+  "description": "Telegram tools for Matimo",
+  "type": "module",
+  "files": [
+    "tools",
+    "README.md",
+    "definition.yaml"
+  ],
+  "peerDependencies": {
+    "matimo": "workspace:*"
+  },
+  "devDependencies": {
+    "@matimo/core": "workspace:*"
+  }
+}

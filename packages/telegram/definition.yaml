@@ -1,0 +1,19 @@
+name: telegram-provider
+type: provider
+version: '1.0.0'
+description: |
+  Telegram Bot API Provider Configuration
+  Create a bot via @BotFather and get your token
+
+provider:
+  name: telegram
+  displayName: Telegram
+  endpoints:
+    baseUrl: https://api.telegram.org
+  defaultScopes: []
+  assets:
+    icon: assets/icon.svg
+    logo: assets/logo.svg
+  documentation: https://core.telegram.org/bots/api
+  brand_color: '#0088cc'
+  homepage: 'https://telegram.org/'

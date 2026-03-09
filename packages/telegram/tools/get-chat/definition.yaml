@@ -1,0 +1,44 @@
+name: telegram-get-chat
+description: Get information about a Telegram chat
+version: '1.0.0'
+
+parameters:
+  chat_id:
+    type: string
+    required: true
+    description: Unique identifier for the target chat
+    example: "@mychannel"
+
+execution:
+  type: http
+  method: GET
+  url: https://api.telegram.org/bot{TOKEN}/getChat?chat_id={chat_id}
+
+authentication:
+  type: bearer
+  location: header
+  name: Authorization
+
+output_schema:
+  type: object
+  properties:
+    ok:
+      type: boolean
+    result:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        username:
+          type: string
+
+error_handling:
+  retry: 2
+  backoff_type: exponential
+  initial_delay_ms: 1000
+  max_delay_ms: 10000
+  retryable_status_codes: [429, 500, 502, 503]

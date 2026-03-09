@@ -1,0 +1,47 @@
+name: telegram-set-webhook
+description: Set webhook URL for receiving updates
+version: '1.0.0'
+
+parameters:
+  url:
+    type: string
+    required: true
+    description: HTTPS URL to send updates to
+    example: "https://your-app.com/webhook"
+  secret_token:
+    type: string
+    required: false
+    description: Secret token for webhook verification
+    example: "your_secret_token"
+
+execution:
+  type: http
+  method: POST
+  url: https://api.telegram.org/bot{TOKEN}/setWebhook
+  headers:
+    Content-Type: application/json
+  body:
+    url: '{url}'
+    secret_token: '{secret_token}'
+
+authentication:
+  type: bearer
+  location: header
+  name: Authorization
+
+output_schema:
+  type: object
+  properties:
+    ok:
+      type: boolean
+    result:
+      type: boolean
+    description:
+      type: string
+
+error_handling:
+  retry: 2
+  backoff_type: exponential
+  initial_delay_ms: 1000
+  max_delay_ms: 10000
+  retryable_status_codes: [429, 500, 502, 503]
